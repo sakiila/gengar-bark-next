@@ -1,0 +1,48 @@
+display_information:
+  name: Gengar Bark
+  description: gengar bark bark
+  background_color: "#5c1582"
+features:
+  bot_user:
+    display_name: Gengar Bark
+    always_online: false
+  slash_commands:
+    - command: /say
+      url: https://gengar-bark-next.vercel.app/api/say
+      description: anonymous saying
+      usage_hint: "[ love bob ]"
+      should_escape: true
+    - command: /watch
+      url: https://gengar-bark-next.vercel.app/api/watch
+      description: status changing
+      usage_hint: "[ add/rm ID(s), ls ]"
+      should_escape: false
+    - command: /message
+      url: https://gengar-bark-next.vercel.app/api/message
+      description: vocal
+      usage_hint: "[ rm url ]"
+      should_escape: false
+oauth_config:
+  scopes:
+    bot:
+      - channels:read
+      - chat:write
+      - commands
+      - emoji:read
+      - groups:history
+      - groups:read
+      - groups:write
+      - users:read
+settings:
+  event_subscriptions:
+    request_url: https://gengar-bark-next.vercel.app/api/event
+    bot_events:
+      - channel_archive
+      - channel_created
+      - emoji_changed
+      - team_join
+      - user_change
+      - user_status_changed
+  org_deploy_enabled: false
+  socket_mode_enabled: false
+  token_rotation_enabled: false

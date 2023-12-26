@@ -565,6 +565,27 @@ export async function userIdToName(userId: string) {
   }
 }
 
+export async function emailToUserId(email: string): Promise<string> {
+  try {
+    const url: string = `https://slack.com/api/users.lookupByEmail?email=${email}`;
+    const response = await fetch(url, {
+      method: 'get',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const data = await response.json();
+
+    if (data.ok) {
+      return data.user.id as string;
+    }
+  } catch (err) {
+    console.log(err);
+  }
+  return 'unknown';
+}
+
 export async function deleteMessage(res: NextApiResponse, url: string) {
   const parts = url.split('/');
   const channelId = parts[parts.length - 2];
