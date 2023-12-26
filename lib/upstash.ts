@@ -1,6 +1,7 @@
 import { Kafka } from '@upstash/kafka';
 import { Redis } from '@upstash/redis';
 import { getLatestPost } from './hn';
+import exp from 'node:constants';
 
 const kafka = new Kafka({
   url: process.env.UPSTASH_KAFKA_REST_URL || '',
@@ -29,6 +30,18 @@ const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL || '',
   token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
 });
+
+export async function setCache(
+  key: string,
+  value: string,
+  options?: { nx?: boolean; ex?: number },
+) {
+  return await redis.set(key, value);
+}
+
+export async function getCache(key: string) {
+  return await redis.get(key) as string;
+}
 
 export async function isDuplicateCron() {
   /* Function to check for duplicate cron jobs:
