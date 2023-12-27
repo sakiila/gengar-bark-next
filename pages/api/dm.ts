@@ -1,11 +1,6 @@
-import {
-  verifyRequest,
-  postBlockToChannelId,
-  emailToUserId,
-} from '@/lib/slack';
+import { emailToUserId, postBlockToChannelId, postToUserId } from '@/lib/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { setCache, getCache } from '@/lib/upstash';
-import { deflateRawSync } from 'node:zlib';
+import { getCache, setCache } from '@/lib/upstash';
 
 export default async function handler(
   req: NextApiRequest,
@@ -40,14 +35,14 @@ export default async function handler(
     });
   }
 
-  await postBlockToChannelId(userId, res, message);
+  await postToUserId(userId, res, message);
 }
 
 async function getUserId(email: string): Promise<string> {
   let userId = await getCache(email);
   // console.log('userId = ', userId);
   if (!userId) {
-    userId = await emailToUserId(email.trim());
+    userId = await emailToUserId(email);
     await setCache(email, userId);
   }
   return userId;

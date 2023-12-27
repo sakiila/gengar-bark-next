@@ -40,7 +40,7 @@ export async function setCache(
 }
 
 export async function getCache(key: string) {
-  return await redis.get(key) as string;
+  return (await redis.get(key)) as string;
 }
 
 export async function isDuplicateCron() {
