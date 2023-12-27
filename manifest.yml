@@ -1,7 +1,7 @@
 display_information:
   name: Gengar Bark
   description: gengar bark bark
-  background_color: "#5c1582"
+  background_color: '#5c1582'
 features:
   bot_user:
     display_name: Gengar Bark
@@ -10,17 +10,17 @@ features:
     - command: /say
       url: https://gengar-bark-next.vercel.app/api/say
       description: anonymous saying
-      usage_hint: "[ love bob ]"
+      usage_hint: '[ love bob ]'
       should_escape: true
     - command: /watch
       url: https://gengar-bark-next.vercel.app/api/watch
       description: status changing
-      usage_hint: "[ add/rm ID(s), ls ]"
+      usage_hint: '[ add/rm ID(s), ls ]'
       should_escape: false
     - command: /message
       url: https://gengar-bark-next.vercel.app/api/message
       description: vocal
-      usage_hint: "[ rm url ]"
+      usage_hint: '[ rm url ]'
       should_escape: false
 oauth_config:
   scopes:

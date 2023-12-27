@@ -491,6 +491,36 @@ export async function postBlockToChannelId(
   }
 }
 
+export async function postToUserId(
+  userId: string,
+  res: NextApiResponse,
+  text: string,
+) {
+  const message = {
+    channel: userId,
+    text: text,
+  };
+  const url = 'https://slack.com/api/chat.postMessage';
+
+  try {
+    await fetch(url, {
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(message),
+    });
+    res.status(200).send('');
+  } catch (err) {
+    console.log(err);
+    res.send({
+      response_type: 'ephemeral',
+      text: `${err}`,
+    });
+  }
+}
+
 export async function postToChannel(
   channel: string,
   res: NextApiResponse,
