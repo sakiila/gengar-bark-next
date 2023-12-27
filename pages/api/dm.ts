@@ -24,7 +24,7 @@ export default async function handler(
 
   console.info('req.body = ', req.body);
 
-  const message = req.body.message as string;
+  let message = req.body.message as string;
   const email = req.body.email as string;
 
   const userId = await getUserId(email.trim());
@@ -33,6 +33,12 @@ export default async function handler(
       response_type: 'ephemeral',
       text: 'Email not found',
     });
+  }
+
+  if (message.includes("SUCCESS")) {
+    message = `:tada: ${message}`;
+  } else {
+    message = `:face_holding_back_tears: ${message}`;
   }
 
   await postToUserId(userId, res, message);
