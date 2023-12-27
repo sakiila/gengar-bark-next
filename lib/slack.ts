@@ -491,6 +491,16 @@ export async function postBlockToChannelId(
   }
 }
 
+export const buildMarkdown = (text: string) => [
+  {
+    type: 'section',
+    text: {
+      type: 'mrkdwn',
+      text: `${text}`,
+    },
+  },
+];
+
 export async function postToUserId(
   userId: string,
   res: NextApiResponse,
@@ -499,6 +509,7 @@ export async function postToUserId(
   const message = {
     channel: userId,
     text: text,
+    // blocks: buildMarkdown(text),
   };
   const url = 'https://slack.com/api/chat.postMessage';
 
