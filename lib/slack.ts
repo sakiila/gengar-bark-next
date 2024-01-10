@@ -666,22 +666,16 @@ export async function getAddedUserId(name: string) {
   myHeaders.append('authority', 'moegoworkspace.slack.com');
   myHeaders.append('accept', '*/*');
   myHeaders.append('accept-language', 'en,zh-CN;q=0.9,zh;q=0.8');
-  myHeaders.append(
-    'cookie',
-    personalCookie,
-  );
+  myHeaders.append('cookie', personalCookie);
   myHeaders.append(
     'user-agent',
     'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
   );
 
   var formdata = new FormData();
-  formdata.append(
-    'token',
-    personalToken,
-  );
+  formdata.append('token', personalToken);
   formdata.append('page', '1');
-  formdata.append('count', '1');
+  formdata.append('count', '2');
   formdata.append('sort_by', 'created');
   formdata.append('sort_dir', 'desc');
 
@@ -695,10 +689,9 @@ export async function getAddedUserId(name: string) {
     },
   );
   const data = await response.json();
-  data.emoji.forEach((emoji: { name: string; user_id: string }) => {
-    if (emoji.name === name) {
-      return emoji.user_id;
-    }
-  });
-  return 'unknown';
+  if (data.emoji == undefined) {
+    return 'unknown';
+  }
+  const foundEmoji = data.emoji.find((emoji: { name: string; user_id: string }) => emoji.name == name);
+  return foundEmoji ? foundEmoji.user_id : 'unknown';
 }

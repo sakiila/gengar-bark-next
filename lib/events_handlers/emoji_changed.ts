@@ -12,7 +12,11 @@ export default async function emoji_changed(
     switch (event.subtype) {
       case 'add':
         const userId = await getAddedUserId(event.name);
-        text = `:tada:  ${event.subtype} Emoji :${event.name}: name: ${event.name} pic: ${event.value} user: <@${userId}>`;
+        if (userId !== 'unknown') {
+          text = `:tada:  ${event.subtype} Emoji :${event.name}: name: ${event.name} pic: ${event.value} user: <@${userId}>`;
+          break;
+        }
+        text = `:tada:  ${event.subtype} Emoji :${event.name}: name: ${event.name} pic: ${event.value}`;
         break;
       case 'remove':
         text = `:tada:  ${event.subtype} Emoji ${event.names}`;
