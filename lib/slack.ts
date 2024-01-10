@@ -16,6 +16,8 @@ export const token = process.env.SLACK_BOT_TOKEN as string;
 export const signingSecret = process.env.SLACK_SIGNING_SECRET as string;
 export const prodChannel = process.env.PROD_CHANNEL as string;
 export const testChannel = process.env.TEST_CHANNEL as string;
+export const personalToken = process.env.PERSONAL_TOKEN as string;
+export const personalCookie = process.env.PERSONAL_COOKIE as string;
 
 export function verifyRequest(req: NextApiRequest) {
   /* Verify that requests are genuinely coming from Slack and not a forgery */
@@ -657,4 +659,46 @@ export async function deleteMessage(res: NextApiResponse, url: string) {
       text: `${err}`,
     });
   }
+}
+
+export async function getAddedUserId(name: string) {
+  var myHeaders = new Headers();
+  myHeaders.append('authority', 'moegoworkspace.slack.com');
+  myHeaders.append('accept', '*/*');
+  myHeaders.append('accept-language', 'en,zh-CN;q=0.9,zh;q=0.8');
+  myHeaders.append(
+    'cookie',
+    personalCookie,
+  );
+  myHeaders.append(
+    'user-agent',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  );
+
+  var formdata = new FormData();
+  formdata.append(
+    'token',
+    personalToken,
+  );
+  formdata.append('page', '1');
+  formdata.append('count', '1');
+  formdata.append('sort_by', 'created');
+  formdata.append('sort_dir', 'desc');
+
+  const response = await fetch(
+    'https://moegoworkspace.slack.com/api/emoji.adminList',
+    {
+      method: 'POST',
+      headers: myHeaders,
+      body: formdata,
+      redirect: 'follow',
+    },
+  );
+  const data = await response.json();
+  data.emoji.forEach((emoji: { name: string; user_id: string }) => {
+    if (emoji.name === name) {
+      return emoji.user_id;
+    }
+  });
+  return 'unknown';
 }

@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { postToProd } from '@/lib/slack';
+import { getAddedUserId, postToProd } from '@/lib/slack';
 
 export default async function emoji_changed(
   req: NextApiRequest,
@@ -9,12 +9,17 @@ export default async function emoji_changed(
 
   try {
     let text: string = '';
-    if (event.subtype === 'remove') {
-      text = `:tada:  ${event.subtype} Emoji ${event.names}`;
-    } else if (event.subtype === 'add') {
-      text = `:tada:  ${event.subtype} Emoji :${event.name}: name: ${event.name} pic: ${event.value}`;
-    } else if (event.subtype === 'rename') {
-      text = `:tada:  ${event.subtype} Emoji :${event.new_name}: name: ${event.new_name}`;
+    switch (event.subtype) {
+      case 'add':
+        const userId = await getAddedUserId(event.name);
+        text = `:tada:  ${event.subtype} Emoji :${event.name}: name: ${event.name} pic: ${event.value} user: <@${userId}>`;
+        break;
+      case 'remove':
+        text = `:tada:  ${event.subtype} Emoji ${event.names}`;
+        break;
+      case 'rename':
+        text = `:tada:  ${event.subtype} Emoji :${event.new_name}: name: ${event.new_name}`;
+        break;
     }
 
     await postToProd(res, text);
