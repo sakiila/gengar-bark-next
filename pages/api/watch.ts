@@ -1,11 +1,8 @@
-import { verifyRequest } from '@/lib/slack';
+import { verifyRequest, prodChannel, testChannel } from '@/lib/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
 import watch_add from '@/lib/slash_handlers/watch_add';
 import watch_ls from '@/lib/slash_handlers/watch_ls';
 import watch_rm from '@/lib/slash_handlers/watch_rm';
-
-export const prodChannel = process.env.PROD_CHANNEL as string;
-export const testChannel = process.env.TEST_CHANNEL as string;
 
 export default async function handler(
   req: NextApiRequest,
