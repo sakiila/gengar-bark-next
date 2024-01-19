@@ -36,6 +36,9 @@ export default async function handler(
   }
 
   if (message.includes("SUCCESS")) {
+    if (email.toLowerCase() === 'pc@moego.pet') {
+      return res.status(200).send('');
+    }
     message = `:tada: ${message}`;
   } else {
     message = `:face_holding_back_tears: ${message}`;
