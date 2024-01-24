@@ -51,6 +51,7 @@ export default async function handler(
     const { data, error } = await postgres.from('build_record').insert([
       {
         result: record.result,
+        duration: record.duration,
         repository: record.repository,
         branch: record.branch,
         sequence: record.sequence,
@@ -64,6 +65,7 @@ export default async function handler(
     }
   }
 
+  // return res.status(200).send(record);
   await postToUserId(userId, res, notification);
 }
 
@@ -81,17 +83,21 @@ function extractInfo(text: string):
   | {
       result: string;
       repository: string;
+      duration: string;
       branch: string;
       sequence: string;
     }
   | undefined {
-  const match = text.match(/(BUILD \w+).*» (\w+) » (\w+) #(\d+)/);
+  const match = text.match(/(BUILD \w+) \(([\w\s]+)\).*» ([a-z0-9-]+) » ([a-z0-9-]+) #(\d+)/i);
   if (match) {
     return {
       result: match[1],
-      repository: match[2],
-      branch: match[3],
-      sequence: match[4],
+      duration: match[2],
+      repository: match[3],
+      branch: match[4],
+      sequence: match[5],
     };
+  } else {
+    console.log('no match = ', text);
   }
 }
