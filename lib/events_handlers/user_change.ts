@@ -26,7 +26,7 @@ export default async function user_change(
       .eq('user_id', id);
 
     const needNotify =
-      deleted && (!dbUser || dbUser.length === 0 || dbUser[0].deleted !== true);
+      deleted && (!dbUser || dbUser.length === 0 || dbUser[0].deleted === false);
 
     await postgres.from('user').upsert({
       user_id: id,
