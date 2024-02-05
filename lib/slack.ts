@@ -692,6 +692,8 @@ export async function getAddedUserId(name: string) {
   if (data.emoji == undefined) {
     return 'unknown';
   }
-  const foundEmoji = data.emoji.find((emoji: { name: string; user_id: string }) => emoji.name == name);
+  const foundEmoji = data.emoji.find(
+    (emoji: { name: string; user_id: string }) => emoji.name == name,
+  );
   return foundEmoji ? foundEmoji.user_id : 'unknown';
 }
