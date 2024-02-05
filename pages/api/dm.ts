@@ -88,7 +88,9 @@ function extractInfo(text: string):
       sequence: string;
     }
   | undefined {
-  const match = text.match(/(BUILD \w+) \(([\w\s]+)\).*» ([a-z0-9-]+) » ([a-z0-9-]+) #(\d+)/i);
+  const match = text.match(
+    /(BUILD \w+) \(([\w\s]+)\).*» ([a-z0-9-]+) » ([a-z0-9-]+) #(\d+)/i,
+  );
   if (match) {
     return {
       result: match[1],
