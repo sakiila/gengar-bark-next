@@ -14,7 +14,8 @@ export default async function team_join(
   const { data: dbUser, error } = await postgres
     .from('user')
     .select('*')
-    .eq('user_id', id);
+    .eq('user_id', id)
+    .eq('deleted', false);
 
   if (dbUser && dbUser.length > 0) {
     return res.status(200).send('');
