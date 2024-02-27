@@ -26,15 +26,19 @@ export default async function user_change(
       .eq('user_id', id);
 
     const needNotify =
-      deleted && (!dbUser || dbUser.length === 0 || dbUser[0].deleted === false);
+      deleted &&
+      (!dbUser || dbUser.length === 0 || dbUser[0].deleted === false);
 
-    await postgres.from('user').upsert({
-      user_id: id,
-      deleted: deleted,
-      email: email,
-      real_name_normalized: realName,
-      updated_at: new Date().toISOString(),
-    });
+    await postgres.from('user').upsert(
+      {
+        user_id: id,
+        deleted: deleted,
+        email: email,
+        real_name_normalized: realName,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'user_id' },
+    );
 
     if (needNotify) {
       const text = `:smiling_face_with_tear: ${realName} (<@${id}>) has left us.`;

@@ -21,13 +21,16 @@ export default async function team_join(
     return res.status(200).send('');
   }
 
-  await postgres.from('user').upsert({
-    user_id: id,
-    deleted: false,
-    email: email,
-    real_name_normalized: realName,
-    updated_at: new Date().toISOString(),
-  });
+  await postgres.from('user').upsert(
+    {
+      user_id: id,
+      deleted: false,
+      email: email,
+      real_name_normalized: realName,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'user_id' },
+  );
 
   try {
     const text = `:tada: <@${id}> (${realName}) join us!`;
