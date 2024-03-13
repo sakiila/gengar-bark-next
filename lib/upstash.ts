@@ -31,12 +31,12 @@ const redis = new Redis({
   token: process.env.UPSTASH_REDIS_REST_TOKEN || '',
 });
 
-export async function setCache(
-  key: string,
-  value: string,
-  options?: { nx?: boolean; ex?: number },
-) {
+export async function setCache(key: string, value: string) {
   return await redis.set(key, value);
+}
+
+export async function setCacheEx(key: string, value: string, ex: number) {
+  return await redis.set(key, value, { ex: ex });
 }
 
 export async function getCache(key: string) {
