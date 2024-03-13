@@ -47,7 +47,8 @@ export default async function user_status_changed(
 
     await postToProd(
       res,
-      `:partying_face: <@${id}> changed status: ${statusEmoji} ${statusText}`);
+      `:partying_face: <@${id}> changed status: ${statusEmoji} ${statusText}`,
+    );
   } catch (e) {
     console.log(e);
   }
