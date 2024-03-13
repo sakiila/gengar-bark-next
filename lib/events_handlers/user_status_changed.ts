@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { postToProd, postToTest } from '@/lib/slack';
 import { postgres } from '@/lib/supabase';
+import { getCache, setCacheEx } from '@/lib/upstash';
 
 export default async function user_status_changed(
   req: NextApiRequest,
@@ -10,14 +11,13 @@ export default async function user_status_changed(
 
   try {
     const id = user.id;
-    const realName = user.real_name;
     const statusEmoji = user.profile.status_emoji;
     const statusText = user.profile.status_text;
 
     if ('U03FPQWGTN2' === id.toUpperCase()) {
       await postToTest(
         res,
-        `:smirk: ${realName} changed status: ${statusEmoji} ${statusText}`,
+        `:smirk: <@${id}> changed status: ${statusEmoji} ${statusText}`,
       );
       return;
     }
@@ -37,8 +37,17 @@ export default async function user_status_changed(
       return;
     }
 
-    const text = `:partying_face: ${realName} changed status: ${statusEmoji} ${statusText}`;
-    await postToProd(res, text);
+    const key = `send.${id}`;
+    const value = await getCache(key);
+    if (value === id) {
+      res.status(200).send('');
+    }
+
+    await setCacheEx(key, id, 60);
+
+    await postToProd(
+      res,
+      `:partying_face: <@${id}> changed status: ${statusEmoji} ${statusText}`);
   } catch (e) {
     console.log(e);
   }

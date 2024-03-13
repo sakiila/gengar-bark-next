@@ -1,4 +1,4 @@
-import { emailToUserId, postBlockToChannelId, postToUserId } from '@/lib/slack';
+import { emailToUserId, postToUserId } from '@/lib/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getCache, setCache } from '@/lib/upstash';
 import { postgres } from '@/lib/supabase';
