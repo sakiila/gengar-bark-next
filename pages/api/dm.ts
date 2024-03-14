@@ -36,14 +36,25 @@ export default async function handler(
     });
   }
 
-  let notification = '';
+  /**
+   * BUILD SUCCESS
+   * BUILD UNSTABLE
+   * BUILD NOT_BUILT
+   * BUILD ABORTED
+   * BUILD FAILURE
+   */
+  let notification = message;
   if (message.includes('SUCCESS')) {
     if (email.toLowerCase() === 'pc@moego.pet') {
       return res.status(200).send('');
     }
     notification = `:tada: ${message}`;
-  } else {
-    notification = `:face_holding_back_tears: ${message}`;
+  } else if (message.includes('NOT_BUILT') || message.includes('UNSTABLE')) {
+    notification = `:warning: ${message}`;
+  } else if (message.includes('ABORTED')) {
+    notification = `:negative_squared_cross_mark: ${message}`;
+  } else if (message.includes('FAILURE')) {
+    notification = `:red_circle: ${message}`;
   }
 
   const record = extractInfo(message);
