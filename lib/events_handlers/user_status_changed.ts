@@ -13,12 +13,14 @@ export default async function user_status_changed(
     const id = user.id;
     const statusEmoji = user.profile.status_emoji;
     const statusText = user.profile.status_text;
+    let statusMessage = `${statusEmoji} ${statusText}`;
+    let payload = `:partying_face: <@${id}> changed status: ${statusMessage}`;
+    if (statusMessage.trim() === '') {
+      payload = `:partying_face: <@${id}> cleared status`;
+    }
 
     if ('U03FPQWGTN2' === id.toUpperCase()) {
-      await postToTest(
-        res,
-        `:smirk: <@${id}> changed status: ${statusEmoji} ${statusText}`,
-      );
+      await postToTest(res, payload);
       return;
     }
 
@@ -45,10 +47,7 @@ export default async function user_status_changed(
 
     await setCacheEx(key, id, 60);
 
-    await postToProd(
-      res,
-      `:partying_face: <@${id}> changed status: ${statusEmoji} ${statusText}`,
-    );
+    await postToProd(res, payload);
   } catch (e) {
     console.log(e);
   }
