@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import crypto from 'crypto';
 import { regexOperations, truncateString } from './helpers';
 import {
-  clearDataForTeam,
+  clearDataForTeam, existsCacheThanSet,
   getAccessToken,
   getChannel,
   getKeywords,
@@ -438,6 +438,11 @@ export async function postToChannelId(
   res: NextApiResponse,
   text: string,
 ) {
+  const hasSentText = await existsCacheThanSet(text);
+  if (hasSentText) {
+    return res.status(200).send('');
+  }
+
   const message = {
     channel: channelId,
     text: text,

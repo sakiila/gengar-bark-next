@@ -43,6 +43,14 @@ export async function getCache(key: string) {
   return (await redis.get(key)) as string;
 }
 
+export async function existsCacheThanSet(key: string) {
+  const keyExists = await redis.exists(key);
+  if (!keyExists) {
+    await setCacheEx(key, '1', 120);
+  }
+  return Boolean(keyExists);
+}
+
 export async function isDuplicateCron() {
   /* Function to check for duplicate cron jobs:
    * nx  tells it to only set the key if it does not exist yet, otherwise an error is returned
