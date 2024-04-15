@@ -17,3 +17,4 @@ Introducing a powerful slack bot designed to enhance communication and strengthe
 
 # License
 
+[LICENSE](LICENSE)
