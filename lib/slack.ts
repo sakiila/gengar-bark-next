@@ -2,7 +2,8 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import crypto from 'crypto';
 import { regexOperations, truncateString } from './helpers';
 import {
-  clearDataForTeam, existsCacheThanSet,
+  clearDataForTeam,
+  existsCacheThanSet,
   getAccessToken,
   getChannel,
   getKeywords,
