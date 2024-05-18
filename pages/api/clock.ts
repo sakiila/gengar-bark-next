@@ -28,26 +28,24 @@ export default async function handler(
 function getStatus() {
   // 创建一个新的 Date 对象
   const currentDate = new Date();
-  // 获取当前时区的偏移量(以分钟为单位)
-  const timezoneOffsetInMinutes = currentDate.getTimezoneOffset();
-  // 将时区偏移量转换为小时
-  const timezoneOffsetInHours = timezoneOffsetInMinutes / 60;
-  // 获取当前时间的小时数(0-23)
-  let currentHour24 = currentDate.getHours();
-  // 如果是 +8 时区,则需要增加 8 小时
-  let currentHour12 = (currentHour24 + 8 + timezoneOffsetInHours) % 12;
+  const utcHours = currentDate.getUTCHours();
+  const utcMinutes = currentDate.getUTCMinutes();
+
+  let currentHour24 = (utcHours + 8) % 24;
+  let currentHour12 = (utcHours + 8) % 12;
   if (currentHour12 === 0) {
     currentHour12 = 12;
   }
-  // 获取当前时间的分钟数(0-59)
-  const currentMinutes = currentDate.getMinutes();
-  // Determine whether it's AM or PM
-  const amPm = currentHour12 < 12 ? 'AM' : 'PM';
 
-  const emoji = formatEmoji(currentHour12, currentMinutes);
-  const text = `${currentHour24.toString().padStart(2, '0')}:${currentMinutes
+  const amPm = currentHour24 < 12 ? 'AM' : 'PM';
+
+  const emoji = formatEmoji(currentHour12, utcMinutes);
+  const text = `${currentHour24.toString().padStart(2, '0')}:${utcMinutes
     .toString()
     .padStart(2, '0')} ${amPm} UTC+8`;
+
+  console.log('emoji:', emoji);
+  console.log('text:', text);
 
   return {
     emoji,
