@@ -2,7 +2,6 @@
 
 Introducing a powerful slack bot designed to enhance communication and strengthen relationships among coworkers. With its advanced features, this bot revolutionizes workplace interactions, enabling seamless messaging and fostering a sense of camaraderie.
 
-
 # Features
 
 1. support emoji changed notification 🍿
