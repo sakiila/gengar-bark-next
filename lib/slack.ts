@@ -13,7 +13,8 @@ import {
 } from './upstash';
 import { getParent, getPost } from '@/lib/hn';
 
-export const token = process.env.SLACK_BOT_TOKEN as string;
+export const bot_token = process.env.SLACK_BOT_TOKEN as string;
+export const user_token = process.env.SLACK_USER_TOKEN as string;
 export const signingSecret = process.env.SLACK_SIGNING_SECRET as string;
 export const prodChannel = process.env.PROD_CHANNEL as string;
 export const testChannel = process.env.TEST_CHANNEL as string;
@@ -452,10 +453,10 @@ export async function postToChannelId(
 
   try {
     await fetch(url, {
-      method: 'post',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${bot_token}`,
       },
       body: JSON.stringify(message),
     });
@@ -482,10 +483,10 @@ export async function postBlockToChannelId(
 
   try {
     await fetch(url, {
-      method: 'post',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${bot_token}`,
       },
       body: JSON.stringify(message),
     });
@@ -523,10 +524,10 @@ export async function postToUserId(
 
   try {
     await fetch(url, {
-      method: 'post',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${bot_token}`,
       },
       body: JSON.stringify(message),
     });
@@ -570,10 +571,10 @@ export async function channelNameToId(channelName: string): Promise<string> {
   try {
     const url = 'https://slack.com/api/conversations.list';
     const response = await fetch(url, {
-      method: 'post',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${bot_token}`,
       },
     });
     const data = await response.json();
@@ -596,10 +597,10 @@ export async function userIdToName(userId: string) {
   try {
     const url: string = `https://slack.com/api/users.info?user=${userId}`;
     const response = await fetch(url, {
-      method: 'get',
+      method: 'GET',
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${bot_token}`,
       },
     });
     const data = await response.json();
@@ -618,10 +619,10 @@ export async function emailToUserId(email: string): Promise<string> {
   try {
     const url: string = `https://slack.com/api/users.lookupByEmail?email=${email}`;
     const response = await fetch(url, {
-      method: 'get',
+      method: 'GET',
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${bot_token}`,
       },
     });
     const data = await response.json();
@@ -649,10 +650,10 @@ export async function deleteMessage(res: NextApiResponse, url: string) {
   try {
     const url: string = 'https://slack.com/api/chat.delete';
     await fetch(url, {
-      method: 'post',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
-        Authorization: `Bearer ${token}`,
+        Authorization: `Bearer ${bot_token}`,
       },
       body: JSON.stringify(message),
     });
@@ -702,4 +703,69 @@ export async function getAddedUserId(name: string) {
     (emoji: { name: string; user_id: string }) => emoji.name == name,
   );
   return foundEmoji ? foundEmoji.user_id : 'unknown';
+}
+
+export async function setProfileStatus(
+  res: NextApiResponse,
+  emoji: string,
+  text: string,
+) {
+  const message = {
+    profile: {
+      status_emoji: emoji,
+      status_text: text,
+    },
+  };
+
+  try {
+    const url: string = 'https://slack.com/api/users.profile.set';
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        Authorization: `Bearer ${user_token}`,
+      },
+      body: JSON.stringify(message),
+    });
+
+    const data = await response.json();
+    if (!data.ok) {
+      return res.status(200).send({ message: `${data.error}` });
+    }
+
+    return res.status(200).send({ message: 'Status updated' });
+  } catch (err) {
+    console.log(err);
+    res.send({
+      response_type: 'ephemeral',
+      text: `${err}`,
+    });
+  }
+}
+
+export async function getProfileStatus() {
+  try {
+    const url: string = 'https://slack.com/api/users.profile.get';
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        Authorization: `Bearer ${user_token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (data.ok) {
+      return {
+        status_emoji: data.profile.status_emoji,
+        status_text: data.profile.status_text,
+      };
+    } else {
+      return null;
+    }
+  } catch (err) {
+    console.log(err);
+    return null;
+  }
 }
