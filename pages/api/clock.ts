@@ -58,6 +58,9 @@ function formatEmoji(hour: number, minutes: number): string {
     return `:clock${hour.toString() + 30}:`;
   }
   if (minutes > 45) {
+    if (hour === 12) {
+      return `:clock1:`;
+    }
     return `:clock${hour + 1}:`;
   }
   return `:clock${hour.toString()}:`;
