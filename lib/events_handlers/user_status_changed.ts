@@ -20,6 +20,7 @@ export default async function user_status_changed(
     }
 
     if ('U03FPQWGTN2' === id.toUpperCase()) {
+      res.status(200).send('');
       // await postToTest(res, payload);
       return;
     }
