@@ -555,7 +555,7 @@ export async function postToUserIdHr(
   const url = 'https://slack.com/api/chat.postMessage';
 
   try {
-    await fetch(url, {
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
@@ -563,7 +563,8 @@ export async function postToUserIdHr(
       },
       body: JSON.stringify(message),
     });
-    res.status(200).send('');
+    const data = await response.json();
+    res.status(200).send(data);
   } catch (err) {
     console.log(err);
     res.send({
