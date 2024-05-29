@@ -14,6 +14,7 @@ import {
 import { getParent, getPost } from '@/lib/hn';
 
 export const bot_token = process.env.SLACK_BOT_TOKEN as string;
+export const bot_hr_token = process.env.SLACK_BOT_HR_TOKEN as string;
 export const user_token = process.env.SLACK_USER_TOKEN as string;
 export const signingSecret = process.env.SLACK_SIGNING_SECRET as string;
 export const prodChannel = process.env.PROD_CHANNEL as string;
@@ -528,6 +529,37 @@ export async function postToUserId(
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
         Authorization: `Bearer ${bot_token}`,
+      },
+      body: JSON.stringify(message),
+    });
+    res.status(200).send('');
+  } catch (err) {
+    console.log(err);
+    res.send({
+      response_type: 'ephemeral',
+      text: `${err}`,
+    });
+  }
+}
+
+export async function postToUserIdHr(
+  userId: string,
+  res: NextApiResponse,
+  text: string,
+) {
+  const message = {
+    channel: userId,
+    text: text,
+    // blocks: buildMarkdown(text),
+  };
+  const url = 'https://slack.com/api/chat.postMessage';
+
+  try {
+    await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        Authorization: `Bearer ${bot_hr_token}`,
       },
       body: JSON.stringify(message),
     });
