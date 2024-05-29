@@ -1,7 +1,6 @@
-import { emailToUserId, postToUserId, postToUserIdHr } from '@/lib/slack';
+import { emailToUserId, postToUserIdHr } from '@/lib/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getCache, setCache } from '@/lib/upstash';
-import { postgres } from '@/lib/supabase';
 
 export default async function handler(
   req: NextApiRequest,
@@ -13,15 +12,6 @@ export default async function handler(
       text: 'This endpoint only accepts POST requests',
     });
   }
-
-  // const verification = verifyRequest(req);
-  // if (!verification.status) {
-  //   // verify that the request is coming from the correct Slack team
-  //   return res.status(403).json({
-  //     response_type: 'ephemeral',
-  //     text: 'Nice try buddy. Slack signature mismatch.',
-  //   });
-  // }
 
   console.info('req.body = ', req.body);
 
