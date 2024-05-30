@@ -14,7 +14,6 @@ export async function getGPTResponse(messages: ChatCompletionMessageParam[]) {
 }
 
 export async function generatePromptFromThread({ messages }: any) {
-  if (!messages) throw new Error('No messages found in thread');
   const botID = messages[0].reply_users?.[0];
 
   const result = messages
