@@ -12,6 +12,7 @@ import {
   trackUnfurls,
 } from './upstash';
 import { getParent, getPost } from '@/lib/hn';
+import { aw } from '@upstash/redis/zmscore-415f6c9f';
 
 export const bot_token = process.env.SLACK_BOT_TOKEN as string;
 export const bot_hr_token = process.env.SLACK_BOT_HR_TOKEN as string;
@@ -800,5 +801,64 @@ export async function getProfileStatus() {
   } catch (err) {
     console.log(err);
     return null;
+  }
+}
+
+export async function getThreadReply(channelId: string, ts: string) {
+  const url = `https://slack.com/api/conversations.replies?channel=${channelId}&ts=${ts}`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        Authorization: `Bearer ${bot_token}`,
+      },
+    });
+    const data = await response.json();
+    if (data.of) {
+      return data.messages;
+    } else {
+      return 'unknown';
+    }
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+export async function threadReply(
+  channelId: string,
+  ts: string,
+  res: NextApiResponse,
+  text: string,
+) {
+  // const hasSentText = await existsCacheThanSet(text);
+  // if (hasSentText) {
+  //   return res.status(200).send('');
+  // }
+
+  const message = {
+    channel: channelId,
+    text: text,
+    thread_ts: ts,
+  };
+  const url = 'https://slack.com/api/chat.postMessage';
+
+  try {
+    await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        Authorization: `Bearer ${bot_token}`,
+      },
+      body: JSON.stringify(message),
+    });
+    res.status(200).send('');
+  } catch (err) {
+    console.log(err);
+    res.send({
+      response_type: 'ephemeral',
+      text: `${err}`,
+    });
   }
 }
