@@ -6,7 +6,7 @@ import user_status_changed from '@/lib/events_handlers/user_status_changed';
 import user_change from '@/lib/events_handlers/user_change';
 import channel_created from '@/lib/events_handlers/channel_created';
 import channel_archive from '@/lib/events_handlers/channel_archive';
-import send_gpt_response, { sendGPTResponse } from '@/lib/events_handlers/chat';
+import send_gpt_response from '@/lib/events_handlers/chat';
 
 export default async function handler(
   req: NextApiRequest,

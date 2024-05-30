@@ -7,7 +7,7 @@ export default async function send_gpt_response(
   res: NextApiResponse,
 ) {
   const channel = req.body.event.channel; // channel the message was sent in
-  const ts = req.body.event.message_ts; // message timestamp
+  const ts = req.body.event.ts; // message timestamp
 
   const thread = await getThreadReply(channel, ts);
 
