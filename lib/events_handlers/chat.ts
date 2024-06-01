@@ -47,9 +47,7 @@ export async function send_gpt_response_in_dm(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  const channel = req.body.event.channel; // channel the message was sent in
-  const ts = req.body.event.ts; // message timestamp
-  const text = req.body.event.text;
+  const text = req.body.text;
 
   const hasSentText = await existsCacheThanSet(text);
   if (hasSentText) {
