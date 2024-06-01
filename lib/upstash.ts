@@ -1,7 +1,7 @@
 import { Kafka } from '@upstash/kafka';
 import { Redis } from '@upstash/redis';
+import { Client, Receiver } from '@upstash/qstash';
 import { getLatestPost } from './hn';
-import exp from 'node:constants';
 
 const kafka = new Kafka({
   url: process.env.UPSTASH_KAFKA_REST_URL || '',
@@ -232,3 +232,41 @@ export async function getTeamConfigAndStats(
     notifications: json[1][2] || 0,
   };
 }
+
+const qc = new Client({
+  token: process.env.QSTASH_TOKEN || '',
+});
+
+export async function publishAi(text: string, url: string) {
+  await qc.publishJSON({
+    url: 'https://gengar-bark-next.vercel.app/api/reply',
+    body: {
+      text: text,
+      url: url
+    },
+  });
+}
+
+const qr = new Receiver({
+  currentSigningKey: process.env.QSTASH_CURRENT_SIGNING_KEY || '',
+  nextSigningKey: process.env.QSTASH_NEXT_SIGNING_KEY || '',
+});
+
+export async function isValid(signature: string, body: string) {
+  return await qr.verify({
+    /**
+     * The signature from the `Upstash-Signature` header.
+     *
+     * Please note that on some platforms (e.g. Vercel or Netlify) you might
+     * receive the header in lower case: `upstash-signature`
+     *
+     */
+    signature: signature,
+
+    /**
+     * The raw request body.
+     */
+    body: body
+  })
+}
+

@@ -1,6 +1,6 @@
 import { verifyRequest } from '@/lib/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { send_gpt_response_in_dm } from '@/lib/events_handlers/chat';
+import { existsCacheThanSet, publishAi } from '@/lib/upstash';
 
 export default async function handler(
   req: NextApiRequest,
@@ -24,5 +24,18 @@ export default async function handler(
 
   console.info('req.body = ', JSON.stringify(req.body));
 
-  await send_gpt_response_in_dm(req, res);
+  const text = req.body.text;
+  const response_url = req.body.response_url;
+
+  const hasSentText = await existsCacheThanSet(text);
+  if (hasSentText) {
+    return res.status(200).send({
+      response_type: 'ephemeral',
+      text: 'Already sent text in 2 minutes.',
+    });
+  }
+
+  await publishAi(text, response_url);
+
+  return res.status(200).send('');
 }
