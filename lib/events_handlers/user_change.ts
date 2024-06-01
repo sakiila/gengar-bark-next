@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { postToProd } from '@/lib/slack';
-import { produceMessage } from '@/lib/upstash';
 import { postgres } from '@/lib/supabase';
 
 export default async function user_change(
@@ -44,7 +43,7 @@ export default async function user_change(
       const text = `:smiling_face_with_tear: ${realName} (<@${id}>) has left us.`;
       await postToProd(res, text);
     } else {
-      await produceMessage(user);
+      // await produceMessage(user);
       res
         .status(200)
         .send(
