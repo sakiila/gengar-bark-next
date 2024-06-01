@@ -13,14 +13,24 @@ export async function getGPTResponse(messages: ChatCompletionMessageParam[]) {
   });
 }
 
-export async function generatePromptFromThread({ messages }: any) {
-  const botID = messages[0].reply_users?.[0];
+export async function generatePromptFromThread(messages: any) {
+  console.log('messages = ', messages);
+  if (!messages || messages.length === 0) {
+    throw new Error('No messages found');
+  }
+
+  const botID = 'U0666R94C83';
 
   const result = messages
     .map((message: any) => {
+      if (!message || !message.text) {
+        return null;
+      }
       const isBot = !!message.bot_id && !message.client_msg_id;
       const isNotMentioned = !isBot && !message.text.startsWith(`<@`);
-      if (isNotMentioned) return null;
+      if (isNotMentioned) {
+        return null;
+      }
 
       return {
         role: isBot ? 'assistant' : 'user',
@@ -30,6 +40,8 @@ export async function generatePromptFromThread({ messages }: any) {
       };
     })
     .filter(Boolean);
+
+  console.log('result = ', result);
 
   return result as ChatCompletionMessageParam[];
 }
