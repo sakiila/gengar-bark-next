@@ -44,9 +44,9 @@ export default async function handler(
         case 'app_mention':
           await send_gpt_response(req, res);
           break;
-        case 'message':
-          await send_gpt_response(req, res);
-          break;
+        // case 'message':
+        //   await send_gpt_response(req, res);
+        //   break;
         default:
           break;
       }
