@@ -1,8 +1,7 @@
 import { responseUrl } from '@/lib/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { ChatCompletionMessageParam } from 'openai/resources';
-import { getGPTResponse3, getGPTResponse4 } from '@/lib/openai';
-import { existsCacheThanSet, isValid } from '@/lib/upstash';
+import { getGPTResponse4 } from '@/lib/openai';
 
 export default async function handler(
   req: NextApiRequest,
