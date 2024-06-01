@@ -6,7 +6,7 @@ import user_status_changed from '@/lib/events_handlers/user_status_changed';
 import user_change from '@/lib/events_handlers/user_change';
 import channel_created from '@/lib/events_handlers/channel_created';
 import channel_archive from '@/lib/events_handlers/channel_archive';
-import send_gpt_response from '@/lib/events_handlers/chat';
+import { send_gpt_response_in_channel } from '@/lib/events_handlers/chat';
 
 export default async function handler(
   req: NextApiRequest,
@@ -42,7 +42,7 @@ export default async function handler(
           await channel_archive(req, res);
           break;
         case 'app_mention':
-          await send_gpt_response(req, res);
+          await send_gpt_response_in_channel(req, res);
           break;
         // case 'message':
         //   await send_gpt_response(req, res);
