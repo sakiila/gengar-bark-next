@@ -2,7 +2,7 @@ import { responseUrl } from '@/lib/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { ChatCompletionMessageParam } from 'openai/resources';
 import { getGPTResponse4 } from '@/lib/openai';
-import { isValid } from '@/lib/upstash';
+import { existsCacheThanSet, isValid } from '@/lib/upstash';
 
 export default async function handler(
   req: NextApiRequest,
@@ -14,8 +14,13 @@ export default async function handler(
   //     text: 'This endpoint only accepts POST requests',
   //   });
   // }
+  const {
+    'upstash-signature': upstash_signature,
+  } = req.headers as {
+    [key: string]: string;
+  };
 
-  const valid = await isValid(String(req.headers["upstash-signature"]), req.body);
+  const valid = await isValid(upstash_signature, req.body);
   if (!valid) {
     return res.status(403).json({
       response_type: 'ephemeral',
@@ -24,6 +29,14 @@ export default async function handler(
   }
 
   console.info('req.body = ', JSON.stringify(req.body));
+
+  const hasSentText = await existsCacheThanSet(String(req.body.text));
+  if (hasSentText) {
+    return res.status(200).send({
+      response_type: 'ephemeral',
+      text: 'Already sent text in 2 minutes.',
+    });
+  }
 
   const prompts: ChatCompletionMessageParam[] = [
     {
