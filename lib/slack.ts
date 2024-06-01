@@ -442,10 +442,10 @@ export async function postToChannelId(
   res: NextApiResponse,
   text: string,
 ) {
-  const hasSentText = await existsCacheThanSet(text);
-  if (hasSentText) {
-    return res.status(200).send('');
-  }
+  // const hasSentText = await existsCacheThanSet(text);
+  // if (hasSentText) {
+  //   return res.status(200).send('');
+  // }
 
   const message = {
     channel: channelId,

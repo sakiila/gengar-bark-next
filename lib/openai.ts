@@ -6,9 +6,16 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-export async function getGPTResponse(messages: ChatCompletionMessageParam[]) {
+export async function getGPTResponse4(messages: ChatCompletionMessageParam[]) {
   return openai.chat.completions.create({
     model: 'gpt-4o',
+    messages,
+  });
+}
+
+export async function getGPTResponse3(messages: ChatCompletionMessageParam[]) {
+  return openai.chat.completions.create({
+    model: 'gpt-3.5-turbo',
     messages,
   });
 }

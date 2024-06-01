@@ -26,7 +26,6 @@ export default async function handler(
 }
 
 function getStatus() {
-  // 创建一个新的 Date 对象
   const currentDate = new Date();
   const utcHours = currentDate.getUTCHours();
   const utcMinutes = currentDate.getUTCMinutes();
