@@ -2,6 +2,12 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { getThreadReply, threadReply } from '@/lib/slack';
 import { generatePromptFromThread, getGPTResponse } from '@/lib/openai';
 
+/**
+ * Send GPT response to the channel
+ * Do not support 'message' event type because it will be triggered by every message
+ * @param req
+ * @param res
+ */
 export default async function send_gpt_response(
   req: NextApiRequest,
   res: NextApiResponse,
