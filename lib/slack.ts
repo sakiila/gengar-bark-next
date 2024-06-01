@@ -863,14 +863,15 @@ export async function threadReply(
 
 export async function responseUrl(url: string, text: string) {
   try {
-    await fetch(url, {
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
         Authorization: `Bearer ${bot_token}`,
       },
-      body: JSON.stringify(text),
+      body: JSON.stringify({ text: text, response_type: 'in_channel' }),
     });
+    console.log('response:', response);
   } catch (err) {
     console.log(err);
   }

@@ -1,7 +1,7 @@
 import { responseUrl } from '@/lib/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { ChatCompletionMessageParam } from 'openai/resources';
-import { getGPTResponse4 } from '@/lib/openai';
+import { getGPTResponse3, getGPTResponse4 } from '@/lib/openai';
 import { existsCacheThanSet, isValid } from '@/lib/upstash';
 
 export default async function handler(
@@ -14,29 +14,31 @@ export default async function handler(
   //     text: 'This endpoint only accepts POST requests',
   //   });
   // }
-  const {
-    'upstash-signature': upstash_signature,
-  } = req.headers as {
-    [key: string]: string;
-  };
+  // const {
+  //   'upstash-signature': upstash_signature,
+  // } = req.headers as {
+  //   [key: string]: string;
+  // };
+  //
+  // console.log('upstash_signature:', upstash_signature);
 
-  const valid = await isValid(upstash_signature, req.body);
-  if (!valid) {
-    return res.status(403).json({
-      response_type: 'ephemeral',
-      text: 'Nice try buddy. Upstash signature mismatch.',
-    });
-  }
+  // const valid = await isValid(upstash_signature, req.body);
+  // if (!valid) {
+  //   return res.status(403).json({
+  //     response_type: 'ephemeral',
+  //     text: 'Nice try buddy. Upstash signature mismatch.',
+  //   });
+  // }
 
   console.info('req.body = ', JSON.stringify(req.body));
 
-  const hasSentText = await existsCacheThanSet(String(req.body.text));
-  if (hasSentText) {
-    return res.status(200).send({
-      response_type: 'ephemeral',
-      text: 'Already sent text in 2 minutes.',
-    });
-  }
+  // const hasSentText = await existsCacheThanSet(String(req.body.text));
+  // if (hasSentText) {
+  //   return res.status(200).send({
+  //     response_type: 'ephemeral',
+  //     text: 'Already sent text in 2 minutes.',
+  //   });
+  // }
 
   const prompts: ChatCompletionMessageParam[] = [
     {
@@ -47,7 +49,7 @@ export default async function handler(
 
   const gptResponse = await getGPTResponse4(prompts);
 
-  console.log('gptResponse:', gptResponse);
+  console.log('gptResponse:', `${gptResponse.choices[0].message.content}`);
 
   try {
     await responseUrl(
