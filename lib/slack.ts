@@ -3,7 +3,6 @@ import crypto from 'crypto';
 import { regexOperations, truncateString } from './helpers';
 import {
   clearDataForTeam,
-  existsCacheThanSet,
   getAccessToken,
   getChannel,
   getKeywords,
@@ -12,7 +11,6 @@ import {
   trackUnfurls,
 } from './upstash';
 import { getParent, getPost } from '@/lib/hn';
-import { aw } from '@upstash/redis/zmscore-415f6c9f';
 
 export const bot_token = process.env.SLACK_BOT_TOKEN as string;
 export const bot_hr_token = process.env.SLACK_BOT_HR_TOKEN as string;
@@ -805,7 +803,7 @@ export async function getProfileStatus() {
 }
 
 export async function getThreadReply(channelId: string, ts: string) {
-  const url = `https://slack.com/api/conversations.replies?channel=${channelId}&ts=${ts}`;
+  const url = `https://slack.com/api/conversations.replies?channel=${channelId}&ts=${ts}&inclusive=true`;
 
   try {
     const response = await fetch(url, {
