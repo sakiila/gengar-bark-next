@@ -27,13 +27,13 @@ export default async function handler(
   const text = req.body.text;
   const response_url = req.body.response_url;
 
-  // const hasSentText = await existsCacheThanSet(text);
-  // if (hasSentText) {
-  //   return res.status(200).send({
-  //     response_type: 'ephemeral',
-  //     text: 'Already sent text in 2 minutes.',
-  //   });
-  // }
+  const hasSentText = await existsCacheThanSet(text);
+  if (hasSentText) {
+    return res.status(200).send({
+      response_type: 'ephemeral',
+      text: 'Already sent text in 2 minutes.',
+    });
+  }
 
   await publishAi(text, response_url);
 
