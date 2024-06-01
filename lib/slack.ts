@@ -851,12 +851,27 @@ export async function threadReply(
       },
       body: JSON.stringify(message),
     });
-    res.status(200).send('');
+    return res.status(200).send('');
   } catch (err) {
     console.log(err);
-    res.send({
+    return res.status(200).send({
       response_type: 'ephemeral',
       text: `${err}`,
     });
+  }
+}
+
+export async function responseUrl(url: string, text: string) {
+  try {
+    await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        Authorization: `Bearer ${bot_token}`,
+      },
+      body: JSON.stringify(text),
+    });
+  } catch (err) {
+    console.log(err);
   }
 }

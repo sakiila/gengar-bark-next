@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getThreadReply, threadReply } from '@/lib/slack';
+import { getThreadReply, responseUrl, threadReply } from '@/lib/slack';
 import { generatePromptFromThread, getGPTResponse4 } from '@/lib/openai';
 import { existsCacheThanSet } from '@/lib/upstash';
 import { ChatCompletionMessageParam } from 'openai/resources';
@@ -21,7 +21,7 @@ export async function send_gpt_response_in_channel(
   const hasSentText = await existsCacheThanSet(text);
   if (hasSentText) {
     console.log('Already sent text:', text);
-    return res.status(200).send('');
+    return res.status(200).send('Already sent text in 2 minutes.');
   }
 
   const thread = await getThreadReply(channel, ts);
@@ -48,10 +48,11 @@ export async function send_gpt_response_in_dm(
   res: NextApiResponse,
 ) {
   const text = req.body.text;
+  const response_url = req.body.response_url;
 
   const hasSentText = await existsCacheThanSet(text);
   if (hasSentText) {
-    return res.send({
+    return res.status(200).send({
       response_type: 'ephemeral',
       text: 'Already sent text in 2 minutes.',
     });
@@ -69,10 +70,12 @@ export async function send_gpt_response_in_dm(
   console.log('gptResponse:', gptResponse);
 
   try {
-    return res.send({
-      response_type: 'in_channel',
-      text: `${gptResponse.choices[0].message.content}`,
-    });
+   await responseUrl(response_url, `${gptResponse.choices[0].message.content}`);
+    // return res.send({
+    //   response_type: 'in_channel',
+    //   text: `${gptResponse.choices[0].message.content}`,
+    // });
+    return res.status(200).send('');
   } catch (e) {
     console.log(e);
   }

@@ -22,7 +22,7 @@ export default async function handler(
     });
   }
 
-  console.info('req.body = ', req.body);
+  console.info('req.body = ', JSON.stringify(req.body));
 
   await send_gpt_response_in_dm(req, res);
 }
