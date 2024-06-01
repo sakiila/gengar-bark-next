@@ -17,8 +17,8 @@ export default async function handler(
   const type = req.body.type;
   if (type === 'url_verification') {
     return res.status(200).json(req.body.challenge);
-  // } else if (verifyRequest(req)) {
-  } else if (true) {
+  } else if (verifyRequest(req)) {
+  // } else if (true) {
     if (type === 'event_callback') {
       const event_type = req.body.event.type;
 
@@ -42,6 +42,9 @@ export default async function handler(
           await channel_archive(req, res);
           break;
         case 'app_mention':
+          await send_gpt_response(req, res);
+          break;
+        case 'message':
           await send_gpt_response(req, res);
           break;
         default:
