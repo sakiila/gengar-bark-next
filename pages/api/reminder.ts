@@ -1,9 +1,8 @@
-import { postToProd, postToTest } from '@/lib/slack';
+import { postToProd } from '@/lib/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { postgres } from '@/lib/supabase';
 import { ChatCompletionMessageParam } from 'openai/resources';
-import { getGPTResponse3, getGPTResponse4 } from '@/lib/openai';
-import { random } from 'nanoid';
+import { getGPTResponse3 } from '@/lib/openai';
 
 export default async function handler(
   req: NextApiRequest,
