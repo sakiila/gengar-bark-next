@@ -3,6 +3,10 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { ChatCompletionMessageParam } from 'openai/resources';
 import { getGPTResponse4 } from '@/lib/openai';
 
+export const config = {
+  maxDuration: 30,
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,

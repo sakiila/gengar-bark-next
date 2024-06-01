@@ -863,7 +863,7 @@ export async function threadReply(
 
 export async function responseUrl(url: string, text: string) {
   try {
-    const response = await fetch(url, {
+    const response = await fetch(url.trim(), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
@@ -871,7 +871,6 @@ export async function responseUrl(url: string, text: string) {
       },
       body: JSON.stringify({ text: text, response_type: 'in_channel' }),
     });
-    console.log('response:', response);
   } catch (err) {
     console.log(err);
   }

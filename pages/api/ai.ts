@@ -38,6 +38,6 @@ export default async function handler(
   await publishAi(text, response_url);
 
   return res.status(200).send({
-    response_type: 'in_channel',
+    response_type: 'in_channel'
   });
 }
