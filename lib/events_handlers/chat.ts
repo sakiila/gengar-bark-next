@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getThreadReply, threadReply } from '@/lib/slack';
-import { generatePromptFromThread, getGPTResponse4 } from '@/lib/openai';
+import { generatePromptFromThread, getGPTResponse3, getGPTResponse4 } from '@/lib/openai';
 
 /**
  * Send GPT response to the channel
@@ -18,7 +18,9 @@ export default async function send_gpt_response(
   const thread = await getThreadReply(channel, ts);
 
   const prompts = await generatePromptFromThread(thread);
-  const gptResponse = await getGPTResponse4(prompts);
+  const gptResponse = await getGPTResponse3(prompts);
+
+  console.log('gptResponse:', gptResponse);
 
   try {
     await threadReply(
