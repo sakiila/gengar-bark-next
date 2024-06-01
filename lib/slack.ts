@@ -816,7 +816,7 @@ export async function getThreadReply(channelId: string, ts: string) {
       },
     });
     const data = await response.json();
-    if (data.of) {
+    if (data.ok) {
       return data.messages;
     } else {
       return 'unknown';

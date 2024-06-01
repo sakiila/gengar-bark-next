@@ -13,6 +13,7 @@ export default async function send_gpt_response(
 
   const prompts = await generatePromptFromThread(thread);
   const gptResponse = await getGPTResponse(prompts);
+  console.log('gptResponse = ', gptResponse);
 
   try {
     await threadReply(
