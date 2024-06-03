@@ -8,6 +8,10 @@ import channel_created from '@/lib/events_handlers/channel_created';
 import channel_archive from '@/lib/events_handlers/channel_archive';
 import { send_gpt_response_in_channel } from '@/lib/events_handlers/chat';
 
+export const config = {
+  maxDuration: 30,
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
