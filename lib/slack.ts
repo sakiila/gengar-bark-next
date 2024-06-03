@@ -249,6 +249,16 @@ export const boldBlock = (text: string) => [
   },
 ];
 
+export const textToMarkdown = (text: string) => [
+  {
+    type: 'section',
+    text: {
+      type: 'mrkdwn',
+      text: `${text}`,
+    },
+  },
+];
+
 export const configureBlocks = (
   keywords: string[],
   channel: string,
@@ -839,6 +849,7 @@ export async function threadReply(
     channel: channelId,
     text: text,
     thread_ts: ts,
+    blocks: textToMarkdown(text),
   };
   const url = 'https://slack.com/api/chat.postMessage';
 
