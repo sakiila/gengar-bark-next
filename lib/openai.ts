@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import { ChatCompletionMessageParam } from 'openai/resources';
 
+// https://github.com/vercel/examples/blob/main/solutions/slackbot/api/events.ts
 const openai = new OpenAI({
   baseURL: process.env.OPENAI_API_URL,
   apiKey: process.env.OPENAI_API_KEY,
