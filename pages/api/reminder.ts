@@ -4,6 +4,10 @@ import { postgres } from '@/lib/supabase';
 import { ChatCompletionMessageParam } from 'openai/resources';
 import { getGPTResponse3 } from '@/lib/openai';
 
+export const config = {
+  maxDuration: 30,
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
