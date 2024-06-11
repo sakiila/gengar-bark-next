@@ -39,7 +39,7 @@ export default async function handler(
   // if (hasSentText) {
   //   return res.status(200).send({
   //     response_type: 'ephemeral',
-  //     text: 'Already sent text in 2 minutes.',
+  //     text: 'Already sent same text in 2 minutes.',
   //   });
   // }
 

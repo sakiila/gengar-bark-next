@@ -267,7 +267,6 @@ export async function isValid(signature: string, body: string) {
     /**
      * The raw request body.
      */
-    body: body
-  })
+    body: body,
+  });
 }
-

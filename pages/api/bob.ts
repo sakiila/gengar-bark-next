@@ -35,13 +35,13 @@ export default async function handler(
   if (hasSentText) {
     return res.status(200).send({
       response_type: 'ephemeral',
-      text: 'Already sent text in 2 minutes.',
+      text: 'Already sent same text in 2 minutes.',
     });
   }
 
-  await publishAi(text, response_url, "bob");
+  await publishAi(text, response_url, 'bob');
 
   return res.status(200).send({
-    response_type: 'in_channel'
+    response_type: 'in_channel',
   });
 }
