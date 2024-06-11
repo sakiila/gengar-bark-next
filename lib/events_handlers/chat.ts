@@ -14,7 +14,7 @@ export async function send_gpt_response_in_channel(
   res: NextApiResponse,
 ) {
   const channel = req.body.event.channel; // channel the message was sent in
-  const ts = req.body.event.ts; // message timestamp
+  const ts = req.body.event.thread_ts ?? req.body.event.ts; // message timestamp
   const text = req.body.event.text;
 
   const hasSentText = await existsCacheThanSet(text);
