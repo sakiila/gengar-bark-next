@@ -237,12 +237,13 @@ const qc = new Client({
   token: process.env.QSTASH_TOKEN || '',
 });
 
-export async function publishAi(text: string, url: string) {
+export async function publishAi(text: string, url: string, type: string) {
   await qc.publishJSON({
     url: 'https://gengar-bark-next.vercel.app/api/reply',
     body: {
       text: text,
-      url: url
+      url: url,
+      type: type,
     },
   });
 }

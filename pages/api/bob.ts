@@ -39,7 +39,7 @@ export default async function handler(
     });
   }
 
-  await publishAi(text, response_url, "ai");
+  await publishAi(text, response_url, "bob");
 
   return res.status(200).send({
     response_type: 'in_channel'
