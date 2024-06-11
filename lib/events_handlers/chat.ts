@@ -19,8 +19,8 @@ export async function send_gpt_response_in_channel(
 
   const hasSentText = await existsCacheThanSet(text);
   if (hasSentText) {
-    console.log('Already sent text:', text);
-    return res.status(200).send('Already sent text in 2 minutes.');
+    console.log('Already sent same text in 2 minutes:', text);
+    return res.status(200).send('Already sent same text in 2 minutes.');
   }
 
   const thread = await getThreadReply(channel, ts);
