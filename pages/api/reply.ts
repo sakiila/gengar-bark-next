@@ -46,9 +46,17 @@ export default async function handler(
   const prompts: ChatCompletionMessageParam[] = [
     {
       role: 'assistant',
-      content: String(req.body.text),
     },
   ];
+
+  switch (req.body.type) {
+    case 'ai':
+      prompts[0].content = String(req.body.text);
+      break;
+    case 'bob':
+      prompts[0].content = process.env.BOB_PROMT + String(req.body.text);
+      break;
+  }
 
   const gptResponse = await getGPTResponse4(prompts);
 
