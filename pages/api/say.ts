@@ -1,4 +1,4 @@
-import { verifyRequest, postBlockToChannelId } from '@/lib/slack';
+import { verifyRequest, postBoldBlockToChannelId } from '@/lib/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(
@@ -25,7 +25,7 @@ export default async function handler(
 
   const channelId = req.body.channel_id as string;
   const message = req.body.text as string;
-  await postBlockToChannelId(channelId, res, message);
+  await postBoldBlockToChannelId(channelId, res, message);
 
   return res.status(200).send('');
 }
