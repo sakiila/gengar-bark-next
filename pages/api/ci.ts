@@ -1,9 +1,5 @@
-import { verifyRequest, prodChannel, testChannel } from '@/lib/slack';
+import { verifyRequest } from '@/lib/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
-import watch_add from '@/lib/slash_handlers/watch_add';
-import watch_ls from '@/lib/slash_handlers/watch_ls';
-import watch_rm from '@/lib/slash_handlers/watch_rm';
-import { aw } from '@upstash/redis/zmscore-415f6c9f';
 import ci_add from '@/lib/slash_handlers/ci_add';
 
 export default async function handler(
@@ -28,5 +24,13 @@ export default async function handler(
   const text = req.body.text;
   const [repository, branch] = text.split(' ');
 
-  await  ci_add(res, repository, branch, channelId, channelName, userId, userName)
+  await ci_add(
+    res,
+    repository,
+    branch,
+    channelId,
+    channelName,
+    userId,
+    userName,
+  );
 }

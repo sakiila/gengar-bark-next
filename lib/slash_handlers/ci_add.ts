@@ -1,6 +1,5 @@
 import { NextApiResponse } from 'next';
 import { postgres } from '@/lib/supabase';
-import { userIdToName } from '@/lib/slack';
 
 export default async function ci_add(
   res: NextApiResponse,
@@ -11,7 +10,6 @@ export default async function ci_add(
   userId: string,
   userName: string,
 ) {
-
   const newArr = [
     {
       repository: repository,
@@ -24,11 +22,7 @@ export default async function ci_add(
   ];
 
   try {
-    const { data: entity, error } = await postgres
-      .from('build_watch')
-      .insert(newArr)
-      .select();
-    console.log('data from fetch:', entity);
+    await postgres.from('build_watch').insert(newArr).select();
 
     res.send({
       response_type: 'in_channel',
