@@ -76,8 +76,21 @@ export default async function handler(
     }
   }
 
-  // return res.status(200).send(record);
   await postToUserId(userId, res, notification);
+
+  if (record) {
+    let { data: build_watchs, error } = await postgres
+    .from('build_watch')
+    .select("*")
+    .eq('repository', record.repository.trim())
+    .eq('branch', record.branch.trim());
+
+    build_watchs?.forEach(async (build_watch) => {
+      await postToUserId(build_watch.channel, res, notification);
+    });
+  }
+
+  res.status(200).send('Success');
 }
 
 async function getUserId(email: string): Promise<string> {

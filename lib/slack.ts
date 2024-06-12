@@ -612,7 +612,6 @@ export async function postToUserId(
       },
       body: JSON.stringify(message),
     });
-    res.status(200).send('');
   } catch (err) {
     console.log(err);
     res.send({
