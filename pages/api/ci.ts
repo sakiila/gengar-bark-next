@@ -25,7 +25,7 @@ export default async function handler(
   const userName = req.body.user_name;
   const channelId = req.body.channel_id;
   const channelName = req.body.channel_name;
-  const text = req.body.event.text;
+  const text = req.body.text;
   const [repository, branch] = text.split(' ');
 
   await  ci_add(res, repository, branch, channelId, channelName, userId, userName)
