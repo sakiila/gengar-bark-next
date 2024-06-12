@@ -7,6 +7,15 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+export async function getDALLEResponse3(prompt: string) {
+  return openai.images.generate({
+    model: 'dall-e-3',
+    prompt: prompt.trim(),
+    n: 1,
+    size: '1024x1024',
+  });
+}
+
 export async function getGPTResponse4(messages: ChatCompletionMessageParam[]) {
   return openai.chat.completions.create({
     model: 'gpt-4o',

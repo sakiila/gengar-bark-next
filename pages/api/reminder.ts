@@ -1,11 +1,15 @@
-import { postToProd } from '@/lib/slack';
+import {
+  postReminderBlockToChannelId,
+  postReminderToProd,
+  postToProd,
+} from '@/lib/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { postgres } from '@/lib/supabase';
 import { ChatCompletionMessageParam } from 'openai/resources';
-import { getGPTResponse3 } from '@/lib/openai';
+import { getDALLEResponse3, getGPTResponse3 } from '@/lib/openai';
 
 export const config = {
-  maxDuration: 30,
+  maxDuration: 60,
 };
 
 export default async function handler(
@@ -67,11 +71,20 @@ export default async function handler(
     },
   ];
 
-  const gptResponse = await getGPTResponse3(prompts);
-  console.log('gptResponse:', JSON.stringify(gptResponse));
+  let [textResponse, imageResponse] = await Promise.all([
+    getGPTResponse3(prompts),
+    getDALLEResponse3(String(entities[0].template)),
+  ]);
+  console.log('textResponse:', JSON.stringify(textResponse));
+  console.log('imageResponse:', JSON.stringify(imageResponse));
 
   try {
-    await postToProd(res, `${at} ${gptResponse.choices[0].message.content}`);
+    await postReminderToProd(
+      res,
+      entities[0].type,
+      `${at} ${textResponse.choices[0].message.content}`,
+      String(imageResponse.data[0].url),
+    );
   } catch (e) {
     console.log(e);
   }

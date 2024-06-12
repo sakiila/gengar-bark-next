@@ -239,6 +239,30 @@ export async function log(message: string) {
   }
 }
 
+export const reminderBlock = (
+  reminder: string,
+  text: string,
+  imageUrl: string,
+) => [
+  {
+    type: 'section',
+    text: {
+      type: 'mrkdwn',
+      text: `*提醒${reminder}小助手*\n ${text}`,
+    },
+  },
+  {
+    type: 'image',
+    title: {
+      type: 'plain_text',
+      text: `提醒${reminder}小助手`,
+      emoji: true,
+    },
+    image_url: `${imageUrl}`,
+    alt_text: 'by dall-e',
+  },
+];
+
 export const boldBlock = (text: string) => [
   {
     type: 'section',
@@ -480,7 +504,54 @@ export async function postToChannelId(
   }
 }
 
-export async function postBlockToChannelId(
+export async function postReminderToProd(
+  res: NextApiResponse,
+  reminder: string,
+  text: string,
+  imageUrl: string,
+) {
+  await postReminderBlockToChannelId(
+    prodChannel,
+    res,
+    reminder,
+    text,
+    imageUrl,
+  );
+}
+
+export async function postReminderBlockToChannelId(
+  channelId: string,
+  res: NextApiResponse,
+  reminder: string,
+  text: string,
+  imageUrl: string,
+) {
+  const message = {
+    channel: channelId,
+    blocks: reminderBlock(reminder, text, imageUrl),
+  };
+  const url = 'https://slack.com/api/chat.postMessage';
+
+  try {
+    await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        Authorization: `Bearer ${bot_token}`,
+      },
+      body: JSON.stringify(message),
+    });
+    res.status(200).send('');
+  } catch (err) {
+    console.log(err);
+    res.send({
+      response_type: 'ephemeral',
+      text: `${err}`,
+    });
+  }
+}
+
+export async function postBoldBlockToChannelId(
   channelId: string,
   res: NextApiResponse,
   text: string,
