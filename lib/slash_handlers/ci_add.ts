@@ -26,7 +26,7 @@ export default async function ci_add(
 
     res.send({
       response_type: 'in_channel',
-      text: `Watching Successful.`,
+      text: `Observing success.`,
     });
   } catch (err) {
     console.log('fetch Error:', err);
