@@ -494,7 +494,7 @@ export async function postToChannelId(
       },
       body: JSON.stringify(message),
     });
-    res.status(200).send('');
+    res.status(200).send('Success');
   } catch (err) {
     console.log(err);
     res.send({
