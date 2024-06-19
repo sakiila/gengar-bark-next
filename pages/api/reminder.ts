@@ -67,7 +67,7 @@ export default async function handler(
   const prompts: ChatCompletionMessageParam[] = [
     {
       role: 'assistant',
-      content: String(entities[0].template),
+      content: String(`生成一张图片：活泼有趣地提醒大家${entities[0].type}`),
     },
   ];
 
