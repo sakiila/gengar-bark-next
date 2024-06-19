@@ -67,13 +67,13 @@ export default async function handler(
   const prompts: ChatCompletionMessageParam[] = [
     {
       role: 'assistant',
-      content: String(`生成一张图片：活泼有趣地提醒大家${entities[0].type}`),
+      content: String(entities[0].template),
     },
   ];
 
   let [textResponse, imageResponse] = await Promise.all([
     getGPTResponse3(prompts),
-    getDALLEResponse3(String(entities[0].template)),
+    getDALLEResponse3(String(`生成一张图片：活泼有趣地提醒大家${entities[0].type}`)),
   ]);
   console.log('textResponse:', JSON.stringify(textResponse));
   console.log('imageResponse:', JSON.stringify(imageResponse));
