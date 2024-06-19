@@ -40,7 +40,7 @@ export default async function user_change(
     );
 
     if (needNotify) {
-      const text = `:smiling_face_with_tear: ${realName} (<@${id}>) has left us.`;
+      const text = `:smiling_face_with_tear: ${realName} (<@${id}>) has left MoeGo team.`;
       await postToProd(res, text);
     } else {
       // await produceMessage(user);
