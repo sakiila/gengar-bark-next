@@ -33,7 +33,7 @@ export default async function team_join(
   );
 
   try {
-    const text = `:tada: <@${id}> (${realName}) join us!`;
+    const text = `:tada: <@${id}> (${realName}) has joined MoeGo!`;
     await postToProd(res, text);
   } catch (e) {
     console.log(e);
