@@ -1,12 +1,9 @@
-import {
-  postReminderBlockToChannelId,
-  postReminderToProd,
-  postToProd,
-} from '@/lib/slack';
+import { postReminderToProd } from '@/lib/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { postgres } from '@/lib/supabase';
 import { ChatCompletionMessageParam } from 'openai/resources';
 import { getDALLEResponse3, getGPTResponse3 } from '@/lib/openai';
+import { uploadImageToS3 } from '@/lib/cloudflare';
 
 export const config = {
   maxDuration: 60,
@@ -73,17 +70,26 @@ export default async function handler(
 
   let [textResponse, imageResponse] = await Promise.all([
     getGPTResponse3(prompts),
-    getDALLEResponse3(String(`生成一张图片：活泼有趣地提醒大家${entities[0].type}`)),
+    getDALLEResponse3(
+      String(`生成一张图片：活泼有趣地提醒大家${entities[0].type}`),
+    ),
   ]);
   console.log('textResponse:', JSON.stringify(textResponse));
   console.log('imageResponse:', JSON.stringify(imageResponse));
+
+  // upload pic
+  const fileName = `reminder-${new Date().toISOString()}.png`;
+  const fileUrl = await uploadImageToS3(
+    String(imageResponse.data[0].url),
+    fileName,
+  );
 
   try {
     await postReminderToProd(
       res,
       entities[0].type,
       `${at} ${textResponse.choices[0].message.content}`,
-      String(imageResponse.data[0].url),
+      String(fileUrl),
     );
   } catch (e) {
     console.log(e);
@@ -98,8 +104,6 @@ async function todayIsHoliday() {
     const response = await fetch(url);
 
     const data = await response.json();
-
-    console.log('data:', data);
 
     return data[0].status == 1 || data[0].status == 3;
   } catch (error) {

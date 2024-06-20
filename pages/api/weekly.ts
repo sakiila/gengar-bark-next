@@ -46,9 +46,9 @@ export default async function handler(
 
   try {
     await postToChannelId(
-      'C070M3QGJTV',
+      'C070M3QGJTV', // #bnm-team
       res,
-      `填周报啦！请大家在这里填写本周的工作总结：<${jsonResponse._links.base}${jsonResponse._links.webui}|周报地址>`,
+      `:meow_code: <!channel> 填周报啦！请大家在这里填写本周的工作总结：<${jsonResponse._links.base}${jsonResponse._links.webui}|周报地址>`,
     );
   } catch (e) {
     console.log(e);

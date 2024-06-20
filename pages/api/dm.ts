@@ -86,7 +86,11 @@ export default async function handler(
       .eq('branch', record.branch.trim());
 
     build_watchs?.forEach(async (build_watch) => {
-      await postToUserId(build_watch.channel, res, `${notification} by <@${userId}>`);
+      await postToUserId(
+        build_watch.channel,
+        res,
+        `${notification} by <@${userId}>`,
+      );
     });
   }
 
