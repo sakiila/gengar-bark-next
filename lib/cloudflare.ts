@@ -1,5 +1,6 @@
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import axios from 'axios';
+import sharp from 'sharp';
 
 const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID as string;
 const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID as string;
@@ -17,12 +18,17 @@ export async function uploadImageToS3(imageUrl: string, key: string) {
   });
 
   const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
-  const imageBuffer = Buffer.from(response.data, 'binary');
+  // Resize the image using sharp
+  const resizedImageBuffer = await sharp(response.data)
+  .resize(256, 256) // Resize to 256x256
+  .toBuffer(); // Convert back to buffer
+
+  // const imageBuffer = Buffer.from(response.data, 'binary');
 
   const uploadParams = {
     Bucket: R2_BUCKET_NAME,
     Key: key,
-    Body: imageBuffer,
+    Body: resizedImageBuffer,
     ContentType: response.headers['content-type'],
   };
 
