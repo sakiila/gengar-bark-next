@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { postToProd, postToTest } from '@/lib/slack';
+import { postToChannelId, postToProd, postToTest, prodChannel } from '@/lib/slack';
 import { postgres } from '@/lib/supabase';
 import { getCache, setCacheEx } from '@/lib/upstash';
 
@@ -48,7 +48,7 @@ export default async function user_status_changed(
 
     await setCacheEx(key, id, 60);
 
-    await postToProd(res, payload);
+    await postToChannelId("C04BB2RDPQS", res, payload);
   } catch (e) {
     console.log(e);
   }
