@@ -71,7 +71,7 @@ export default async function handler(
   let [textResponse, imageResponse] = await Promise.all([
     getGPTResponse3(prompts),
     getDALLEResponse3(
-      String(`生成一张图片：活泼有趣地提醒大家${entities[0].type}`),
+      String(`生成一张图片：活泼有趣地提醒大家${entities[0].type}，不能出现性暗示、暴力、违法犯罪等内容。`),
     ),
   ]);
   console.log('textResponse:', JSON.stringify(textResponse));
