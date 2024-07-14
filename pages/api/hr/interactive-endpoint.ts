@@ -124,7 +124,7 @@ export default async function handler(
     }
   }
 
-  res.status(200).send({});
+  return res.status(200).send('Success');
 }
 
 async function getUserInfo(

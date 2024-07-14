@@ -7,7 +7,7 @@ export default async function handler(
 ) {
   await autoMessageReminderTask();
 
-  res.status(200).json({ message: 'Cron job successful!' });
+  return res.status(200).json({ message: 'Cron job successful!' });
 }
 
 /**
