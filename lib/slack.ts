@@ -532,7 +532,6 @@ export async function postToChannelId(
   res: NextApiResponse,
   text: string,
 ) {
-
   const message = {
     channel: channelId,
     text: text,
@@ -1008,7 +1007,6 @@ export async function threadReply(
   res: NextApiResponse,
   text: string,
 ) {
-
   const message = {
     channel: channelId,
     text: text,
