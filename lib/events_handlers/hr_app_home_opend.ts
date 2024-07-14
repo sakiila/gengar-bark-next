@@ -296,6 +296,7 @@ async function fetchUserBlocks(page: number) {
   .from('user')
   .select('*')
   .eq('deleted', false)
+  .ilike('email', '%@moego.pet%')
   .order('real_name_normalized', { ascending: true })
   .range((page - 1) * 5, (page - 1) * 5 + 4);
 
