@@ -34,34 +34,30 @@ export default async function handler(
         continue;
       }
 
-      if (action.action_id === 'manage_user') {
-        const userId = action.value.split('_')[1];
-        const page = metadata.page;
-        await getUserInfo(userId, triggerId, page);
-      } else if (action.action_id === 'refresh') {
-        const userId = payload.user.id;
-        const page = metadata.page;
-        await publishView(userId, await getView(page));
-      } else if (action.action_id === 'last') {
-        const userId = payload.user.id;
-        const page = metadata.page;
-        await publishView(userId, await getView(Number(page) - 1));
-      } else if (action.action_id === 'next') {
-        const userId = payload.user.id;
-        const page = metadata.page;
-        await publishView(userId, await getView(Number(page) + 1));
-      } else if (action.action_id === 'multi_users_select') {
-        const userId = payload.user.id;
-        const selectedUsers = action.selected_users;
-        await publishView(userId, await getViewByUserIds(selectedUsers));
-      } else if (action.action_id === 'edit_template') {
-        const templateId = action.value.split('_')[1];
-        const page = metadata.page;
-        await getTemplateInfo(templateId, triggerId, page);
-      } else if (action.action_id === 'refresh_template') {
-        const userId = payload.user.id;
-        const page = metadata.page;
-        await publishView(userId, await getView(page));
+      const actionId = action.action_id;
+      const userId = payload.user.id;
+      const page = metadata.page;
+
+      switch (actionId) {
+        case 'manage_user':
+          await getUserInfo(action.value.split('_')[1], triggerId, page);
+          break;
+        case 'refresh':
+        case 'refresh_template':
+          await publishView(userId, await getView(page));
+          break;
+        case 'last':
+          await publishView(userId, await getView(Number(page) - 1));
+          break;
+        case 'next':
+          await publishView(userId, await getView(Number(page) + 1));
+          break;
+        case 'multi_users_select':
+          await publishView(userId, await getViewByUserIds(action.selected_users));
+          break;
+        case 'edit_template':
+          await getTemplateInfo(action.value.split('_')[1], triggerId, page);
+          break;
       }
     }
   } else if (payload.type === 'view_submission') {
