@@ -15,7 +15,8 @@ import { getParent, getPost } from '@/lib/hn';
 export const bot_token = process.env.SLACK_BOT_TOKEN as string;
 export const bot_hr_token = process.env.SLACK_BOT_HR_TOKEN as string;
 export const user_token = process.env.SLACK_USER_TOKEN as string;
-export const signingSecret = process.env.SLACK_SIGNING_SECRET as string;
+export const signing_secret = process.env.SLACK_SIGNING_SECRET as string;
+export const signing_hr_Secret = process.env.SLACK_SIGNING_HR_SECRET as string;
 export const prodChannel = process.env.PROD_CHANNEL as string;
 export const testChannel = process.env.TEST_CHANNEL as string;
 export const personalToken = process.env.PERSONAL_TOKEN as string;
@@ -56,7 +57,64 @@ export function verifyRequest(req: NextApiRequest) {
   const my_signature =
     'v0=' +
     crypto
-      .createHmac('sha256', signingSecret)
+      .createHmac('sha256', signing_secret)
+      .update(sig_basestring)
+      .digest('hex'); // create signature
+
+  if (
+    crypto.timingSafeEqual(
+      Buffer.from(slack_signature),
+      Buffer.from(my_signature),
+    )
+  ) {
+    return {
+      status: true,
+      message: 'Verified Request.',
+    };
+  } else {
+    return {
+      status: false,
+      message: 'Nice try buddy. Slack signature mismatch.',
+    };
+  }
+}
+
+export function verifyHrRequest(req: NextApiRequest) {
+  /* Verify that requests are genuinely coming from Slack and not a forgery */
+  const {
+    'x-slack-signature': slack_signature,
+    'x-slack-request-timestamp': timestamp,
+  } = req.headers as {
+    [key: string]: string;
+  };
+
+  if (!slack_signature || !timestamp) {
+    return {
+      status: false,
+      message: 'No slack signature or timestamp found in request headers.',
+    };
+  }
+  if (process.env.SLACK_SIGNING_HR_SECRET === undefined) {
+    return {
+      status: false,
+      message: '`SLACK_SIGNING_HR_SECRET` env var is not defined.',
+    };
+  }
+  if (
+    Math.abs(Math.floor(new Date().getTime() / 1000) - parseInt(timestamp)) >
+    60 * 5
+  ) {
+    return {
+      status: false,
+      message: 'Nice try buddy. Slack signature mismatch.',
+    };
+  }
+  const req_body = new URLSearchParams(req.body).toString(); // convert body to URL search params
+  const sig_basestring = 'v0:' + timestamp + ':' + req_body; // create base string
+  const my_signature =
+    'v0=' +
+    crypto
+      .createHmac('sha256', signing_hr_Secret)
       .update(sig_basestring)
       .digest('hex'); // create signature
 
@@ -653,6 +711,49 @@ export async function postToUserIdHr(
   }
 }
 
+export async function postToUserIdHrDirect(
+  userId: string,
+  text: string,
+): Promise<any> {
+  const message = {
+    channel: userId,
+    text: text,
+    // blocks: buildMarkdown(text),
+  };
+
+  const url = 'https://slack.com/api/chat.postMessage';
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        Authorization: `Bearer ${bot_hr_token}`,
+      },
+      body: JSON.stringify(message),
+    });
+
+    // Check if the response status is not successful
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    // Make sure to handle this error in your calling function
+    if (data.error) {
+      throw new Error(data.error);
+    }
+
+    return data; // now it returns a JavaScript object
+  } catch (err) {
+    if (err instanceof Error) {
+      throw new Error(`postToUserIdHrDirect failed: ${err.message}`);
+    } else {
+      throw new Error(`postToUserIdHrDirect failed: ${err}`);
+    }
+  }
+}
+
 export async function postToChannel(
   channel: string,
   res: NextApiResponse,
@@ -954,5 +1055,63 @@ export async function responseUrl(url: string, text: string) {
     });
   } catch (err) {
     console.log(err);
+  }
+}
+
+export async function publishView(userId: string, view: any) {
+  const url = 'https://slack.com/api/views.publish';
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${bot_hr_token}`,
+        'Content-type': 'application/json; charset=UTF-8'
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        view: view
+      })
+    });
+
+    if (!response.ok) {
+      const message = `An error has occurred: ${response.status}`;
+      throw new Error(message);
+    }
+
+    const data = await response.json();
+
+    return data;
+  } catch (error) {
+    console.error('Error publishing view:', error);
+  }
+}
+
+export async function openView(triggerId: string, view: any) {
+  const url = 'https://slack.com/api/views.open';
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${bot_hr_token}`,
+        'Content-type': 'application/json; charset=UTF-8'
+      },
+      body: JSON.stringify({
+        trigger_id: triggerId,
+        view: view
+      })
+    });
+
+    if (!response.ok) {
+      const message = `An error has occurred: ${response.status}`;
+      throw new Error(message);
+    }
+
+    const data = await response.json();
+
+    return data;
+  } catch (error) {
+    console.error('Error publishing view:', error);
   }
 }
