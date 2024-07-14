@@ -41,7 +41,12 @@ export default async function handler(
 
       switch (actionId) {
         case 'manage_user':
-          await getUserInfo(action.value.split('_')[1], triggerId, page, userIds);
+          await getUserInfo(
+            action.value.split('_')[1],
+            triggerId,
+            page,
+            userIds,
+          );
           break;
         case 'refresh':
         case 'refresh_template':
@@ -54,7 +59,10 @@ export default async function handler(
           await publishView(userId, await getView(Number(page) + 1));
           break;
         case 'multi_users_select':
-          await publishView(userId, await getViewByUserIds(action.selected_users));
+          await publishView(
+            userId,
+            await getViewByUserIds(action.selected_users),
+          );
           break;
         case 'edit_template':
           await getTemplateInfo(action.value.split('_')[1], triggerId, page);
@@ -94,7 +102,6 @@ export default async function handler(
       } else {
         await publishView(userId, await getView(page));
       }
-
     } else if (payload.view.callback_id === 'manage_template_modal') {
       const template_id = metadata.template_id;
 
@@ -114,14 +121,18 @@ export default async function handler(
         console.error('Error updating user:', error);
       }
       await publishView(userId, await getView(page));
-
     }
   }
 
   res.status(200).send({});
 }
 
-async function getUserInfo(userId: string, triggerId: string, page: number, userIds: string[]) {
+async function getUserInfo(
+  userId: string,
+  triggerId: string,
+  page: number,
+  userIds: string[],
+) {
   const { data: users } = await postgres
     .from('user')
     .select('*')

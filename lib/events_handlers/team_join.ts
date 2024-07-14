@@ -29,7 +29,7 @@ export default async function team_join(
       email: email,
       real_name_normalized: realName,
       updated_at: new Date().toISOString(),
-      tz: tz
+      tz: tz,
     },
     { onConflict: 'user_id' },
   );

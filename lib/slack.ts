@@ -1065,13 +1065,13 @@ export async function publishView(userId: string, view: any) {
     const response = await fetch(url, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${bot_hr_token}`,
-        'Content-type': 'application/json; charset=UTF-8'
+        Authorization: `Bearer ${bot_hr_token}`,
+        'Content-type': 'application/json; charset=UTF-8',
       },
       body: JSON.stringify({
         user_id: userId,
-        view: view
-      })
+        view: view,
+      }),
     });
 
     if (!response.ok) {
@@ -1094,13 +1094,13 @@ export async function openView(triggerId: string, view: any) {
     const response = await fetch(url, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${bot_hr_token}`,
-        'Content-type': 'application/json; charset=UTF-8'
+        Authorization: `Bearer ${bot_hr_token}`,
+        'Content-type': 'application/json; charset=UTF-8',
       },
       body: JSON.stringify({
         trigger_id: triggerId,
-        view: view
-      })
+        view: view,
+      }),
     });
 
     if (!response.ok) {

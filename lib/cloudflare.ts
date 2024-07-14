@@ -20,8 +20,8 @@ export async function uploadImageToS3(imageUrl: string, key: string) {
   const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
   // Resize the image using sharp
   const resizedImageBuffer = await sharp(response.data)
-  .resize(256, 256) // Resize to 256x256
-  .toBuffer(); // Convert back to buffer
+    .resize(256, 256) // Resize to 256x256
+    .toBuffer(); // Convert back to buffer
 
   // const imageBuffer = Buffer.from(response.data, 'binary');
 

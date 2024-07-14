@@ -260,7 +260,11 @@ function getUserBlock(user: any) {
     type: 'section',
     text: {
       type: 'mrkdwn',
-      text: `*${user.real_name_normalized}* [ entry: ${user.entry_date || '-'}   confirm: ${user.confirm_date || '-'}   birthday: ${user.birthday_date || '-'}   tz: ${user.tz || '-'} ]`,
+      text: `*${user.real_name_normalized}* [ entry: ${
+        user.entry_date || '-'
+      }   confirm: ${user.confirm_date || '-'}   birthday: ${
+        user.birthday_date || '-'
+      }   tz: ${user.tz || '-'} ]`,
     },
     accessory: {
       type: 'button',
@@ -312,12 +316,12 @@ export const banView = {
 
 async function fetchUserBlocks(page: number) {
   const { data, error } = await postgres
-  .from('user')
-  .select('*')
-  .eq('deleted', false)
-  .ilike('email', '%@moego.pet%')
-  .order('real_name_normalized', { ascending: true })
-  .range((page - 1) * 5, (page - 1) * 5 + 4);
+    .from('user')
+    .select('*')
+    .eq('deleted', false)
+    .ilike('email', '%@moego.pet%')
+    .order('real_name_normalized', { ascending: true })
+    .range((page - 1) * 5, (page - 1) * 5 + 4);
 
   if (error) {
     console.error('Error fetching user blocks:', error);
@@ -329,9 +333,9 @@ async function fetchUserBlocks(page: number) {
 
 async function fetchTemplateBlocks() {
   const { data, error } = await postgres
-  .from('hr_auto_message_template')
-  .select('*')
-  .order('id', { ascending: true });
+    .from('hr_auto_message_template')
+    .select('*')
+    .order('id', { ascending: true });
 
   if (error) {
     console.error('Error fetching template blocks:', error);
