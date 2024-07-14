@@ -163,6 +163,9 @@ export async function getView(page: number) {
           },
         ],
       },
+      {
+        type: 'divider',
+      },
     ],
   };
 
