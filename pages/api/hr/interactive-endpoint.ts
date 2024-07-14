@@ -76,12 +76,14 @@ export default async function handler(
       const confirmDate = values.confirm_date.confirm_date_action.selected_date;
       const birthdayDate =
         values.birthday_date.birthday_date_action.selected_date;
+      const tz = values.timezone_select.timezone_select.selected_option.value;
       const { data: date, error: error } = await postgres
         .from('user')
         .update({
           entry_date: entryDate,
           confirm_date: confirmDate,
           birthday_date: birthdayDate,
+          tz: tz || 'Asia/Chongqing',
         })
         .eq('user_id', user_id);
 
@@ -195,6 +197,54 @@ async function getUserInfo(userId: string, triggerId: string, page: number) {
           text: 'Birthday date',
         },
       },
+      {
+        type: 'section',
+        block_id: 'timezone_select',
+        text: {
+          type: 'mrkdwn',
+          text: '*Timezone*',
+        },
+        accessory: {
+          action_id: 'timezone_select',
+          type: 'static_select',
+
+          initial_option: {
+            text: {
+              type: 'plain_text',
+              text: `${user.tz || 'Asia/Chongqing'}`,
+            },
+            value: `${user.tz || 'Asia/Chongqing'}`,
+          },
+
+          placeholder: {
+            type: 'plain_text',
+            text: 'Select an item',
+          },
+          options: [
+            {
+              text: {
+                type: 'plain_text',
+                text: 'Asia/Chongqing',
+              },
+              value: 'Asia/Chongqing',
+            },
+            {
+              text: {
+                type: 'plain_text',
+                text: 'America/Los_Angeles',
+              },
+              value: 'America/Los_Angeles',
+            },
+            {
+              text: {
+                type: 'plain_text',
+                text: 'America/New_York',
+              },
+              value: 'America/New_York',
+            },
+          ],
+        },
+      },
     ],
     submit: {
       type: 'plain_text',
@@ -207,7 +257,7 @@ async function getUserInfo(userId: string, triggerId: string, page: number) {
     },
   };
 
-  // console.log('modalView = ', JSON.stringify(modalView));
+  console.log('modalView = ', JSON.stringify(modalView));
 
   await openView(triggerId, modalView);
 }

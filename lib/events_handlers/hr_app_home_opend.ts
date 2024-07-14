@@ -244,8 +244,8 @@ export async function getViewByUserIds(userIds: string[]) {
       },
     ],
   };
-  console.log('/n');
-  console.log('view', JSON.stringify(view));
+
+  // console.log('view', JSON.stringify(view));
 
   return view;
 }
@@ -255,11 +255,7 @@ function getUserBlock(user: any) {
     type: 'section',
     text: {
       type: 'mrkdwn',
-      text: `*${user.real_name_normalized}*   [ entry: ${
-        user.entry_date || '-'
-      }   confirm: ${user.confirm_date || '-'}   birthday: ${
-        user.birthday_date || '-'
-      } ]`,
+      text: `*${user.real_name_normalized}* [ entry: ${user.entry_date || '-'}   confirm: ${user.confirm_date || '-'}   birthday: ${user.birthday_date || '-'}   tz: ${user.tz || '-'} ]`,
     },
     accessory: {
       type: 'button',
