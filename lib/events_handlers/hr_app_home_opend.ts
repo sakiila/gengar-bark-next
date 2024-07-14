@@ -38,27 +38,10 @@ export async function getView(page: number) {
     page = totalPages;
   }
 
-  let userBlocks: any[] = [];
-  await postgres
-    .from('user')
-    .select('*')
-    .eq('deleted', false)
-    .order('id', { ascending: true })
-    .range((page - 1) * 5, (page - 1) * 5 + 4)
-    .then(({ data, error }) => {
-      const usersBlocks = data?.map((user) => getUserBlock(user));
-      userBlocks = userBlocks.concat(usersBlocks);
-    });
-
-  let templateBlocks: any[] = [];
-  await postgres
-    .from('hr_auto_message_template')
-    .select('*')
-    .order('id', { ascending: true })
-    .then(({ data, error }) => {
-      const templateBlock = data?.map((template) => getTemplateBlock(template));
-      templateBlocks = templateBlocks.concat(templateBlock);
-    });
+  const [userBlocks, templateBlocks] = await Promise.all([
+    fetchUserBlocks(page),
+    fetchTemplateBlocks(),
+  ]);
 
   const view = {
     private_metadata: JSON.stringify({
@@ -304,3 +287,33 @@ export const banView = {
     },
   ],
 };
+
+async function fetchUserBlocks(page: number) {
+  const { data, error } = await postgres
+  .from('user')
+  .select('*')
+  .eq('deleted', false)
+  .order('real_name_normalized', { ascending: true })
+  .range((page - 1) * 5, (page - 1) * 5 + 4);
+
+  if (error) {
+    console.error('Error fetching user blocks:', error);
+    return [];
+  }
+
+  return data.map(getUserBlock);
+}
+
+async function fetchTemplateBlocks() {
+  const { data, error } = await postgres
+  .from('hr_auto_message_template')
+  .select('*')
+  .order('id', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching template blocks:', error);
+    return [];
+  }
+
+  return data.map(getTemplateBlock);
+}
