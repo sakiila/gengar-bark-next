@@ -9,8 +9,6 @@ export default async function app_home_opened(
   const event = req.body.event;
   const userId = event.user;
 
-  console.log('userId', userId);
-
   if (!adminUser.includes(userId)) {
     await publishView(userId, banView);
   } else {
@@ -40,7 +38,7 @@ export async function getView(page: number) {
     page = totalPages;
   }
 
-  let blo: any[] = [];
+  let userBlocks: any[] = [];
   await postgres
     .from('user')
     .select('*')
@@ -49,13 +47,49 @@ export async function getView(page: number) {
     .range((page - 1) * 5, (page - 1) * 5 + 4)
     .then(({ data, error }) => {
       const usersBlocks = data?.map((user) => getUserBlock(user));
-      blo = blo.concat(usersBlocks);
+      userBlocks = userBlocks.concat(usersBlocks);
+    });
+
+  let templateBlocks: any[] = [];
+  await postgres
+    .from('hr_auto_message_template')
+    .select('*')
+    .order('id', { ascending: true })
+    .then(({ data, error }) => {
+      const templateBlock = data?.map((template) => getTemplateBlock(template));
+      templateBlocks = templateBlocks.concat(templateBlock);
     });
 
   const view = {
-    private_metadata: `${page}`,
+    private_metadata: JSON.stringify({
+      page: `${page}`,
+    }),
     type: 'home',
     blocks: [
+      {
+        type: 'section',
+        text: {
+          type: 'plain_text',
+          text: `:tada: Have a nice day!`,
+          emoji: true,
+        },
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'plain_text',
+          text: ' ',
+          emoji: true,
+        },
+      },
+      {
+        type: 'header',
+        text: {
+          type: 'plain_text',
+          text: 'Manage Users',
+          emoji: true,
+        },
+      },
       {
         type: 'section',
         text: {
@@ -67,14 +101,11 @@ export async function getView(page: number) {
           type: 'multi_users_select',
           placeholder: {
             type: 'plain_text',
-            text: '🔍 Select users',
+            text: '🔍 Select',
           },
         },
       },
-      {
-        type: 'divider',
-      },
-      ...blo,
+      ...userBlocks,
       {
         type: 'actions',
         elements: [
@@ -111,10 +142,51 @@ export async function getView(page: number) {
           },
         ],
       },
+      {
+        type: 'divider',
+      },
+      {
+        type: 'context',
+        elements: [
+          {
+            type: 'plain_text',
+            text: ' ',
+            emoji: true,
+          },
+        ],
+      },
+      {
+        type: 'header',
+        text: {
+          type: 'plain_text',
+          text: 'Manage Templates',
+          emoji: true,
+        },
+      },
+      ...templateBlocks,
+      {
+        type: 'actions',
+        elements: [
+          {
+            type: 'button',
+            style: 'primary',
+            text: {
+              type: 'plain_text',
+              emoji: true,
+              text: 'Refresh',
+            },
+            value: 'refresh_template',
+            action_id: 'refresh_template',
+          },
+        ],
+      },
     ],
   };
-  console.log('/n');
+  console.log('---------------------------------------');
+  console.log('---------------------------------------');
   console.log('view', JSON.stringify(view));
+  console.log('---------------------------------------');
+  console.log('---------------------------------------');
 
   return view;
 }
@@ -195,8 +267,28 @@ function getUserBlock(user: any) {
         text: `Manage ${user.real_name_normalized}`,
         emoji: true,
       },
-      value: `manage_${user.id}`,
+      value: `manage_${user.user_id}`,
       action_id: 'manage_user',
+    },
+  };
+}
+
+function getTemplateBlock(template: any) {
+  return {
+    type: 'section',
+    text: {
+      type: 'mrkdwn',
+      text: `*${template.template_name}*\n${template.template_text}`,
+    },
+    accessory: {
+      type: 'button',
+      text: {
+        type: 'plain_text',
+        text: `Edit ${template.template_name}`,
+        emoji: true,
+      },
+      value: `edit_${template.id}`,
+      action_id: 'edit_template',
     },
   };
 }
