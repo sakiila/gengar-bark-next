@@ -14,7 +14,6 @@ export default async function handler(
 ) {
   console.log('req.body.payload = ', req.body.payload);
   const payload = JSON.parse(req.body.payload);
-  // console.log('payload = ', payload);
 
   const userId = payload.user.id;
   if (!adminUser.includes(userId)) {
@@ -208,9 +207,8 @@ async function getUserInfo(userId: string, triggerId: string, page: number) {
     },
   };
 
-  console.log('modalView = ', JSON.stringify(modalView));
+  // console.log('modalView = ', JSON.stringify(modalView));
 
-  // Send modal to user
   await openView(triggerId, modalView);
 }
 
@@ -281,8 +279,7 @@ async function getTemplateInfo(
     },
   };
 
-  console.log('modalView = ', JSON.stringify(modalView));
+  // console.log('modalView = ', JSON.stringify(modalView));
 
-  // Send modal to user
   await openView(triggerId, modalView);
 }
