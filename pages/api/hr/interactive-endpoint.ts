@@ -89,14 +89,14 @@ export default async function handler(
     } else if (payload.view.callback_id === 'manage_template_modal') {
       const template_id = metadata.template_id;
 
-      const name = values.plain_text_input.template_name_input_action.value;
-      const text = values.plain_text_input.template_text_input_action.value;
+      const name = values.template_name_input.template_name_input_action.value;
+      const text = values.template_text_input.template_text_input_action.value;
       const { data: date, error: error } = await postgres
         .from('hr_auto_message_template')
         .update({
           template_name: name,
           template_text: text,
-          update_time: Date.now(),
+          update_time: new Date(),
           update_user_id: userId,
         })
         .eq('id', template_id);
@@ -287,6 +287,7 @@ async function getTemplateInfo(
     blocks: [
       {
         type: 'input',
+        block_id: 'template_name_input',
         element: {
           type: 'plain_text_input',
           action_id: 'template_name_input_action',
@@ -301,9 +302,10 @@ async function getTemplateInfo(
       },
       {
         type: 'input',
+        block_id: 'template_text_input',
         element: {
           type: 'plain_text_input',
-          action_id: 'template_name_input_action',
+          action_id: 'template_text_input_action',
           initial_value: `${template.template_text}`,
           multiline: true,
         },
