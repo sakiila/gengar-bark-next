@@ -89,7 +89,11 @@ export default async function handler(
         console.error('Error updating user:', error);
       }
 
-      await publishView(userId, await getViewByUserIds(userIds));
+      if (userIds) {
+        await publishView(userId, await getViewByUserIds(userIds));
+      } else {
+        await publishView(userId, await getView(page));
+      }
 
     } else if (payload.view.callback_id === 'manage_template_modal') {
       const template_id = metadata.template_id;
