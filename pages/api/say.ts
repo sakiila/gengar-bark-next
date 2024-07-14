@@ -27,5 +27,5 @@ export default async function handler(
   const message = req.body.text as string;
   await postBoldBlockToChannelId(channelId, res, message);
 
-  return res.status(200).send('');
+  return res.status(200).send({});
 }

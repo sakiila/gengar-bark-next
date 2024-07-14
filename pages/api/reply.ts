@@ -71,7 +71,7 @@ export default async function handler(
     //   response_type: 'in_channel',
     //   text: `${gptResponse.choices[0].message.content}`,
     // });
-    return res.status(200).send('');
+    return res.status(200).send({});
   } catch (e) {
     console.log(e);
   }

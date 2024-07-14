@@ -15,7 +15,7 @@ export default async function app_home_opened(
     await publishView(userId, await getView(1));
   }
 
-  return res.status(200).send('Success');
+  res.status(200).send({});
 }
 
 export async function getView(page: number) {
@@ -26,7 +26,8 @@ export async function getView(page: number) {
   const { error, data, count } = await postgres
     .from('user')
     .select('*', { count: 'exact' })
-    .eq('deleted', false);
+    .eq('deleted', false)
+    .ilike('email', '%@moego.pet%');
 
   if (error || !count) {
     console.error('Error fetching users:', error);
@@ -169,11 +170,11 @@ export async function getView(page: number) {
     ],
   };
 
-  // console.log('---------------------------------------');
-  // console.log('---------------------------------------');
-  // console.log('view', JSON.stringify(view));
-  // console.log('---------------------------------------');
-  // console.log('---------------------------------------');
+  console.log('---------------------------------------');
+  console.log('---------------------------------------');
+  console.log('view', JSON.stringify(view));
+  console.log('---------------------------------------');
+  console.log('---------------------------------------');
 
   return view;
 }

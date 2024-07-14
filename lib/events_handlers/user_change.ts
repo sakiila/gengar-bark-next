@@ -16,7 +16,7 @@ export default async function user_change(
     const deleted = user.deleted;
 
     if (isBot) {
-      return res.status(200).send('');
+      res.status(200).send({});
     }
 
     const { data: dbUser, error } = await postgres

@@ -19,7 +19,7 @@ export default async function team_join(
     .eq('deleted', false);
 
   if (dbUser && dbUser.length > 0) {
-    return res.status(200).send('');
+    res.status(200).send({});
   }
 
   await postgres.from('user').upsert(

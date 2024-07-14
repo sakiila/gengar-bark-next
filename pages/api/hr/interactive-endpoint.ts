@@ -8,6 +8,10 @@ import {
   getViewByUserIds,
 } from '@/lib/events_handlers/hr_app_home_opend';
 
+export const config = {
+  maxDuration: 30,
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
@@ -18,7 +22,7 @@ export default async function handler(
   const userId = payload.user.id;
   if (!adminUser.includes(userId)) {
     await publishView(userId, banView);
-    return res.status(200).send({});
+    res.status(200).send({});
   }
 
   let metadata = JSON.parse(payload.view.private_metadata || '{}');
@@ -124,7 +128,7 @@ export default async function handler(
     }
   }
 
-  return res.status(200).send('Success');
+  res.status(200).send({});
 }
 
 async function getUserInfo(
