@@ -184,15 +184,34 @@ export async function getViewByUserIds(userIds: string[]) {
     .from('user')
     .select('*')
     .in('user_id', userIds)
-    .order('id', { ascending: true })
+    .order('real_name_normalized', { ascending: true })
     .then(({ data, error }) => {
       const usersBlocks = data?.map((user) => getUserBlock(user));
       blo = blo.concat(usersBlocks);
     });
 
   const view = {
+    private_metadata: JSON.stringify({
+      user_ids: userIds,
+    }),
     type: 'home',
     blocks: [
+      {
+        type: 'section',
+        text: {
+          type: 'plain_text',
+          text: ' ',
+          emoji: true,
+        },
+      },
+      {
+        type: 'header',
+        text: {
+          type: 'plain_text',
+          text: 'Manage Users',
+          emoji: true,
+        },
+      },
       {
         type: 'section',
         text: {
@@ -208,9 +227,6 @@ export async function getViewByUserIds(userIds: string[]) {
           },
         },
       },
-      {
-        type: 'divider',
-      },
       ...blo,
       {
         type: 'actions',
@@ -221,12 +237,15 @@ export async function getViewByUserIds(userIds: string[]) {
             text: {
               type: 'plain_text',
               emoji: true,
-              text: 'Refresh',
+              text: 'Back Home',
             },
             value: 'refresh',
             action_id: 'refresh',
           },
         ],
+      },
+      {
+        type: 'divider',
       },
     ],
   };

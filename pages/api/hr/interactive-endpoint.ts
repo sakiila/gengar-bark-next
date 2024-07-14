@@ -12,8 +12,8 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  console.log('req.body.payload = ', req.body.payload);
   const payload = JSON.parse(req.body.payload);
+  console.log('payload = ', JSON.stringify(payload));
 
   const userId = payload.user.id;
   if (!adminUser.includes(userId)) {
@@ -21,7 +21,7 @@ export default async function handler(
     return res.status(200).send({});
   }
 
-  let metadata = JSON.parse(payload.view.private_metadata);
+  let metadata = JSON.parse(payload.view.private_metadata || '{}');
 
   if (payload.type === 'block_actions') {
     const triggerId = payload.trigger_id;
@@ -36,11 +36,12 @@ export default async function handler(
 
       const actionId = action.action_id;
       const userId = payload.user.id;
-      const page = metadata.page;
+      const page = metadata.page || 1;
+      const userIds = metadata.user_ids;
 
       switch (actionId) {
         case 'manage_user':
-          await getUserInfo(action.value.split('_')[1], triggerId, page);
+          await getUserInfo(action.value.split('_')[1], triggerId, page, userIds);
           break;
         case 'refresh':
         case 'refresh_template':
@@ -67,6 +68,7 @@ export default async function handler(
 
     if (payload.view.callback_id === 'manage_user_modal') {
       const user_id = metadata.user_id;
+      const userIds = metadata.user_ids;
 
       const entryDate = values.entry_date.entry_date_action.selected_date;
       const confirmDate = values.confirm_date.confirm_date_action.selected_date;
@@ -86,6 +88,9 @@ export default async function handler(
       if (error) {
         console.error('Error updating user:', error);
       }
+
+      await publishView(userId, await getViewByUserIds(userIds));
+
     } else if (payload.view.callback_id === 'manage_template_modal') {
       const template_id = metadata.template_id;
 
@@ -104,15 +109,15 @@ export default async function handler(
       if (error) {
         console.error('Error updating user:', error);
       }
-    }
+      await publishView(userId, await getView(page));
 
-    await publishView(userId, await getView(page));
+    }
   }
 
   res.status(200).send({});
 }
 
-async function getUserInfo(userId: string, triggerId: string, page: number) {
+async function getUserInfo(userId: string, triggerId: string, page: number, userIds: string[]) {
   const { data: users } = await postgres
     .from('user')
     .select('*')
@@ -127,6 +132,7 @@ async function getUserInfo(userId: string, triggerId: string, page: number) {
     private_metadata: JSON.stringify({
       page: `${page}`,
       user_id: `${userId}`,
+      user_ids: userIds,
     }),
     type: 'modal',
     callback_id: 'manage_user_modal',
