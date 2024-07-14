@@ -1,6 +1,5 @@
 import { postToUserIdHrDirect } from '@/lib/slack';
 import { postgres } from '@/lib/supabase';
-import { aw } from '@upstash/redis/zmscore-415f6c9f';
 
 export async function autoMessageReminderTask() {
   console.log('Run auto message reminder task');
@@ -124,7 +123,7 @@ async function postAndRecord(user: any, template: any) {
 
   const text = formatMessage(
     template.template_text,
-    userId,w
+    userId,
     new Date(user.birthday_date),
   );
 
