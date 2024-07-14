@@ -170,11 +170,11 @@ export async function getView(page: number) {
     ],
   };
 
-  console.log('---------------------------------------');
-  console.log('---------------------------------------');
-  console.log('view', JSON.stringify(view));
-  console.log('---------------------------------------');
-  console.log('---------------------------------------');
+  // console.log('---------------------------------------');
+  // console.log('---------------------------------------');
+  // console.log('view', JSON.stringify(view));
+  // console.log('---------------------------------------');
+  // console.log('---------------------------------------');
 
   return view;
 }
