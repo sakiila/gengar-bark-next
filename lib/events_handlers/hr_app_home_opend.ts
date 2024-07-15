@@ -85,7 +85,7 @@ export async function getView(page: number) {
           type: 'multi_users_select',
           placeholder: {
             type: 'plain_text',
-            text: '🔍Select',
+            text: '🔍 Select',
             emoji: true,
           },
         },
@@ -225,7 +225,7 @@ export async function getViewByUserIds(userIds: string[]) {
           type: 'multi_users_select',
           placeholder: {
             type: 'plain_text',
-            text: '🔍Select',
+            text: '🔍 Select',
             emoji: true,
           },
         },
