@@ -19,10 +19,6 @@ export default async function app_home_opened(
 }
 
 export async function getView(page: number) {
-  if (page < 1) {
-    page = 1;
-  }
-
   const { error, data, count } = await postgres
     .from('user')
     .select('*', { count: 'exact' })
@@ -35,8 +31,11 @@ export async function getView(page: number) {
   }
 
   const totalPages = Math.ceil(count / 5);
-  if (page > totalPages) {
+  if (page < 1) {
     page = totalPages;
+  }
+  if (page > totalPages) {
+    page = 1;
   }
 
   const [userBlocks, templateBlocks] = await Promise.all([
