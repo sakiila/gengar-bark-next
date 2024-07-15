@@ -46,7 +46,7 @@ export default async function handler(
   let notification = message;
   if (message.includes('SUCCESS')) {
     if (email.toLowerCase() === 'pc@moego.pet') {
-      return res.status(200).send({});
+      return res.status(200).send('');
     }
     notification = `:tada: ${message}`;
   } else if (message.includes('NOT_BUILT') || message.includes('UNSTABLE')) {

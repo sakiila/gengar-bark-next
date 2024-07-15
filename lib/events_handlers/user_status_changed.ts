@@ -25,7 +25,7 @@ export default async function user_status_changed(
     }
 
     if ('U03FPQWGTN2' === id.toUpperCase()) {
-      res.status(200).send({});
+      res.status(200).send('');
       // await postToTest(res, payload);
       return;
     }
@@ -41,14 +41,14 @@ export default async function user_status_changed(
     }
 
     if (!entity || entity.length === 0) {
-      res.status(200).send({});
+      res.status(200).send('');
       return;
     }
 
     const key = `send.${id}`;
     const value = await getCache(key);
     if (value === id) {
-      res.status(200).send({});
+      res.status(200).send('');
     }
 
     await setCacheEx(key, id, 60);

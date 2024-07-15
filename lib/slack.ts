@@ -547,7 +547,7 @@ export async function postToChannelId(
       },
       body: JSON.stringify(message),
     });
-    res.status(200).send({});
+    res.status(200).send('');
   } catch (err) {
     console.log(err);
     res.send({
@@ -594,7 +594,7 @@ export async function postReminderBlockToChannelId(
       },
       body: JSON.stringify(message),
     });
-    res.status(200).send({});
+    res.status(200).send('');
   } catch (err) {
     console.log(err);
     res.send({
@@ -624,7 +624,7 @@ export async function postBoldBlockToChannelId(
       },
       body: JSON.stringify(message),
     });
-    res.status(200).send({});
+    res.status(200).send('');
   } catch (err) {
     console.log(err);
     res.send({
@@ -697,7 +697,7 @@ export async function postToUserIdHr(
     });
     const data = await response.json();
     console.log('data: ', data);
-    res.status(200).send({});
+    res.status(200).send('');
   } catch (err) {
     console.log(err);
     res.send({
@@ -867,7 +867,7 @@ export async function deleteMessage(res: NextApiResponse, url: string) {
       body: JSON.stringify(message),
     });
 
-    res.status(200).send({});
+    res.status(200).send('');
   } catch (err) {
     console.log(err);
     res.send({
@@ -1024,7 +1024,7 @@ export async function threadReply(
       },
       body: JSON.stringify(message),
     });
-    return res.status(200).send({});
+    return res.status(200).send('');
   } catch (err) {
     console.log(err);
     return res.status(200).send({

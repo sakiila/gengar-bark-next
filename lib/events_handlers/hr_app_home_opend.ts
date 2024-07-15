@@ -15,7 +15,7 @@ export default async function app_home_opened(
     await publishView(userId, await getView(1));
   }
 
-  res.status(200).send({});
+  res.status(200).send('');
 }
 
 export async function getView(page: number) {

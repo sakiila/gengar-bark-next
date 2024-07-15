@@ -22,7 +22,7 @@ export default async function handler(
   const userId = payload.user.id;
   if (!adminUser.includes(userId)) {
     await publishView(userId, banView);
-    res.status(200).send({});
+    res.status(200).send('');
   }
 
   let metadata = JSON.parse(payload.view.private_metadata || '{}');
@@ -128,7 +128,7 @@ export default async function handler(
     }
   }
 
-  res.status(200).send({});
+  res.status(200).send('');
 }
 
 async function getUserInfo(
