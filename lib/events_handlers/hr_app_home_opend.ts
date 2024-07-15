@@ -85,7 +85,8 @@ export async function getView(page: number) {
           type: 'multi_users_select',
           placeholder: {
             type: 'plain_text',
-            text: '🔍 Select',
+            text: ':mag: Select',
+            emoji: true,
           },
         },
       },
@@ -300,6 +301,7 @@ function getTemplateBlock(template: any) {
   };
 }
 
+// Bob Iris Fiona
 export const adminUser = ['U03FPQWGTN2', 'U054RLGNA5U', 'U01G0F85QGG'];
 
 export const banView = {
@@ -309,7 +311,7 @@ export const banView = {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: ':ghost: You are not allowed to manage this app.',
+        text: ':ghost: You are not allowed to manage this app. Please contact Iris.',
       },
     },
   ],
