@@ -2,6 +2,12 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { publishView } from '@/lib/slack';
 import { postgres } from '@/lib/supabase';
 
+
+interface User {
+  real_name_normalized: string
+}
+
+
 export default async function app_home_opened(
   req: NextApiRequest,
   res: NextApiResponse,
@@ -12,13 +18,13 @@ export default async function app_home_opened(
   if (!adminUser.includes(userId)) {
     await publishView(userId, banView);
   } else {
-    await publishView(userId, await getView(1));
+    await publishView(userId, await getView(userId, 1));
   }
 
   res.status(200).send('');
 }
 
-export async function getView(page: number) {
+export async function getView(userId: string, page: number) {
   const { error, data, count } = await postgres
     .from('user')
     .select('*', { count: 'exact' })
@@ -38,10 +44,13 @@ export async function getView(page: number) {
     page = 1;
   }
 
-  const [userBlocks, templateBlocks] = await Promise.all([
-    fetchUserBlocks(page),
-    fetchTemplateBlocks(),
-  ]);
+  const [niceDayBlock, userBlocks, templateBlocks, templateLogBlocks] =
+    await Promise.all([
+      fetchUser(userId),
+      fetchUserBlocks(page),
+      fetchTemplateBlocks(),
+      fetchTemplateLogBlocks(),
+    ]);
 
   const view = {
     private_metadata: JSON.stringify({
@@ -49,14 +58,7 @@ export async function getView(page: number) {
     }),
     type: 'home',
     blocks: [
-      {
-        type: 'section',
-        text: {
-          type: 'plain_text',
-          text: `:tada: Have a nice day!`,
-          emoji: true,
-        },
-      },
+      niceDayBlock,
       {
         type: 'section',
         text: {
@@ -69,7 +71,7 @@ export async function getView(page: number) {
         type: 'header',
         text: {
           type: 'plain_text',
-          text: 'Manage Users',
+          text: `Manage Users (${count} users)`,
           emoji: true,
         },
       },
@@ -143,7 +145,7 @@ export async function getView(page: number) {
         type: 'header',
         text: {
           type: 'plain_text',
-          text: 'Manage Templates',
+          text: 'Manage Templates (3 templates)',
           emoji: true,
         },
       },
@@ -164,6 +166,28 @@ export async function getView(page: number) {
           },
         ],
       },
+      {
+        type: 'divider',
+      },
+      {
+        type: 'context',
+        elements: [
+          {
+            type: 'plain_text',
+            text: ' ',
+            emoji: true,
+          },
+        ],
+      },
+      {
+        type: 'header',
+        text: {
+          type: 'plain_text',
+          text: 'Send Logs (latest 10)',
+          emoji: true,
+        },
+      },
+      ...templateLogBlocks,
       {
         type: 'divider',
       },
@@ -301,8 +325,24 @@ function getTemplateBlock(template: any) {
   };
 }
 
-// Bob Iris Fiona
-export const adminUser = ['U03FPQWGTN2', 'U054RLGNA5U', 'U01G0F85QGG'];
+function getTemplateLogBlock(templateLog: any) {
+  return {
+    type: 'section',
+    fields: [
+      {
+        type: 'mrkdwn',
+        text: `${templateLog.id}. *${templateLog.log_name}* for *${templateLog.log_user_name}* on ${formatDateTime(new Date(templateLog.log_user_time))}`,
+      },
+      {
+        type: 'mrkdwn',
+        text: `${templateLog.log_text.length > 80 ? templateLog.log_text.substring(0, 80) + '...' : templateLog.log_text}`,
+      },
+    ],
+  };
+}
+
+// Bob Iris Fiona Peter
+export const adminUser = ['U03FPQWGTN2', 'U054RLGNA5U', 'U01G0F85QGG', 'U03JFM4M82C'];
 
 export const banView = {
   type: 'home',
@@ -316,6 +356,36 @@ export const banView = {
     },
   ],
 };
+
+async function fetchUser(userId: string) {
+  const { data, error } = await postgres
+    .from('user')
+    .select('*')
+    .eq('user_id', userId);
+
+  if (error) {
+    console.error('Error fetching user blocks:', error);
+    return [];
+  }
+
+
+  const text = await getBirthdayUsers();
+
+  return {
+    type: 'section',
+    text: {
+      type: 'plain_text',
+      text: `:tada: Have a nice day, ${data[0].real_name_normalized}. Happy birthday to ${text}.`,
+      emoji: true,
+    },
+  };
+}
+
+
+async function getBirthdayUsers() {
+  const { data:dbUser } = await postgres.rpc('get_birthday_user');
+  return dbUser?.map((user: User) => `${user.real_name_normalized}`).join(', ').trim();
+}
 
 async function fetchUserBlocks(page: number) {
   const { data, error } = await postgres
@@ -346,4 +416,36 @@ async function fetchTemplateBlocks() {
   }
 
   return data.map(getTemplateBlock);
+}
+
+async function fetchTemplateLogBlocks() {
+  const { data, error } = await postgres
+    .from('hr_auto_message_template_log')
+    .select('*')
+    .order('id', { ascending: false })
+    .limit(10);
+
+  if (error) {
+    console.error('Error fetching template log blocks:', error);
+    return [];
+  }
+
+  return data.map(getTemplateLogBlock);
+}
+
+function formatDateTime(date: Date): string {
+  if (!(date instanceof Date)) {
+    throw new Error('Invalid date');
+  }
+
+  const pad = (num: number) => (num < 10 ? `0${num}` : num.toString());
+
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1);
+  const day = pad(date.getDate());
+  const hour = pad(date.getHours());
+  const minute = pad(date.getMinutes());
+  const second = pad(date.getSeconds());
+
+  return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
 }

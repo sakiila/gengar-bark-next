@@ -54,13 +54,13 @@ export default async function handler(
           break;
         case 'refresh':
         case 'refresh_template':
-          await publishView(userId, await getView(page));
+          await publishView(userId, await getView(userId, page));
           break;
         case 'last':
-          await publishView(userId, await getView(Number(page) - 1));
+          await publishView(userId, await getView(userId,Number(page) - 1));
           break;
         case 'next':
-          await publishView(userId, await getView(Number(page) + 1));
+          await publishView(userId, await getView(userId,Number(page) + 1));
           break;
         case 'multi_users_select':
           await publishView(
@@ -104,7 +104,7 @@ export default async function handler(
       if (userIds) {
         await publishView(userId, await getViewByUserIds(userIds));
       } else {
-        await publishView(userId, await getView(page));
+        await publishView(userId, await getView(userId, page));
       }
     } else if (payload.view.callback_id === 'manage_template_modal') {
       const template_id = metadata.template_id;
@@ -124,7 +124,7 @@ export default async function handler(
       if (error) {
         console.error('Error updating user:', error);
       }
-      await publishView(userId, await getView(page));
+      await publishView(userId, await getView(userId, page));
     }
   }
 
