@@ -2,11 +2,9 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { publishView } from '@/lib/slack';
 import { postgres } from '@/lib/supabase';
 
-
 interface User {
-  real_name_normalized: string
+  real_name_normalized: string;
 }
-
 
 export default async function app_home_opened(
   req: NextApiRequest,
@@ -342,7 +340,13 @@ function getTemplateLogBlock(templateLog: any) {
 }
 
 // Bob Iris Fiona Peter Chris
-export const adminUser = ['U03FPQWGTN2', 'U054RLGNA5U', 'U01G0F85QGG', 'U03JFM4M82C', 'U02J9Q2ST1B'];
+export const adminUser = [
+  'U03FPQWGTN2',
+  'U054RLGNA5U',
+  'U01G0F85QGG',
+  'U03JFM4M82C',
+  'U02J9Q2ST1B',
+];
 
 export const banView = {
   type: 'home',
@@ -368,7 +372,6 @@ async function fetchUser(userId: string) {
     return [];
   }
 
-
   const birthdayText = await getBirthdayUsers();
 
   return {
@@ -381,9 +384,8 @@ async function fetchUser(userId: string) {
   };
 }
 
-
 async function getBirthdayUsers() {
-  const { data:dbUser } = await postgres.rpc('get_birthday_user');
+  const { data: dbUser } = await postgres.rpc('get_birthday_user');
   if (!dbUser || dbUser.length === 0) {
     return '';
   }

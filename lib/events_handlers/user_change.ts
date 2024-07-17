@@ -35,7 +35,7 @@ export default async function user_change(
         email: email,
         real_name_normalized: realName,
         updated_at: new Date().toISOString(),
-        tz: dbUser?.[0].tz || user.tz || 'Asia/Chongqing',
+        tz: user.tz || dbUser?.[0].tz || 'Asia/Chongqing',
       },
       { onConflict: 'user_id' },
     );

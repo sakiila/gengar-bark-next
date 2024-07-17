@@ -57,10 +57,10 @@ export default async function handler(
           await publishView(userId, await getView(userId, page));
           break;
         case 'last':
-          await publishView(userId, await getView(userId,Number(page) - 1));
+          await publishView(userId, await getView(userId, Number(page) - 1));
           break;
         case 'next':
-          await publishView(userId, await getView(userId,Number(page) + 1));
+          await publishView(userId, await getView(userId, Number(page) + 1));
           break;
         case 'multi_users_select':
           await publishView(
