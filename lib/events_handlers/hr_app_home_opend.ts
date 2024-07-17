@@ -384,7 +384,7 @@ async function fetchUser(userId: string) {
 
 async function getBirthdayUsers() {
   const { data:dbUser } = await postgres.rpc('get_birthday_user');
-  if (!dbUser) {
+  if (!dbUser || dbUser.length === 0) {
     return '';
   }
   return "Happy birthday to " + dbUser?.map((user: User) => `${user.real_name_normalized}`).join(', ').trim() + ".";
