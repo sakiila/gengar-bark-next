@@ -339,13 +339,17 @@ function getTemplateLogBlock(templateLog: any) {
   };
 }
 
-// Bob Iris Fiona Peter Chris
 export const adminUser = [
-  'U03FPQWGTN2',
-  'U054RLGNA5U',
-  'U01G0F85QGG',
-  'U03JFM4M82C',
-  'U02J9Q2ST1B',
+  'U03FPQWGTN2', // Bob
+  'U03JFM4M82C', // Peter
+  'U02J9Q2ST1B', // Chris
+  'U054RLGNA5U', // Iris
+  'U01G0F85QGG', // Fiona
+  'U0565L2DV50',  // Eva
+  'U0521K5FP6E', // Pepper
+  'U06PLNDC6KF', // Sora
+  'U06RKRMELA2', // Teresa
+  'U072DFTJ6G1', // Melody
 ];
 
 export const banView = {
