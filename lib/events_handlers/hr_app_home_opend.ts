@@ -341,8 +341,8 @@ function getTemplateLogBlock(templateLog: any) {
   };
 }
 
-// Bob Iris Fiona Peter
-export const adminUser = ['U03FPQWGTN2', 'U054RLGNA5U', 'U01G0F85QGG', 'U03JFM4M82C'];
+// Bob Iris Fiona Peter Chris
+export const adminUser = ['U03FPQWGTN2', 'U054RLGNA5U', 'U01G0F85QGG', 'U03JFM4M82C', 'U02J9Q2ST1B'];
 
 export const banView = {
   type: 'home',
@@ -369,13 +369,13 @@ async function fetchUser(userId: string) {
   }
 
 
-  const text = await getBirthdayUsers();
+  const birthdayText = await getBirthdayUsers();
 
   return {
     type: 'section',
     text: {
       type: 'plain_text',
-      text: `:tada: Have a nice day, ${data[0].real_name_normalized}. Happy birthday to ${text}.`,
+      text: `:tada: Have a nice day, ${data[0].real_name_normalized}. ${birthdayText}`,
       emoji: true,
     },
   };
@@ -384,7 +384,10 @@ async function fetchUser(userId: string) {
 
 async function getBirthdayUsers() {
   const { data:dbUser } = await postgres.rpc('get_birthday_user');
-  return dbUser?.map((user: User) => `${user.real_name_normalized}`).join(', ').trim();
+  if (!dbUser) {
+    return '';
+  }
+  return "Happy birthday to " + dbUser?.map((user: User) => `${user.real_name_normalized}`).join(', ').trim() + ".";
 }
 
 async function fetchUserBlocks(page: number) {
