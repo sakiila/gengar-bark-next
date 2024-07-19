@@ -19,22 +19,32 @@ export async function autoMessageReminderTask() {
   let birthdayReminderUser = [];
   let anniversaryReminderUser = [];
   for (const user of dbUser) {
-    if (isValid(user.entry_date) && isToday(new Date(user.entry_date))) {
+    const afterEntryDate = new Date(user.entry_date);
+    afterEntryDate.setDate(afterEntryDate.getDate() + 1);
+    if (isValid(user.entry_date) && isToday(afterEntryDate)) {
       entryReminderUser.push(user);
     }
-    if (isValid(user.confirm_date) && isToday(new Date(user.confirm_date))) {
+    if (isValid(user.confirm_date)
+      && isToday(new Date(user.confirm_date))) {
       confirmReminderUser.push(user);
     }
     if (
-      isValid(user.birthday_date) &&
-      isTodayAnniversary(new Date(user.birthday_date))
+      isValid(user.birthday_date)
+      && isTodayAnniversary(new Date(user.birthday_date))
     ) {
       birthdayReminderUser.push(user);
     }
-    if (isValid(user.entry_date) && !isToday(new Date(user.entry_date)) && isTodayAnniversary(new Date(user.entry_date))) {
+    if (isValid(user.entry_date)
+      && !isToday(new Date(user.entry_date))
+      && isTodayAnniversary(new Date(user.entry_date))) {
       anniversaryReminderUser.push(user);
     }
   }
+
+  // console.log('entryReminderUser:', entryReminderUser);
+  // console.log('confirmReminderUser:', confirmReminderUser);
+  // console.log('birthdayReminderUser:', birthdayReminderUser);
+  // console.log('anniversaryReminderUser:', anniversaryReminderUser);
 
   const { data: templates } = await postgres
     .from('hr_auto_message_template')
