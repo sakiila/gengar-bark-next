@@ -27,7 +27,8 @@ export async function getView(userId: string, page: number) {
     .from('user')
     .select('*', { count: 'exact' })
     .eq('deleted', false)
-    .ilike('email', '%@moego.pet%');
+    .ilike('email', '%@moego.pet%')
+    .not('email', 'ilike', '%devops%');
 
   if (error || !count) {
     console.error('Error fetching users:', error);
@@ -402,6 +403,7 @@ async function fetchUserBlocks(page: number) {
     .select('*')
     .eq('deleted', false)
     .ilike('email', '%@moego.pet%')
+    .not('email', 'ilike', '%devops%')
     .order('real_name_normalized', { ascending: true })
     .range((page - 1) * 5, (page - 1) * 5 + 4);
 
