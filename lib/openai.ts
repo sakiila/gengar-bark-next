@@ -30,6 +30,13 @@ export async function getGPTResponse3(messages: ChatCompletionMessageParam[]) {
   });
 }
 
+export async function getGPTResponse4mini(messages: ChatCompletionMessageParam[]) {
+  return openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages,
+  });
+}
+
 export async function generatePromptFromThread(messages: any) {
   console.log('messages = ', messages);
   if (!messages || messages.length === 0) {

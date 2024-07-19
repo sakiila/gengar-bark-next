@@ -17,7 +17,7 @@ export async function autoMessageReminderTask() {
   let entryReminderUser = [];
   let confirmReminderUser = [];
   let birthdayReminderUser = [];
-  const nowDate = Date.now();
+  let anniversaryReminderUser = [];
   for (const user of dbUser) {
     if (isValid(user.entry_date) && isToday(new Date(user.entry_date))) {
       entryReminderUser.push(user);
@@ -27,9 +27,12 @@ export async function autoMessageReminderTask() {
     }
     if (
       isValid(user.birthday_date) &&
-      isTodayBirthday(new Date(user.birthday_date))
+      isTodayAnniversary(new Date(user.birthday_date))
     ) {
       birthdayReminderUser.push(user);
+    }
+    if (isValid(user.entry_date) && !isToday(new Date(user.entry_date)) && isTodayAnniversary(new Date(user.entry_date))) {
+      anniversaryReminderUser.push(user);
     }
   }
 
@@ -61,6 +64,12 @@ export async function autoMessageReminderTask() {
         promises.push(postAndRecord(user, template));
       }
     }
+
+    if (template.template_type === 4) {
+      for (const user of anniversaryReminderUser) {
+        promises.push(postAndRecord(user, template));
+      }
+    }
   }
 
   Promise.all(promises)
@@ -86,7 +95,7 @@ function isToday(dateFromPostgres: Date): boolean {
   return today.getTime() === checkingDate.getTime();
 }
 
-function isTodayBirthday(birthday: Date): boolean {
+function isTodayAnniversary(birthday: Date): boolean {
   if (!isValid(birthday)) {
     return false;
   }
@@ -109,11 +118,13 @@ function formatMessage(
   template: string,
   userId: string,
   birthday: Date,
+  anniversary: Date,
 ): string {
   return template
     .replace(/{name}/g, `<@${userId}>`)
     .replace(/{today}/g, new Date().toLocaleDateString())
-    .replace(/{age}/g, getAge(birthday).toString());
+    .replace(/{age}/g, getAge(birthday).toString())
+    .replace(/{anniversay}/g, getAge(anniversary).toString());
 }
 
 async function postAndRecord(user: any, template: any) {
@@ -123,6 +134,7 @@ async function postAndRecord(user: any, template: any) {
     template.template_text,
     userId,
     new Date(user.birthday_date),
+    new Date(user.entry_date),
   );
 
   let errorMessage;
