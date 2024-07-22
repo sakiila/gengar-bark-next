@@ -34,7 +34,7 @@ export default async function user_change(
         real_name_normalized: realName,
         updated_at: new Date().toISOString(),
         tz: user.tz || dbUser?.[0].tz || 'Asia/Chongqing',
-        isBot: isBot,
+        is_bot: isBot,
         team_id: teamId,
       },
       { onConflict: 'user_id' },
