@@ -27,8 +27,10 @@ export async function getView(userId: string, page: number) {
     .from('user')
     .select('*', { count: 'exact' })
     .eq('deleted', false)
-    .ilike('email', '%@moego.pet%')
-    .not('email', 'ilike', '%devops%');
+    .eq('is_bot', false)
+    .eq('team_id', 'T011CF3CMJN');
+    // .ilike('email', '%@moego.pet%')
+    // .not('email', 'ilike', '%devops%');
 
   if (error || !count) {
     console.error('Error fetching users:', error);
@@ -208,6 +210,9 @@ export async function getViewByUserIds(userIds: string[]) {
     .from('user')
     .select('*')
     .in('user_id', userIds)
+    .eq('deleted', false)
+    .eq('is_bot', false)
+    .eq('team_id', 'T011CF3CMJN')
     .order('real_name_normalized', { ascending: true })
     .then(({ data, error }) => {
       const usersBlocks = data?.map((user) => getUserBlock(user));
@@ -370,7 +375,10 @@ async function fetchUser(userId: string) {
   const { data, error } = await postgres
     .from('user')
     .select('*')
-    .eq('user_id', userId);
+    .eq('user_id', userId)
+    .eq('deleted', false)
+    .eq('is_bot', false)
+    .eq('team_id', 'T011CF3CMJN')
 
   if (error) {
     console.error('Error fetching user blocks:', error);
@@ -402,8 +410,10 @@ async function fetchUserBlocks(page: number) {
     .from('user')
     .select('*')
     .eq('deleted', false)
-    .ilike('email', '%@moego.pet%')
-    .not('email', 'ilike', '%devops%')
+    .eq('is_bot', false)
+    .eq('team_id', 'T011CF3CMJN')
+    // .ilike('email', '%@moego.pet%')
+    // .not('email', 'ilike', '%devops%')
     .order('real_name_normalized', { ascending: true })
     .range((page - 1) * 5, (page - 1) * 5 + 4);
 
