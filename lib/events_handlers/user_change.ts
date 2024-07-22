@@ -14,10 +14,7 @@ export default async function user_change(
     const id = user.id;
     const isBot = user.is_bot;
     const deleted = user.deleted;
-
-    if (isBot) {
-      res.status(200).send('');
-    }
+    const teamId = user.team_id;
 
     const { data: dbUser, error } = await postgres
       .from('user')
@@ -25,6 +22,7 @@ export default async function user_change(
       .eq('user_id', id);
 
     const needNotify =
+      !isBot &&
       deleted &&
       (!dbUser || dbUser.length === 0 || dbUser[0].deleted === false);
 
@@ -36,6 +34,8 @@ export default async function user_change(
         real_name_normalized: realName,
         updated_at: new Date().toISOString(),
         tz: user.tz || dbUser?.[0].tz || 'Asia/Chongqing',
+        isBot: isBot,
+        team_id: teamId,
       },
       { onConflict: 'user_id' },
     );
@@ -44,7 +44,6 @@ export default async function user_change(
       const text = `:smiling_face_with_tear: ${realName} (<@${id}>) has left MoeGo team.`;
       await postToProd(res, text);
     } else {
-      // await produceMessage(user);
       res
         .status(200)
         .send(
