@@ -11,6 +11,9 @@ export default async function team_join(
   const realName = user.profile.real_name_normalized;
   const email = user.profile.email;
   const tz = user.tz;
+  const isBot = user.is_bot;
+  const deleted = user.deleted;
+  const teamId = user.team_id;
 
   const { data: dbUser, error } = await postgres
     .from('user')
@@ -25,11 +28,13 @@ export default async function team_join(
   await postgres.from('user').upsert(
     {
       user_id: id,
-      deleted: false,
+      deleted: deleted,
       email: email,
       real_name_normalized: realName,
       updated_at: new Date().toISOString(),
       tz: tz,
+      is_bot: isBot,
+      team_id: teamId,
     },
     { onConflict: 'user_id' },
   );
