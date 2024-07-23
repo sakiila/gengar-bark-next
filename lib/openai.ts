@@ -7,7 +7,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-export async function getDALLEResponse3(prompt: string) {
+export async function getDALLE3(prompt: string) {
   return openai.images.generate({
     model: 'dall-e-3',
     prompt: prompt.trim(),
@@ -16,21 +16,14 @@ export async function getDALLEResponse3(prompt: string) {
   });
 }
 
-export async function getGPTResponse4(messages: ChatCompletionMessageParam[]) {
+export async function getGPT4(messages: ChatCompletionMessageParam[]) {
   return openai.chat.completions.create({
     model: 'gpt-4o',
     messages,
   });
 }
 
-export async function getGPTResponse3(messages: ChatCompletionMessageParam[]) {
-  return openai.chat.completions.create({
-    model: 'gpt-3.5-turbo',
-    messages,
-  });
-}
-
-export async function getGPTResponse4mini(messages: ChatCompletionMessageParam[]) {
+export async function getGPT4mini(messages: ChatCompletionMessageParam[]) {
   return openai.chat.completions.create({
     model: 'gpt-4o-mini',
     messages,

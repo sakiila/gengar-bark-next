@@ -2,7 +2,7 @@ import { postReminderToProd } from '@/lib/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { postgres } from '@/lib/supabase';
 import { ChatCompletionMessageParam } from 'openai/resources';
-import { getDALLEResponse3, getGPTResponse3 } from '@/lib/openai';
+import { getDALLE3, getGPT4mini } from '@/lib/openai';
 import { uploadImageToS3 } from '@/lib/cloudflare';
 
 export const config = {
@@ -69,10 +69,10 @@ export default async function handler(
   ];
 
   let [textResponse, imageResponse] = await Promise.all([
-    getGPTResponse3(prompts),
-    getDALLEResponse3(
+    getGPT4mini(prompts),
+    getDALLE3(
       String(
-        `漫画，幽默，开心，活力，温暖，一只或多只可爱的小动物提醒你做${entities[0].type}的动作`,
+        `漫画，幽默，开心，活力，温暖，热情，一只或多只可爱的小动物提醒你做${entities[0].type}的动作`,
       ),
     ),
   ]);

@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getThreadReply, threadReply } from '@/lib/slack';
-import { generatePromptFromThread, getGPTResponse4 } from '@/lib/openai';
+import { generatePromptFromThread, getGPT4 } from '@/lib/openai';
 import { existsCacheThanSet } from '@/lib/upstash';
 
 /**
@@ -26,7 +26,7 @@ export async function send_gpt_response_in_channel(
   const thread = await getThreadReply(channel, ts);
 
   const prompts = await generatePromptFromThread(thread);
-  const gptResponse = await getGPTResponse4(prompts);
+  const gptResponse = await getGPT4(prompts);
 
   console.log('gptResponse:', gptResponse);
 

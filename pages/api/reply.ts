@@ -1,7 +1,7 @@
 import { responseUrl } from '@/lib/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { ChatCompletionMessageParam } from 'openai/resources';
-import { getGPTResponse4 } from '@/lib/openai';
+import { getGPT4 } from '@/lib/openai';
 
 export const config = {
   maxDuration: 30,
@@ -58,7 +58,7 @@ export default async function handler(
       break;
   }
 
-  const gptResponse = await getGPTResponse4(prompts);
+  const gptResponse = await getGPT4(prompts);
 
   console.log('gptResponse:', `${gptResponse.choices[0].message.content}`);
 
