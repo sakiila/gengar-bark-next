@@ -365,7 +365,7 @@ export const banView = {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: ':ghost: You are not allowed to manage this app. Please contact Iris.',
+        text: ':ghost: You are not allowed to manage this app. Please contact Iris or Bob.',
       },
     },
   ],
