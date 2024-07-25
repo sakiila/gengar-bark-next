@@ -335,7 +335,7 @@ function getTemplateLogBlock(templateLog: any) {
     fields: [
       {
         type: 'mrkdwn',
-        text: `${templateLog.id}. *${templateLog.log_name}* for *${templateLog.log_user_name}*\n     ${formatDateTime(new Date(templateLog.log_user_time))} ${templateLog.success ? ':white_check_mark:' : ':x:'} ${templateLog.log_result || ''}`,
+        text: `${templateLog.id}. *${templateLog.log_name}* for *${templateLog.log_user_name}*\n      ${formatDateTime(new Date(templateLog.log_user_time))} ${templateLog.success ? ':white_check_mark:' : ':x:'} ${templateLog.log_result || ''}`,
       },
       {
         type: 'mrkdwn',
@@ -351,7 +351,7 @@ export const adminUser = [
   'U02J9Q2ST1B', // Chris
   'U054RLGNA5U', // Iris
   'U01G0F85QGG', // Fiona
-  'U0565L2DV50',  // Eva
+  'U0565L2DV50', // Eva
   'U0521K5FP6E', // Pepper
   'U06PLNDC6KF', // Sora
   'U06RKRMELA2', // Teresa
