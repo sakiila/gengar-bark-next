@@ -339,7 +339,7 @@ function getTemplateLogBlock(templateLog: any) {
       },
       {
         type: 'mrkdwn',
-        text: `${templateLog.log_text.length > 80 ? templateLog.log_text.substring(0, 80) + '...' : templateLog.log_text}`,
+        text: `${templateLog.log_text.length > 90 ? templateLog.log_text.substring(0, 90) + '...' : templateLog.log_text}`,
       },
     ],
   };
