@@ -182,5 +182,6 @@ async function postAndRecord(user: any, template: any) {
     log_user_name: user.real_name_normalized,
     log_user_time: nowInTz,
     log_result: errorMessage,
+    success: !errorMessage,
   });
 }
