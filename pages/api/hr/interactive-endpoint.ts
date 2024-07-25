@@ -91,7 +91,7 @@ export default async function handler(
         .from('user')
         .update({
           entry_date: entryDate,
-          confirm_date: confirmDate,
+          confirm_date: confirmDate ? confirmDate : entryDate ? new Date(new Date(entryDate).setMonth(new Date(entryDate).getMonth() + 3)) : null,
           birthday_date: birthdayDate,
           tz: tz || 'Asia/Chongqing',
         })

@@ -127,13 +127,11 @@ function getAge(birthday: Date): number {
 function formatMessage(
   template: string,
   userId: string,
-  birthday: Date,
   anniversary: Date,
 ): string {
   return template
     .replace(/{name}/g, `<@${userId}>`)
     .replace(/{today}/g, new Date().toLocaleDateString())
-    .replace(/{age}/g, getAge(birthday).toString())
     .replace(/{anniversay}/g, getAge(anniversary).toString());
 }
 
@@ -143,13 +141,15 @@ async function postAndRecord(user: any, template: any) {
   const text = formatMessage(
     template.template_text,
     userId,
-    new Date(user.birthday_date),
     new Date(user.entry_date),
   );
 
   let errorMessage;
   try {
-    await postToUserIdHrDirect(userId, text);
+    await Promise.all([
+      postToUserIdHrDirect(userId, text),
+      postToUserIdHrDirect('U054RLGNA5U', text) // send to Iris
+    ]);
   } catch (error) {
     if (error instanceof Error) {
       console.error(
