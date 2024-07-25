@@ -403,7 +403,7 @@ async function fetchUser(userId: string) {
   };
 }
 
-async function getBirthdayUsers() {
+export async function getBirthdayUsers() {
   const { data: dbUser } = await postgres.rpc('get_birthday_user');
   if (!dbUser || dbUser.length === 0) {
     return '';
