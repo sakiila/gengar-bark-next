@@ -41,6 +41,7 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.0.1",
+    "csv": "^6.3.9",
     "eslint": "^8",
     "eslint-config-next": "14.0.4",
     "postcss": "^8",
