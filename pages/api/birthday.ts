@@ -26,7 +26,7 @@ export default async function handler(
   if (!dbUser || dbUser.length === 0) {
     return '';
   }
-  const text =  ":birthday: Happy birthday to " + dbUser?.map((user: User) => `<@${user.user_id}`).join(', ').trim() + ".";
+  const text =  ":birthday: Happy birthday to " + dbUser?.map((user: User) => `<@${user.user_id}>`).join(', ').trim() + ".";
 
   if (!text) {
     return res.send({
