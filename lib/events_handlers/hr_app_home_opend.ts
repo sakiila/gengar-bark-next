@@ -335,7 +335,7 @@ function getTemplateLogBlock(templateLog: any) {
     fields: [
       {
         type: 'mrkdwn',
-        text: `${templateLog.id}. *${templateLog.log_name}* for *${templateLog.log_user_name}*\n   ${formatDateTime(new Date(templateLog.log_user_time))} ${templateLog.success ? ':white_check_mark:' : ':x:'} ${templateLog.log_result || ''}`,
+        text: `${templateLog.id}. *${templateLog.log_name}* for *${templateLog.log_user_name}*\n   ${formatDateTime(new Date(templateLog.log_user_time))}\n   ${templateLog.success ? ':white_check_mark:' : ':x:'} ${templateLog.log_result || ''}`,
       },
       {
         type: 'mrkdwn',
