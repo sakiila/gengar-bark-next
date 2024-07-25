@@ -713,8 +713,11 @@ export async function postToUserIdHrDirect(
 ): Promise<any> {
   const message = {
     channel: userId,
-    text: text,
-    // blocks: buildMarkdown(text),
+    // text: text,
+    blocks: [
+      JSON.parse(text),
+    ],
+    unfurl_links: false,
   };
 
   const url = 'https://slack.com/api/chat.postMessage';

@@ -29,8 +29,6 @@ export async function getView(userId: string, page: number) {
     .eq('deleted', false)
     .eq('is_bot', false)
     .eq('team_id', 'T011CF3CMJN');
-    // .ilike('email', '%@moego.pet%')
-    // .not('email', 'ilike', '%devops%');
 
   if (error || !count) {
     console.error('Error fetching users:', error);
@@ -314,7 +312,7 @@ function getTemplateBlock(template: any) {
     type: 'section',
     text: {
       type: 'mrkdwn',
-      text: `*${template.template_name}*\n${template.template_text}`,
+      text: `*${template.template_name}*\n`,
     },
     accessory: {
       type: 'button',
@@ -329,19 +327,29 @@ function getTemplateBlock(template: any) {
   };
 }
 
+// function getTemplateLogBlock(templateLog: any) {
+//   return {
+//     type: 'section',
+//     fields: [
+//       {
+//         type: 'mrkdwn',
+//         text: `${templateLog.id}. *${templateLog.log_name}* for *${templateLog.log_user_name}*\n        ${formatDateTime(new Date(templateLog.log_user_time))} ${templateLog.success ? ':white_check_mark:' : ':x:'} ${templateLog.log_result || ''}`,
+//       },
+//       {
+//         type: 'mrkdwn',
+//         text: `${templateLog.log_text.length > 90 ? templateLog.log_text.substring(0, 90) + '...' : templateLog.log_text}`,
+//       },
+//     ],
+//   };
+// }
+
 function getTemplateLogBlock(templateLog: any) {
   return {
     type: 'section',
-    fields: [
-      {
-        type: 'mrkdwn',
-        text: `${templateLog.id}. *${templateLog.log_name}* for *${templateLog.log_user_name}*\n        ${formatDateTime(new Date(templateLog.log_user_time))} ${templateLog.success ? ':white_check_mark:' : ':x:'} ${templateLog.log_result || ''}`,
-      },
-      {
-        type: 'mrkdwn',
-        text: `${templateLog.log_text.length > 90 ? templateLog.log_text.substring(0, 90) + '...' : templateLog.log_text}`,
-      },
-    ],
+    text: {
+      type: 'mrkdwn',
+      text: `${templateLog.id}. *${templateLog.log_name}* for *${templateLog.log_user_name}* on ${formatDateTime(new Date(templateLog.log_user_time))} ${templateLog.success ? ':white_check_mark:' : ':x:'} ${templateLog.log_result || ''}`,
+    },
   };
 }
 
@@ -376,7 +384,7 @@ async function fetchUser(userId: string) {
     .eq('user_id', userId)
     .eq('deleted', false)
     .eq('is_bot', false)
-    .eq('team_id', 'T011CF3CMJN')
+    .eq('team_id', 'T011CF3CMJN');
 
   if (error) {
     console.error('Error fetching user blocks:', error);

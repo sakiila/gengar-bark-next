@@ -91,7 +91,15 @@ export default async function handler(
         .from('user')
         .update({
           entry_date: entryDate,
-          confirm_date: confirmDate ? confirmDate : entryDate ? new Date(new Date(entryDate).setMonth(new Date(entryDate).getMonth() + 3)) : null,
+          confirm_date: confirmDate
+            ? confirmDate
+            : entryDate
+              ? new Date(
+                  new Date(entryDate).setMonth(
+                    new Date(entryDate).getMonth() + 3,
+                  ),
+                )
+              : null,
           birthday_date: birthdayDate,
           tz: tz || 'Asia/Chongqing',
         })
@@ -109,13 +117,14 @@ export default async function handler(
     } else if (payload.view.callback_id === 'manage_template_modal') {
       const template_id = metadata.template_id;
 
+      console.log('values = ', JSON.stringify(values));
       const name = values.template_name_input.template_name_input_action.value;
-      const text = values.template_text_input.template_text_input_action.value;
-      const { data: date, error: error } = await postgres
+      const text_value = values.template_text_input.template_text_input_action.rich_text_value;
+      const { data: data, error: error } = await postgres
         .from('hr_auto_message_template')
         .update({
           template_name: name,
-          template_text: text,
+          template_text: text_value,
           update_time: new Date(),
           update_user_id: userId,
         })
@@ -329,10 +338,9 @@ async function getTemplateInfo(
         type: 'input',
         block_id: 'template_text_input',
         element: {
-          type: 'plain_text_input',
+          type: 'rich_text_input',
           action_id: 'template_text_input_action',
-          initial_value: `${template.template_text}`,
-          multiline: true,
+          initial_value: JSON.parse(template.template_text),
         },
         label: {
           type: 'plain_text',
@@ -352,6 +360,7 @@ async function getTemplateInfo(
     },
   };
 
+  // console.log();
   // console.log('modalView = ', JSON.stringify(modalView));
 
   await openView(triggerId, modalView);

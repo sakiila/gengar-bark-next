@@ -41,6 +41,16 @@ export async function autoMessageReminderTask() {
     }
   }
 
+  // const { data }= await postgres.from('user').select('*').eq('user_id', 'U03FPQWGTN2');
+  // console.log('data:',data);
+  // if (data) {
+  //   anniversaryReminderUser.push(data[0]);
+  //   entryReminderUser.push(data[0]);
+  //   confirmReminderUser.push(data[0]);
+  //   birthdayReminderUser.push(data[0]);
+  // }
+
+
   // console.log('entryReminderUser:', entryReminderUser);
   // console.log('confirmReminderUser:', confirmReminderUser);
   // console.log('birthdayReminderUser:', birthdayReminderUser);
@@ -126,11 +136,11 @@ function getAge(birthday: Date): number {
 
 function formatMessage(
   template: string,
-  userId: string,
+  username: string,
   anniversary: Date,
 ): string {
   return template
-    .replace(/{name}/g, `<@${userId}>`)
+    .replace(/{name}/g, `${username}`)
     .replace(/{today}/g, new Date().toLocaleDateString())
     .replace(/{anniversay}/g, getAge(anniversary).toString());
 }
@@ -140,7 +150,7 @@ async function postAndRecord(user: any, template: any) {
 
   const text = formatMessage(
     template.template_text,
-    userId,
+    user.real_name_normalized,
     new Date(user.entry_date),
   );
 
