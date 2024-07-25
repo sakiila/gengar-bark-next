@@ -1,10 +1,15 @@
 import { postToChannelId } from '@/lib/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getBirthdayUsers } from '@/lib/events_handlers/hr_app_home_opend';
+import { postgres } from '@/lib/supabase';
 
 export const config = {
   maxDuration: 60,
 };
+
+interface User {
+  user_id: string;
+  real_name_normalized: string;
+}
 
 export default async function handler(
   req: NextApiRequest,
@@ -17,7 +22,12 @@ export default async function handler(
     });
   }
 
-  const text = await getBirthdayUsers();
+  const { data: dbUser } = await postgres.rpc('get_birthday_user');
+  if (!dbUser || dbUser.length === 0) {
+    return '';
+  }
+  const text =  ":birthday: Happy birthday to " + dbUser?.map((user: User) => `<@${user.user_id}`).join(', ').trim() + ".";
+
   if (!text) {
     return res.send({
       response_type: 'ephemeral',
@@ -26,7 +36,7 @@ export default async function handler(
   }
 
   try {
-    await postToChannelId('C04BB2RDPQS', res, `:birthday: ${text}`);
+    await postToChannelId('C04BB2RDPQS', res, `${text}`);
   } catch (e) {
     console.log(e);
   }

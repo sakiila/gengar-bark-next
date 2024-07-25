@@ -50,7 +50,6 @@ export async function autoMessageReminderTask() {
   //   birthdayReminderUser.push(data[0]);
   // }
 
-
   // console.log('entryReminderUser:', entryReminderUser);
   // console.log('confirmReminderUser:', confirmReminderUser);
   // console.log('birthdayReminderUser:', birthdayReminderUser);
