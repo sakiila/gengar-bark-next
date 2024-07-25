@@ -45,13 +45,13 @@ export default async function user_status_changed(
       return;
     }
 
-    const key = `send.${id}`;
-    const value = await getCache(key);
-    if (value === id) {
-      res.status(200).send('');
-    }
+    // const key = `send.${id}`;
+    // const value = await getCache(key);
+    // if (value === id) {
+    //   res.status(200).send('');
+    // }
 
-    await setCacheEx(key, id, 60);
+    // await setCacheEx(key, id, 60);
 
     await postToChannelId('C04BB2RDPQS', res, payload);
   } catch (e) {
