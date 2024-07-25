@@ -24,7 +24,7 @@ export default async function handler(
 
   const { data: dbUser } = await postgres.rpc('get_birthday_user');
   if (!dbUser || dbUser.length === 0) {
-    return res.send({
+    return res.status(200).send({
       response_type: 'ephemeral',
       text: `No birthday user found.`,
     });
