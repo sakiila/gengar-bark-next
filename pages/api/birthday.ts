@@ -24,16 +24,13 @@ export default async function handler(
 
   const { data: dbUser } = await postgres.rpc('get_birthday_user');
   if (!dbUser || dbUser.length === 0) {
-    return '';
-  }
-  const text =  ":birthday: Happy birthday to " + dbUser?.map((user: User) => `<@${user.user_id}>`).join(', ').trim() + ".";
-
-  if (!text) {
     return res.send({
       response_type: 'ephemeral',
       text: `No birthday user found.`,
     });
   }
+
+  const text =  ":birthday: Happy birthday to " + dbUser?.map((user: User) => `<@${user.user_id}>`).join(', ').trim() + ".";
 
   try {
     await postToChannelId('C04BB2RDPQS', res, `${text}`);
