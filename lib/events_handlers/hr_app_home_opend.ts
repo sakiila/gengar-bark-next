@@ -335,15 +335,11 @@ function getTemplateLogBlock(templateLog: any) {
     fields: [
       {
         type: 'mrkdwn',
-        text: `${templateLog.id}. *${templateLog.log_name}* for *${templateLog.log_user_name}*\non ${formatDateTime(new Date(templateLog.log_user_time))}`,
+        text: `${templateLog.id}. *${templateLog.log_name}* for *${templateLog.log_user_name}*\n   ${formatDateTime(new Date(templateLog.log_user_time))} ${templateLog.success ? ':white_check_mark:' : ':x:'} ${templateLog.log_result || ''}`,
       },
       {
         type: 'mrkdwn',
         text: `${templateLog.log_text.length > 80 ? templateLog.log_text.substring(0, 80) + '...' : templateLog.log_text}`,
-      },
-      {
-        type: 'mrkdwn',
-        text: `${templateLog.success ? ':white_check_mark:' : ':x:'} ${templateLog.log_result || ''}`,
       },
     ],
   };
