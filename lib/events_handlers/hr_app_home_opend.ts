@@ -144,7 +144,7 @@ export async function getView(userId: string, page: number) {
         type: 'header',
         text: {
           type: 'plain_text',
-          text: 'Manage Templates (3 templates)',
+          text: 'Manage Templates (4 templates)',
           emoji: true,
         },
       },
