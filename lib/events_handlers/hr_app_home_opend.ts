@@ -355,6 +355,8 @@ function getTemplateLogBlock(templateLog: any) {
 
 export const adminUser = [
   'U03FPQWGTN2', // Bob
+  'U03JFM4M82C', // Peter
+  'U02J9Q2ST1B', // Chris
   'U054RLGNA5U', // Iris
   'U01G0F85QGG', // Fiona
   'U0565L2DV50', // Eva
