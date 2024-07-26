@@ -119,7 +119,8 @@ export default async function handler(
 
       console.log('values = ', JSON.stringify(values));
       const name = values.template_name_input.template_name_input_action.value;
-      const text_value = values.template_text_input.template_text_input_action.rich_text_value;
+      const text_value =
+        values.template_text_input.template_text_input_action.rich_text_value;
       const { data: data, error: error } = await postgres
         .from('hr_auto_message_template')
         .update({
@@ -166,7 +167,7 @@ async function getUserInfo(
     callback_id: 'manage_user_modal',
     title: {
       type: 'plain_text',
-      text: `Edit ${user.real_name_normalized}`,
+      text: `${user.real_name_normalized}`,
     },
     blocks: [
       {
@@ -287,7 +288,7 @@ async function getUserInfo(
     },
   };
 
-  console.log('modalView = ', JSON.stringify(modalView));
+  // console.log('modalView = ', JSON.stringify(modalView));
 
   await openView(triggerId, modalView);
 }
@@ -316,7 +317,7 @@ async function getTemplateInfo(
     callback_id: 'manage_template_modal',
     title: {
       type: 'plain_text',
-      text: `Edit ${template.template_name}`,
+      text: `${template.template_name}`,
     },
     blocks: [
       {
@@ -345,6 +346,14 @@ async function getTemplateInfo(
         label: {
           type: 'plain_text',
           text: 'Edit Text',
+          emoji: true,
+        },
+      },
+      {
+        type: 'section',
+        text: {
+          type: 'plain_text',
+          text: `*Note: ${template.note || ''}`,
           emoji: true,
         },
       },
