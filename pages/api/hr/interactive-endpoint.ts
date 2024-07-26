@@ -353,7 +353,7 @@ async function getTemplateInfo(
         type: 'section',
         text: {
           type: 'plain_text',
-          text: `*Note: ${template.note || ''}`,
+          text: `Note: ${template.note || ''}`,
           emoji: true,
         },
       },

@@ -141,7 +141,7 @@ function formatMessage(
   return template
     .replace(/{name}/g, `${username}`)
     .replace(/{today}/g, new Date().toLocaleDateString())
-    .replace(/{anniversay}/g, getAge(anniversary).toString());
+    .replace(/{anniversary}/g, getAge(anniversary).toString());
 }
 
 async function postAndRecord(user: any, template: any) {
