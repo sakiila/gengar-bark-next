@@ -331,7 +331,7 @@ async function getTemplateInfo(
         },
         label: {
           type: 'plain_text',
-          text: 'Edit Name',
+          text: 'Template Name',
           emoji: true,
         },
       },
@@ -345,7 +345,7 @@ async function getTemplateInfo(
         },
         label: {
           type: 'plain_text',
-          text: 'Edit Text',
+          text: 'Template Text',
           emoji: true,
         },
       },
