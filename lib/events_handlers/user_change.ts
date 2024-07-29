@@ -25,10 +25,10 @@ export default async function user_change(
       !isBot &&
       deleted &&
       (!dbUser || dbUser.length === 0 || dbUser[0].deleted === false);
-    const userJoinAgain =
-      !isBot &&
-      !deleted &&
-      (!dbUser || dbUser.length === 0 || dbUser[0].deleted === true);
+    // const userJoinAgain =
+    //   !isBot &&
+    //   !deleted &&
+    //   (!dbUser || dbUser.length === 0 || dbUser[0].deleted === true);
 
     await postgres.from('user').upsert(
       {
@@ -47,10 +47,12 @@ export default async function user_change(
     if (userLeft) {
       const text = `:smiling_face_with_tear: ${realName} (<@${id}>) has left MoeGo team.`;
       await postToProd(res, text);
-    } else if (userJoinAgain) {
-      const text = `:tada: <@${id}> (${realName}) has joined MoeGo AGAIN!`;
-      await postToProd(res, text);
-    } else {
+    }
+    // else if (userJoinAgain) {
+    //   const text = `:tada: <@${id}> (${realName}) has joined MoeGo AGAIN!`;
+    //   await postToProd(res, text);
+    // }
+    else {
       res
         .status(200)
         .send(
