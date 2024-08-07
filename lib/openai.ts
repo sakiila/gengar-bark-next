@@ -44,10 +44,10 @@ export async function generatePromptFromThread(messages: any) {
         return null;
       }
       const isBot = !!message.bot_id && !message.client_msg_id;
-      const isNotMentioned = !isBot && !message.text.startsWith(`<@`);
-      if (isNotMentioned) {
-        return null;
-      }
+      // const isNotMentioned = !isBot && !message.text.startsWith(`<@`);
+      // if (isNotMentioned) {
+      //   return null;
+      // }
 
       return {
         role: isBot ? 'assistant' : 'user',
