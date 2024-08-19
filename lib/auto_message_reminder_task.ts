@@ -157,7 +157,8 @@ async function postAndRecord(user: any, template: any) {
   try {
     await Promise.all([
       postToUserIdHrDirect(userId, text),
-      postToUserIdHrDirect('U054RLGNA5U', text) // send to Iris
+      postToUserIdHrDirect('U054RLGNA5U', text), // send to Iris
+      postToUserIdHrDirect('U03FPQWGTN2', text), // send to Bob
     ]);
   } catch (error) {
     if (error instanceof Error) {
