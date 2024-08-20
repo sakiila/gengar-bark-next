@@ -45,7 +45,8 @@ function getStatus() {
   const emoji = formatEmoji(currentHour12, utcMinutes);
   const text = `${currentHour24.toString().padStart(2, '0')}:${utcMinutes
     .toString()
-    .padStart(2, '0')} ${amPm} UTC+8`;
+    // .padStart(2, '0')} ${amPm} UTC+8`;
+    .padStart(2, '0')} ${amPm}`;
 
   console.log('emoji:', emoji);
   console.log('text:', text);
