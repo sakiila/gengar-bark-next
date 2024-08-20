@@ -21,7 +21,11 @@ export default async function handler(
     return res.status(200).json({ message: 'Other status is set' });
   }
 
-  const result = getStatus();
+  let result = getStatus();
+  const { text } = req.query;
+  if (text !== '') {
+    result.text = result.text + ' ' + text;
+  }
   await setProfileStatus(res, result.emoji, result.text);
 }
 
