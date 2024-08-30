@@ -23,9 +23,10 @@ export default async function handler(
 
   let result = getStatus();
   const { text } = req.query;
-  if (text !== '') {
+  if (text !== '' && text !== undefined) {
     result.text = result.text + ' ' + text;
   }
+  console.log('emoji:', result.emoji, 'text:', result.text);
   await setProfileStatus(res, result.emoji, result.text);
 }
 
@@ -47,9 +48,6 @@ function getStatus() {
     .toString()
     // .padStart(2, '0')} ${amPm} UTC+8`;
     .padStart(2, '0')} ${amPm}`;
-
-  console.log('emoji:', emoji);
-  console.log('text:', text);
 
   return {
     emoji,
