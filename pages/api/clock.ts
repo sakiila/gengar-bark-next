@@ -25,9 +25,11 @@ export default async function handler(
   const { text } = req.query;
   if (text !== '' && text !== undefined) {
     result.text = result.text + ' ' + text;
+  } else {
+    result.text = result.text + ' ' + getTodayProgress();
   }
   console.log('emoji:', result.emoji, 'text:', result.text);
-  await setProfileStatus(res, result.emoji, result.text);
+  // await setProfileStatus(res, result.emoji, result.text);
 }
 
 function getStatus() {
@@ -66,4 +68,22 @@ function formatEmoji(hour: number, minutes: number): string {
     return `:clock${hour + 1}:`;
   }
   return `:clock${hour.toString()}:`;
+}
+
+function getTodayProgress(): string {
+  return '';
+
+  const currentDate = new Date();
+  const utcHours = currentDate.getUTCHours();
+  const utcMinutes = currentDate.getUTCMinutes();
+  const currentMinute = (utcHours + 8) * 60 + utcMinutes;
+  const totalMinute = 24 * 60;
+  const progressPercentageMinute = (currentMinute / totalMinute) * 100;
+  const progressBlocks = Math.floor(progressPercentageMinute / 10);
+  console.log('progressBlocks:', progressBlocks);
+  const emptyBlocks = 10 - progressBlocks;
+
+  const progressBar = '[' + ''.repeat(progressBlocks) + '-'.repeat(emptyBlocks) + ']';
+
+  return `Today ${progressPercentageMinute.toFixed(0)}% ${progressBar}`;
 }
