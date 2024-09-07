@@ -30,6 +30,30 @@ export async function getGPT4mini(messages: ChatCompletionMessageParam[]) {
   });
 }
 
+export async function getThird(messages: ChatCompletionMessageParam[]) {
+  const params = {
+    messages: messages,
+    model: 'gpt-4o-mini',
+  };
+
+  const headers = {
+    'Content-Type': 'application/json; charset=utf-8',
+    Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+  };
+
+  try {
+    const response = await fetch(`${process.env.OPENAI_API_URL}/v1/chat/completions`, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify(params),
+    });
+    return response.json()
+    // return res['choices'][0]['message']['content']
+  } catch (err) {
+    console.log(err);
+  }
+}
+
 export async function generatePromptFromThread(messages: any) {
   console.log('messages = ', messages);
   if (!messages || messages.length === 0) {
