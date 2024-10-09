@@ -27,7 +27,7 @@ export default async function handler(
     result.text = result.text + ' ' + text;
   }
   console.log('emoji:', result.emoji, 'text:', result.text);
-  // await setProfileStatus(res, result.emoji, result.text);
+  await setProfileStatus(res, result.emoji, result.text);
 }
 
 function getStatus() {
