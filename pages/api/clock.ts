@@ -25,8 +25,6 @@ export default async function handler(
   const { text } = req.query;
   if (text !== '' && text !== undefined) {
     result.text = result.text + ' ' + text;
-  } else {
-    result.text = result.text + ' ' + getTodayProgress();
   }
   console.log('emoji:', result.emoji, 'text:', result.text);
   // await setProfileStatus(res, result.emoji, result.text);
