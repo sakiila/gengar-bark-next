@@ -33,7 +33,7 @@ export default async function handler(
   //   });
   // }
 
-  console.info('req.body = ', JSON.stringify(req.body));
+  console.info('reply req.body = ', JSON.stringify(req.body));
 
   // const hasSentText = await existsCacheThanSet(String(req.body.text));
   // if (hasSentText) {

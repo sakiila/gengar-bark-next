@@ -21,7 +21,7 @@ export default async function handler(
     });
   }
 
-  console.info('req.body = ', req.body);
+  console.info('say req.body = ', req.body);
 
   const channelId = req.body.channel_id as string;
   const message = req.body.text as string;

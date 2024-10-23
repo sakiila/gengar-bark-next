@@ -13,7 +13,7 @@ export default async function handler(
     });
   }
 
-  console.info('req.body = ', req.body);
+  console.info('dmhr req.body = ', req.body);
 
   const message = req.body.message as string;
   const email = req.body.email as string;

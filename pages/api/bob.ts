@@ -26,7 +26,7 @@ export default async function handler(
     });
   }
 
-  console.info('req.body = ', JSON.stringify(req.body));
+  console.info('bob req.body = ', JSON.stringify(req.body));
 
   const text = req.body.text;
   const response_url = req.body.response_url;

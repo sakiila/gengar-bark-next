@@ -6,7 +6,10 @@ import user_status_changed from '@/lib/events_handlers/user_status_changed';
 import user_change from '@/lib/events_handlers/user_change';
 import channel_created from '@/lib/events_handlers/channel_created';
 import channel_archive from '@/lib/events_handlers/channel_archive';
-import { send_gpt_response_in_channel } from '@/lib/events_handlers/chat';
+import {
+  send_gpt_response_in_channel,
+  set_status,
+} from '@/lib/events_handlers/chat';
 
 export const config = {
   maxDuration: 30,
@@ -16,7 +19,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  console.log('req.body = ', JSON.stringify(req.body));
+  console.log('event req.body = ', JSON.stringify(req.body));
 
   const type = req.body.type;
   if (type === 'url_verification') {
@@ -48,9 +51,12 @@ export default async function handler(
         case 'app_mention':
           await send_gpt_response_in_channel(req, res);
           break;
-        // case 'message':
-        //   await send_gpt_response(req, res);
+        // case 'assistant_thread_started':
+        //   await set_suggested_prompts(req, res);
         //   break;
+        case 'message':
+          await set_status(req, res);
+          break;
         default:
           break;
       }

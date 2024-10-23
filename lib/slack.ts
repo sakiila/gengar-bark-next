@@ -714,9 +714,7 @@ export async function postToUserIdHrDirect(
   const message = {
     channel: userId,
     // text: text,
-    blocks: [
-      JSON.parse(text),
-    ],
+    blocks: [JSON.parse(text)],
     unfurl_links: false,
   };
 
@@ -1107,5 +1105,94 @@ export async function openView(triggerId: string, view: any) {
     return data;
   } catch (error) {
     console.error('Error publishing view:', error);
+  }
+}
+
+export async function setSuggestedPrompts(
+  res: NextApiResponse,
+  channelId: string,
+  ts: string,
+) {
+  const message = {
+    channel: channelId,
+    thread_ts: ts,
+    prompts: [
+      {
+        title: 'Idea generation',
+        message:
+          'Pretend you are a marketing associate and you need new ideas for an enterprise productivity feature. Generate 10 ideas for a new feature launch.',
+      },
+      {
+        title: 'What does SLACK stand for?',
+        message: 'What does SLACK stand for?',
+      },
+      {
+        title: 'Explain complex concepts',
+        message: 'How does artificial intelligence work?',
+      },
+    ],
+  };
+
+  try {
+    const url: string =
+      'https://slack.com/api/assistant.threads.setSuggestedPrompts';
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        Authorization: `Bearer ${bot_token}`,
+      },
+      body: JSON.stringify(message),
+    });
+
+    const data = await response.json();
+    if (!data.ok) {
+      return res.status(200).send('');
+    }
+
+    return res.status(200).send('');
+  } catch (err) {
+    console.log(err);
+    res.send({
+      response_type: 'ephemeral',
+      text: `${err}`,
+    });
+  }
+}
+
+export async function setStatus(
+  res: NextApiResponse,
+  channelId: string,
+  ts: string,
+) {
+  const message = {
+    channel: channelId,
+    thread_ts: ts,
+    status: 'is working on your request...',
+  };
+
+  try {
+    const url: string = 'https://slack.com/api/assistant.threads.setStatus';
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+        Authorization: `Bearer ${bot_token}`,
+      },
+      body: JSON.stringify(message),
+    });
+
+    const data = await response.json();
+    if (!data.ok) {
+      return res.status(200).send('');
+    }
+
+    return res.status(200).send('');
+  } catch (err) {
+    console.log(err);
+    res.send({
+      response_type: 'ephemeral',
+      text: `${err}`,
+    });
   }
 }

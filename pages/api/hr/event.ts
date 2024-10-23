@@ -10,7 +10,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  // console.log('req.body = ', JSON.stringify(req.body));
+  // console.log('hr req.body = ', JSON.stringify(req.body));
 
   const type = req.body.type;
   if (type === 'url_verification') {
