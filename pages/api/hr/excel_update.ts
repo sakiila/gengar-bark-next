@@ -18,7 +18,7 @@ export default async function handler(
     tz: string;
   }>;
 
-  console.log('payload = ', JSON.stringify(payload));
+  console.log('/hr/excel_update payload = ', JSON.stringify(payload));
 
   // payload.forEach((load) => {
   //   console.log('load = ', JSON.stringify(load));

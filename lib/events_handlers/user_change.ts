@@ -15,6 +15,7 @@ export default async function user_change(
     const isBot = user.is_bot;
     const deleted = user.deleted;
     const teamId = user.team_id;
+    const tz = user.tz;
 
     const { data: dbUser, error } = await postgres
       .from('user')
@@ -37,7 +38,7 @@ export default async function user_change(
         email: email,
         real_name_normalized: realName,
         updated_at: new Date().toISOString(),
-        tz: user.tz || dbUser?.[0].tz || 'Asia/Chongqing',
+        tz: tz ?? dbUser?.[0].tz ?? 'Asia/Chongqing',
         is_bot: isBot,
         team_id: teamId,
       },
