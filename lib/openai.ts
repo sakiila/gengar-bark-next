@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import OpenAI from 'openai';
 import { ChatCompletionMessageParam } from 'openai/resources';
 

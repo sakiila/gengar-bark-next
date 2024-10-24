@@ -17,3 +17,13 @@ Introducing a powerful slack bot designed to enhance communication and strengthe
 # License
 
 [LICENSE](LICENSE)
+
+docker build --platform linux/arm64 -t gengar-bark .
+docker tag gengar-bark:latest sakiila/gengar-bark:latest
+docker push sakiila/gengar-bark:latest
+docker run -d --name gengar-bark -p 3001:3000 gengar-bark 
+
+local
+docker build --platform linux/arm64 -t gengar-bark:latest .
+docker run -d --name gengar-bark -p 3001:3000 gengar-bark
+
