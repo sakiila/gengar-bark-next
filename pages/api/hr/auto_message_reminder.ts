@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { autoMessageReminderTask } from '@/lib/auto_message_reminder_task';
+import { autoMessageReminderTaskV2 } from '@/lib/hr/auto_message';
 
 export const config = {
   maxDuration: 30,
@@ -9,7 +10,7 @@ export default async function handler(
   _req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  await autoMessageReminderTask();
+  await autoMessageReminderTaskV2();
 
   return res.status(200).json({ message: 'Cron job successful!' });
 }

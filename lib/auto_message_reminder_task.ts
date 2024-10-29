@@ -144,6 +144,36 @@ function formatMessage(
     .replace(/{anniversary}/g, getAge(anniversary).toString());
 }
 
+async function extracted(
+  user: any,
+  template: any,
+  text: string,
+  userId: string,
+  errorMessage:string | null,
+) {
+  let nowInTz;
+  if (isValid(user.tz)) {
+    const tz = user.tz;
+    nowInTz = new Date(new Date().toLocaleString("en-US", { timeZone: tz }));
+  } else {
+    nowInTz = new Date(
+      new Date().toLocaleString("en-US", { timeZone: "Asia/Chongqing" }),
+    );
+  }
+
+  await postgres.from("hr_auto_message_template_log").insert({
+    log_name: template.template_name,
+    log_type: template.template_type,
+    log_text: text,
+    log_time: new Date(),
+    log_user_id: userId,
+    log_user_name: user.real_name_normalized,
+    log_user_time: nowInTz,
+    log_result: errorMessage,
+    success: !errorMessage,
+  });
+}
+
 async function postAndRecord(user: any, template: any) {
   const userId = user.user_id;
 
@@ -153,12 +183,12 @@ async function postAndRecord(user: any, template: any) {
     new Date(user.entry_date),
   );
 
-  let errorMessage;
+  let errorMessage: string | null = null;
   try {
     await Promise.all([
       postToUserIdHrDirect(userId, text),
-      postToUserIdHrDirect('U054RLGNA5U', text), // send to Iris
-      postToUserIdHrDirect('U03FPQWGTN2', text), // send to Bob
+      postToUserIdHrDirect("U054RLGNA5U", text), // send to Iris
+      postToUserIdHrDirect("U03FPQWGTN2", text), // send to Bob
     ]);
   } catch (error) {
     if (error instanceof Error) {
@@ -172,26 +202,5 @@ async function postAndRecord(user: any, template: any) {
       );
     }
   }
-
-  let nowInTz;
-  if (isValid(user.tz)) {
-    const tz = user.tz;
-    nowInTz = new Date(new Date().toLocaleString('en-US', { timeZone: tz }));
-  } else {
-    nowInTz = new Date(
-      new Date().toLocaleString('en-US', { timeZone: 'Asia/Chongqing' }),
-    );
-  }
-
-  await postgres.from('hr_auto_message_template_log').insert({
-    log_name: template.template_name,
-    log_type: template.template_type,
-    log_text: text,
-    log_time: new Date(),
-    log_user_id: userId,
-    log_user_name: user.real_name_normalized,
-    log_user_time: nowInTz,
-    log_result: errorMessage,
-    success: !errorMessage,
-  });
+  await extracted(user, template, text, userId, errorMessage);
 }
