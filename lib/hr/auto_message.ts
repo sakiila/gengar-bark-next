@@ -61,19 +61,19 @@ const formatMessage = (template: string, user: User): string => {
 
 // Message sending
 const sendMessage = async (userId: string, text: string): Promise<void> => {
-  // try {
-  //   await postToUserIdHrDirect(userId, text);
-  // } catch (error) {
-  //   console.error(`Failed to send message to user ${userId}:`, error);
-  //   throw error;
-  // }
-  //
-  // // send to Iris
-  // try {
-  //   await postToUserIdHrDirect('U054RLGNA5U', text)
-  // } catch (error) {
-  //   console.error(`Failed to send message to user Iris:`, error);
-  // }
+  try {
+    await postToUserIdHrDirect(userId, text);
+  } catch (error) {
+    console.error(`Failed to send message to user ${userId}:`, error);
+    throw error;
+  }
+
+  // send to Iris
+  try {
+    await postToUserIdHrDirect('U054RLGNA5U', text)
+  } catch (error) {
+    console.error(`Failed to send message to user Iris:`, error);
+  }
 
   // send to Bob
   try {

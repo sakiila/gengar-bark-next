@@ -11,9 +11,9 @@ WHERE deleted = false
   AND team_id = 'T011CF3CMJN'
   AND entry_date = CURRENT_DATE
   AND (
-    (tz IS NULL AND EXTRACT(HOUR FROM now() AT TIME ZONE 'Asia/Chongqing') BETWEEN 11 and 12)
+    (tz IS NULL AND EXTRACT(HOUR FROM now() AT TIME ZONE 'Asia/Chongqing') = 11)
         OR
-    (tz IS NOT NULL AND EXTRACT(HOUR FROM now() AT TIME ZONE tz) BETWEEN 11 and 12)
+    (tz IS NOT NULL AND EXTRACT(HOUR FROM now() AT TIME ZONE tz) = 11)
     );
 $$;
 
@@ -30,9 +30,9 @@ WHERE deleted = false
   AND team_id = 'T011CF3CMJN'
   AND confirm_date = CURRENT_DATE
   AND (
-    (tz IS NULL AND EXTRACT(HOUR FROM now() AT TIME ZONE 'Asia/Chongqing') BETWEEN 8 and 9)
+    (tz IS NULL AND EXTRACT(HOUR FROM now() AT TIME ZONE 'Asia/Chongqing') = 9)
         OR
-    (tz IS NOT NULL AND EXTRACT(HOUR FROM now() AT TIME ZONE tz) BETWEEN 8 and 9)
+    (tz IS NOT NULL AND EXTRACT(HOUR FROM now() AT TIME ZONE tz) = 9)
     );
 $$;
 
@@ -51,9 +51,9 @@ WHERE deleted = false
   AND EXTRACT(MONTH FROM birthday_date) = EXTRACT(MONTH FROM CURRENT_DATE)
   AND EXTRACT(DAY FROM birthday_date) = EXTRACT(DAY FROM CURRENT_DATE)
   AND (
-    (tz IS NULL AND EXTRACT(HOUR FROM now() AT TIME ZONE 'Asia/Chongqing') BETWEEN 8 and 9)
+    (tz IS NULL AND EXTRACT(HOUR FROM now() AT TIME ZONE 'Asia/Chongqing') = 9)
         OR
-    (tz IS NOT NULL AND EXTRACT(HOUR FROM now() AT TIME ZONE tz) BETWEEN 8 and 9)
+    (tz IS NOT NULL AND EXTRACT(HOUR FROM now() AT TIME ZONE tz) = 9)
     );
 $$;
 
@@ -73,8 +73,8 @@ WHERE deleted = false
   AND EXTRACT(DAY FROM entry_date) = EXTRACT(DAY FROM CURRENT_DATE)
   AND entry_date != CURRENT_DATE
   AND (
-    (tz IS NULL AND EXTRACT(HOUR FROM now() AT TIME ZONE 'Asia/Chongqing') BETWEEN 8 and 9)
+    (tz IS NULL AND EXTRACT(HOUR FROM now() AT TIME ZONE 'Asia/Chongqing') = 9)
         OR
-    (tz IS NOT NULL AND EXTRACT(HOUR FROM now() AT TIME ZONE tz) BETWEEN 8 and 9)
+    (tz IS NOT NULL AND EXTRACT(HOUR FROM now() AT TIME ZONE tz) = 9)
     );
 $$;
