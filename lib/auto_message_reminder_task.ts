@@ -41,6 +41,7 @@ export async function autoMessageReminderTask() {
     }
   }
 
+
   // const { data }= await postgres.from('user').select('*').eq('user_id', 'U03FPQWGTN2');
   // console.log('data:',data);
   // if (data) {
@@ -50,14 +51,14 @@ export async function autoMessageReminderTask() {
   //   birthdayReminderUser.push(data[0]);
   // }
 
-  // console.log('entryReminderUser:', entryReminderUser);
-  // console.log('confirmReminderUser:', confirmReminderUser);
-  // console.log('birthdayReminderUser:', birthdayReminderUser);
-  // console.log('anniversaryReminderUser:', anniversaryReminderUser);
+  console.log('entryReminderUser:', entryReminderUser);
+  console.log('confirmReminderUser:', confirmReminderUser);
+  console.log('birthdayReminderUser:', birthdayReminderUser);
+  console.log('anniversaryReminderUser:', anniversaryReminderUser);
 
   const { data: templates } = await postgres
-    .from('hr_auto_message_template')
-    .select('*');
+  .from('hr_auto_message_template')
+  .select('*');
 
   if (!templates || templates.length === 0) {
     console.log('No template found');
@@ -92,8 +93,8 @@ export async function autoMessageReminderTask() {
   }
 
   Promise.all(promises)
-    .then(() => console.log('All messages have been sent'))
-    .catch((err) => console.error(err));
+  .then(() => console.log('All messages have been sent'))
+  .catch((err) => console.error(err));
 }
 
 function isValid(value: unknown): boolean {
@@ -139,39 +140,9 @@ function formatMessage(
   anniversary: Date,
 ): string {
   return template
-    .replace(/{name}/g, `${username}`)
-    .replace(/{today}/g, new Date().toLocaleDateString())
-    .replace(/{anniversary}/g, getAge(anniversary).toString());
-}
-
-async function extracted(
-  user: any,
-  template: any,
-  text: string,
-  userId: string,
-  errorMessage:string | null,
-) {
-  let nowInTz;
-  if (isValid(user.tz)) {
-    const tz = user.tz;
-    nowInTz = new Date(new Date().toLocaleString("en-US", { timeZone: tz }));
-  } else {
-    nowInTz = new Date(
-      new Date().toLocaleString("en-US", { timeZone: "Asia/Chongqing" }),
-    );
-  }
-
-  await postgres.from("hr_auto_message_template_log").insert({
-    log_name: template.template_name,
-    log_type: template.template_type,
-    log_text: text,
-    log_time: new Date(),
-    log_user_id: userId,
-    log_user_name: user.real_name_normalized,
-    log_user_time: nowInTz,
-    log_result: errorMessage,
-    success: !errorMessage,
-  });
+  .replace(/{name}/g, `${username}`)
+  .replace(/{today}/g, new Date().toLocaleDateString())
+  .replace(/{anniversary}/g, getAge(anniversary).toString());
 }
 
 async function postAndRecord(user: any, template: any) {
@@ -183,12 +154,12 @@ async function postAndRecord(user: any, template: any) {
     new Date(user.entry_date),
   );
 
-  let errorMessage: string | null = null;
+  let errorMessage;
   try {
     await Promise.all([
-      postToUserIdHrDirect(userId, text),
-      postToUserIdHrDirect("U054RLGNA5U", text), // send to Iris
-      postToUserIdHrDirect("U03FPQWGTN2", text), // send to Bob
+      // postToUserIdHrDirect(userId, text),
+      // postToUserIdHrDirect('U054RLGNA5U', text), // send to Iris
+      postToUserIdHrDirect('U03FPQWGTN2', text), // send to Bob
     ]);
   } catch (error) {
     if (error instanceof Error) {
@@ -202,5 +173,26 @@ async function postAndRecord(user: any, template: any) {
       );
     }
   }
-  await extracted(user, template, text, userId, errorMessage);
+
+  let nowInTz;
+  if (isValid(user.tz)) {
+    const tz = user.tz;
+    nowInTz = new Date(new Date().toLocaleString('en-US', { timeZone: tz }));
+  } else {
+    nowInTz = new Date(
+      new Date().toLocaleString('en-US', { timeZone: 'Asia/Chongqing' }),
+    );
+  }
+
+  // await postgres.from('hr_auto_message_template_log').insert({
+  //   log_name: template.template_name,
+  //   log_type: template.template_type,
+  //   log_text: text,
+  //   log_time: new Date(),
+  //   log_user_id: userId,
+  //   log_user_name: user.real_name_normalized,
+  //   log_user_time: nowInTz,
+  //   log_result: errorMessage,
+  //   success: !errorMessage,
+  // });
 }

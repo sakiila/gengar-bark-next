@@ -81,7 +81,6 @@ const sendMessage = async (userId: string, text: string): Promise<void> => {
   } catch (error) {
     console.error(`Failed to send message to user Bob:`, error);
   }
-  // console.log(`Succeed to send message to user Bob:`, text);
 
 };
 
