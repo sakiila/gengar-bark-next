@@ -99,9 +99,13 @@ const processReminders = async (
 
   const sendingPromises = users.map((user) => {
     const message = formatMessage(template.template_text, user);
-    return sendMessage(user.user_id, message).catch(async (error) => {
-      await logResult(user, template, message, error.message);
-    });
+    return sendMessage(user.user_id, message)
+      .then(async () => {
+        await logResult(user, template, message, "");
+      })
+      .catch(async (error) => {
+        await logResult(user, template, message, error.message);
+      });
   });
 
   await Promise.all(sendingPromises);
@@ -182,8 +186,6 @@ async function logResult(
     log_user_time: getUserTime(user),
     log_result: errorMessage,
     success: !errorMessage,
-    error_stack: errorMessage ? new Error().stack : null,
-    attempt_count: 1,
   };
 
   try {
