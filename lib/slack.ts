@@ -1,6 +1,6 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import crypto from 'crypto';
-import { regexOperations, truncateString } from './helpers';
+import { NextApiRequest, NextApiResponse } from "next";
+import crypto from "crypto";
+import { regexOperations, truncateString } from "./helpers";
 import {
   clearDataForTeam,
   getAccessToken,
@@ -9,8 +9,8 @@ import {
   getTeamConfigAndStats,
   trackBotUsage,
   trackUnfurls,
-} from './upstash';
-import { getParent, getPost } from '@/lib/hn';
+} from "./upstash";
+import { getParent, getPost } from "@/lib/hn";
 
 export const bot_token = process.env.SLACK_BOT_TOKEN as string;
 export const bot_hr_token = process.env.SLACK_BOT_HR_TOKEN as string;
@@ -25,8 +25,8 @@ export const personalCookie = process.env.PERSONAL_COOKIE as string;
 export function verifyRequest(req: NextApiRequest) {
   /* Verify that requests are genuinely coming from Slack and not a forgery */
   const {
-    'x-slack-signature': slack_signature,
-    'x-slack-request-timestamp': timestamp,
+    "x-slack-signature": slack_signature,
+    "x-slack-request-timestamp": timestamp,
   } = req.headers as {
     [key: string]: string;
   };
@@ -34,13 +34,13 @@ export function verifyRequest(req: NextApiRequest) {
   if (!slack_signature || !timestamp) {
     return {
       status: false,
-      message: 'No slack signature or timestamp found in request headers.',
+      message: "No slack signature or timestamp found in request headers.",
     };
   }
   if (process.env.SLACK_SIGNING_SECRET === undefined) {
     return {
       status: false,
-      message: '`SLACK_SIGNING_SECRET` env var is not defined.',
+      message: "`SLACK_SIGNING_SECRET` env var is not defined.",
     };
   }
   if (
@@ -49,17 +49,17 @@ export function verifyRequest(req: NextApiRequest) {
   ) {
     return {
       status: false,
-      message: 'Nice try buddy. Slack signature mismatch.',
+      message: "Nice try buddy. Slack signature mismatch.",
     };
   }
   const req_body = new URLSearchParams(req.body).toString(); // convert body to URL search params
-  const sig_basestring = 'v0:' + timestamp + ':' + req_body; // create base string
+  const sig_basestring = "v0:" + timestamp + ":" + req_body; // create base string
   const my_signature =
-    'v0=' +
+    "v0=" +
     crypto
-      .createHmac('sha256', signing_secret)
+      .createHmac("sha256", signing_secret)
       .update(sig_basestring)
-      .digest('hex'); // create signature
+      .digest("hex"); // create signature
 
   if (
     crypto.timingSafeEqual(
@@ -69,12 +69,12 @@ export function verifyRequest(req: NextApiRequest) {
   ) {
     return {
       status: true,
-      message: 'Verified Request.',
+      message: "Verified Request.",
     };
   } else {
     return {
       status: false,
-      message: 'Nice try buddy. Slack signature mismatch.',
+      message: "Nice try buddy. Slack signature mismatch.",
     };
   }
 }
@@ -82,8 +82,8 @@ export function verifyRequest(req: NextApiRequest) {
 export function verifyHrRequest(req: NextApiRequest) {
   /* Verify that requests are genuinely coming from Slack and not a forgery */
   const {
-    'x-slack-signature': slack_signature,
-    'x-slack-request-timestamp': timestamp,
+    "x-slack-signature": slack_signature,
+    "x-slack-request-timestamp": timestamp,
   } = req.headers as {
     [key: string]: string;
   };
@@ -91,13 +91,13 @@ export function verifyHrRequest(req: NextApiRequest) {
   if (!slack_signature || !timestamp) {
     return {
       status: false,
-      message: 'No slack signature or timestamp found in request headers.',
+      message: "No slack signature or timestamp found in request headers.",
     };
   }
   if (process.env.SLACK_SIGNING_HR_SECRET === undefined) {
     return {
       status: false,
-      message: '`SLACK_SIGNING_HR_SECRET` env var is not defined.',
+      message: "`SLACK_SIGNING_HR_SECRET` env var is not defined.",
     };
   }
   if (
@@ -106,17 +106,17 @@ export function verifyHrRequest(req: NextApiRequest) {
   ) {
     return {
       status: false,
-      message: 'Nice try buddy. Slack signature mismatch.',
+      message: "Nice try buddy. Slack signature mismatch.",
     };
   }
   const req_body = new URLSearchParams(req.body).toString(); // convert body to URL search params
-  const sig_basestring = 'v0:' + timestamp + ':' + req_body; // create base string
+  const sig_basestring = "v0:" + timestamp + ":" + req_body; // create base string
   const my_signature =
-    'v0=' +
+    "v0=" +
     crypto
-      .createHmac('sha256', signing_hr_Secret)
+      .createHmac("sha256", signing_hr_Secret)
       .update(sig_basestring)
-      .digest('hex'); // create signature
+      .digest("hex"); // create signature
 
   if (
     crypto.timingSafeEqual(
@@ -126,12 +126,12 @@ export function verifyHrRequest(req: NextApiRequest) {
   ) {
     return {
       status: true,
-      message: 'Verified Request.',
+      message: "Verified Request.",
     };
   } else {
     return {
       status: false,
-      message: 'Nice try buddy. Slack signature mismatch.',
+      message: "Nice try buddy. Slack signature mismatch.",
     };
   }
 }
@@ -145,10 +145,10 @@ export async function sendSlackMessage(postId: number, teamId: string) {
   console.log(
     `Sending message to team ${teamId} in channel ${channelId} for post ${postId}`,
   );
-  const response = await fetch('https://slack.com/api/chat.postMessage', {
-    method: 'POST',
+  const response = await fetch("https://slack.com/api/chat.postMessage", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify({
@@ -169,15 +169,15 @@ export async function handleUnfurl(req: NextApiRequest, res: NextApiResponse) {
 
   const { team_id } = req.body;
   if (!team_id) {
-    return res.status(400).json({ message: 'No team_id found' });
+    return res.status(400).json({ message: "No team_id found" });
   }
   const channel = req.body.event.channel; // channel the message was sent in
   const ts = req.body.event.message_ts; // message timestamp
   const url = req.body.event.links[0].url; // url that was shared
   const newUrl = new URL(url);
-  const id = newUrl.searchParams.get('id'); // get hacker news post id
+  const id = newUrl.searchParams.get("id"); // get hacker news post id
   if (!id) {
-    return res.status(400).json({ message: 'No id found' });
+    return res.status(400).json({ message: "No id found" });
   }
 
   const [post, accessToken, keywords] = await Promise.all([
@@ -190,11 +190,11 @@ export async function handleUnfurl(req: NextApiRequest, res: NextApiResponse) {
 
   const originalPost = post.parent ? await getParent(post) : null; // if post is a comment, get title of original post
 
-  const response = await fetch('https://slack.com/api/chat.unfurl', {
+  const response = await fetch("https://slack.com/api/chat.unfurl", {
     // unfurl the hacker news post using the Slack API
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
       Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify({
@@ -202,7 +202,7 @@ export async function handleUnfurl(req: NextApiRequest, res: NextApiResponse) {
       ts,
       unfurls: {
         [url]: {
-          mrkdwn_in: ['author_name', 'text', 'footer'],
+          mrkdwn_in: ["author_name", "text", "footer"],
           fallback: `https://news.ycombinator.com/item?id=${post.id}`,
           author_name: `New ${post.type} from ${post.by}`,
           author_link: `https://news.ycombinator.com/item?id=${post.id}`,
@@ -215,8 +215,8 @@ export async function handleUnfurl(req: NextApiRequest, res: NextApiResponse) {
           ...(mentionedTerms.size > 0 && {
             fields: [
               {
-                title: 'Mentioned Terms',
-                value: Array.from(mentionedTerms).join(', '),
+                title: "Mentioned Terms",
+                value: Array.from(mentionedTerms).join(", "),
                 short: false,
               },
             ],
@@ -226,12 +226,12 @@ export async function handleUnfurl(req: NextApiRequest, res: NextApiResponse) {
           }|${
             originalPost?.title // if original post exists, add a footer with the link to it
               ? `on: ${truncateString(originalPost.title, 40)}` // truncate the title to max 40 chars
-              : 'Hacker News'
+              : "Hacker News"
           }> | <!date^${
             post.time
           }^{date_short_pretty} at {time}^${`https://news.ycombinator.com/item?id=${post.id}`}|Just Now>`,
           footer_icon:
-            'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Y_Combinator_logo.svg/1024px-Y_Combinator_logo.svg.png',
+            "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Y_Combinator_logo.svg/1024px-Y_Combinator_logo.svg.png",
         },
       },
     }),
@@ -257,12 +257,12 @@ export async function handleUninstall(
     // verify that the request is coming from the correct Slack team
     // here we use the verification token because for some reason signing secret doesn't work
     return res.status(403).json({
-      message: 'Nice try buddy. Slack signature mismatch.',
+      message: "Nice try buddy. Slack signature mismatch.",
     });
   const { team_id } = req.body;
   const response = await clearDataForTeam(team_id);
   const logResponse = await log(
-    'Team *`' + team_id + '`* just uninstalled the bot :cry:',
+    "Team *`" + team_id + "`* just uninstalled the bot :cry:",
   );
   return res.status(200).json({
     response,
@@ -276,16 +276,16 @@ export async function log(message: string) {
   if (!process.env.VERCEL_SLACK_HOOK) return;
   try {
     return await fetch(process.env.VERCEL_SLACK_HOOK, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         blocks: [
           {
-            type: 'section',
+            type: "section",
             text: {
-              type: 'mrkdwn',
+              type: "mrkdwn",
               text: message,
             },
           },
@@ -303,29 +303,29 @@ export const reminderBlock = (
   imageUrl: string,
 ) => [
   {
-    type: 'section',
+    type: "section",
     text: {
-      type: 'mrkdwn',
+      type: "mrkdwn",
       text: `*提醒${reminder}小助手*\n ${text}`,
     },
   },
   {
-    type: 'image',
+    type: "image",
     title: {
-      type: 'plain_text',
+      type: "plain_text",
       text: `提醒${reminder}小助手`,
       emoji: true,
     },
     image_url: `${imageUrl}`,
-    alt_text: 'by dall-e',
+    alt_text: "by dall-e",
   },
 ];
 
 export const boldBlock = (text: string) => [
   {
-    type: 'section',
+    type: "section",
     text: {
-      type: 'mrkdwn',
+      type: "mrkdwn",
       text: `*${text}*`,
     },
   },
@@ -333,9 +333,9 @@ export const boldBlock = (text: string) => [
 
 export const textToMarkdown = (text: string) => [
   {
-    type: 'section',
+    type: "section",
     text: {
-      type: 'mrkdwn',
+      type: "mrkdwn",
       text: `${text}`,
     },
   },
@@ -352,90 +352,90 @@ export const configureBlocks = (
   },
 ) => [
   {
-    type: 'header',
+    type: "header",
     text: {
-      type: 'plain_text',
-      text: ':hammer_and_wrench:  Bot Configuration  :hammer_and_wrench:',
+      type: "plain_text",
+      text: ":hammer_and_wrench:  Bot Configuration  :hammer_and_wrench:",
     },
   },
   {
-    type: 'context',
-    block_id: 'stats',
+    type: "context",
+    block_id: "stats",
     elements: [
       {
-        type: 'mrkdwn',
+        type: "mrkdwn",
         text: `Current Usage: ${unfurls} link previews shown, ${notifications} notifications sent |  <https://slack.com/apps/A03QV0U65HN|More Configuration Settings>`,
       },
     ],
   },
   {
-    type: 'divider',
+    type: "divider",
   },
   {
-    type: 'section',
+    type: "section",
     text: {
-      type: 'mrkdwn',
-      text: ':bulb: KEYWORDS :bulb:',
+      type: "mrkdwn",
+      text: ":bulb: KEYWORDS :bulb:",
     },
   },
   {
-    type: 'section',
+    type: "section",
     text: {
-      type: 'mrkdwn',
+      type: "mrkdwn",
       text:
         keywords.length > 0
           ? "Here's the list of keywords that you're currently tracking:"
-          : '_No keywords configured yet._',
+          : "_No keywords configured yet._",
     },
   },
   ...(keywords.length > 0
     ? keywords.map((keyword: any) => ({
-        type: 'section',
+        type: "section",
         block_id: `keyword_${keyword}`,
         text: {
-          type: 'mrkdwn',
-          text: '`' + keyword + '`',
+          type: "mrkdwn",
+          text: "`" + keyword + "`",
         },
         accessory: {
-          action_id: 'remove_keyword',
-          type: 'button',
+          action_id: "remove_keyword",
+          type: "button",
           text: {
-            type: 'plain_text',
-            text: 'Remove',
+            type: "plain_text",
+            text: "Remove",
           },
           value: keyword,
         },
       }))
     : []),
   {
-    type: 'input',
+    type: "input",
     dispatch_action: true,
     element: {
-      type: 'plain_text_input',
-      action_id: 'add_keyword',
+      type: "plain_text_input",
+      action_id: "add_keyword",
       placeholder: {
-        type: 'plain_text',
-        text: 'Add a keyword (must be between 3 and 30 characters)',
+        type: "plain_text",
+        text: "Add a keyword (must be between 3 and 30 characters)",
       },
       dispatch_action_config: {
-        trigger_actions_on: ['on_enter_pressed'],
+        trigger_actions_on: ["on_enter_pressed"],
       },
       min_length: 3,
       max_length: 30,
       focus_on_load: true,
     },
     label: {
-      type: 'plain_text',
-      text: ' ',
+      type: "plain_text",
+      text: " ",
     },
   },
   ...(feedback?.keyword
     ? [
         {
-          type: 'context',
+          type: "context",
           elements: [
             {
-              type: 'mrkdwn',
+              type: "mrkdwn",
               text: feedback.keyword,
             },
           ],
@@ -443,27 +443,27 @@ export const configureBlocks = (
       ]
     : []),
   {
-    type: 'divider',
+    type: "divider",
   },
   {
-    type: 'section',
+    type: "section",
     text: {
-      type: 'mrkdwn',
-      text: ':hash: CHANNEL :hash:',
+      type: "mrkdwn",
+      text: ":hash: CHANNEL :hash:",
     },
   },
   {
-    type: 'section',
+    type: "section",
     text: {
-      type: 'mrkdwn',
-      text: 'Select a public channel to receive notifications in:',
+      type: "mrkdwn",
+      text: "Select a public channel to receive notifications in:",
     },
     accessory: {
-      action_id: 'set_channel',
-      type: 'conversations_select',
+      action_id: "set_channel",
+      type: "conversations_select",
       placeholder: {
-        type: 'plain_text',
-        text: 'Select a channel...',
+        type: "plain_text",
+        text: "Select a channel...",
         emoji: true,
       },
       ...(channel ? { initial_conversation: channel } : {}),
@@ -472,10 +472,10 @@ export const configureBlocks = (
   ...(feedback?.channel
     ? [
         {
-          type: 'context',
+          type: "context",
           elements: [
             {
-              type: 'mrkdwn',
+              type: "mrkdwn",
               text: feedback.channel,
             },
           ],
@@ -483,14 +483,14 @@ export const configureBlocks = (
       ]
     : []),
   {
-    type: 'divider',
+    type: "divider",
   },
   {
-    type: 'context',
+    type: "context",
     elements: [
       {
-        type: 'mrkdwn',
-        text: 'Made and <https://slacker.run/|open-sourced> with :black_heart: by <https://vercel.com/|▲ Vercel>',
+        type: "mrkdwn",
+        text: "Made and <https://slacker.run/|open-sourced> with :black_heart: by <https://vercel.com/|▲ Vercel>",
       },
     ],
   },
@@ -510,9 +510,9 @@ export async function respondToSlack(
 
   // respond to Slack with the new state of the bot
   const response = await fetch(response_url, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       blocks: configureBlocks(
@@ -536,22 +536,22 @@ export async function postToChannelId(
     channel: channelId,
     text: text,
   };
-  const url = 'https://slack.com/api/chat.postMessage';
+  const url = "https://slack.com/api/chat.postMessage";
 
   try {
     await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json; charset=utf-8',
+        "Content-Type": "application/json; charset=utf-8",
         Authorization: `Bearer ${bot_token}`,
       },
       body: JSON.stringify(message),
     });
-    res.status(200).send('');
+    res.status(200).send("");
   } catch (err) {
     console.log(err);
     res.send({
-      response_type: 'ephemeral',
+      response_type: "ephemeral",
       text: `${err}`,
     });
   }
@@ -583,22 +583,22 @@ export async function postReminderBlockToChannelId(
     channel: channelId,
     blocks: reminderBlock(reminder, text, imageUrl),
   };
-  const url = 'https://slack.com/api/chat.postMessage';
+  const url = "https://slack.com/api/chat.postMessage";
 
   try {
     await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json; charset=utf-8',
+        "Content-Type": "application/json; charset=utf-8",
         Authorization: `Bearer ${bot_token}`,
       },
       body: JSON.stringify(message),
     });
-    res.status(200).send('');
+    res.status(200).send("");
   } catch (err) {
     console.log(err);
     res.send({
-      response_type: 'ephemeral',
+      response_type: "ephemeral",
       text: `${err}`,
     });
   }
@@ -613,22 +613,22 @@ export async function postBoldBlockToChannelId(
     channel: channelId,
     blocks: boldBlock(text),
   };
-  const url = 'https://slack.com/api/chat.postMessage';
+  const url = "https://slack.com/api/chat.postMessage";
 
   try {
     await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json; charset=utf-8',
+        "Content-Type": "application/json; charset=utf-8",
         Authorization: `Bearer ${bot_token}`,
       },
       body: JSON.stringify(message),
     });
-    res.status(200).send('');
+    res.status(200).send("");
   } catch (err) {
     console.log(err);
     res.send({
-      response_type: 'ephemeral',
+      response_type: "ephemeral",
       text: `${err}`,
     });
   }
@@ -636,9 +636,9 @@ export async function postBoldBlockToChannelId(
 
 export const buildMarkdown = (text: string) => [
   {
-    type: 'section',
+    type: "section",
     text: {
-      type: 'mrkdwn',
+      type: "mrkdwn",
       text: `${text}`,
     },
   },
@@ -654,13 +654,13 @@ export async function postToUserId(
     text: text,
     // blocks: buildMarkdown(text),
   };
-  const url = 'https://slack.com/api/chat.postMessage';
+  const url = "https://slack.com/api/chat.postMessage";
 
   try {
     await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json; charset=utf-8',
+        "Content-Type": "application/json; charset=utf-8",
         Authorization: `Bearer ${bot_token}`,
       },
       body: JSON.stringify(message),
@@ -668,7 +668,7 @@ export async function postToUserId(
   } catch (err) {
     console.log(err);
     res.send({
-      response_type: 'ephemeral',
+      response_type: "ephemeral",
       text: `${err}`,
     });
   }
@@ -684,24 +684,24 @@ export async function postToUserIdHr(
     text: text,
     // blocks: buildMarkdown(text),
   };
-  const url = 'https://slack.com/api/chat.postMessage';
+  const url = "https://slack.com/api/chat.postMessage";
 
   try {
     const response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json; charset=utf-8',
+        "Content-Type": "application/json; charset=utf-8",
         Authorization: `Bearer ${bot_hr_token}`,
       },
       body: JSON.stringify(message),
     });
     const data = await response.json();
-    console.log('data: ', data);
-    res.status(200).send('');
+    console.log("data: ", data);
+    res.status(200).send("");
   } catch (err) {
     console.log(err);
     res.send({
-      response_type: 'ephemeral',
+      response_type: "ephemeral",
       text: `${err}`,
     });
   }
@@ -718,12 +718,12 @@ export async function postToUserIdHrDirect(
     unfurl_links: false,
   };
 
-  const url = 'https://slack.com/api/chat.postMessage';
+  const url = "https://slack.com/api/chat.postMessage";
   try {
     const response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json; charset=utf-8',
+        "Content-Type": "application/json; charset=utf-8",
         Authorization: `Bearer ${bot_hr_token}`,
       },
       body: JSON.stringify(message),
@@ -756,9 +756,9 @@ export async function postToChannel(
   res: NextApiResponse,
   payload: string,
 ) {
-  console.log('channel:', channel);
+  console.log("channel:", channel);
   const channelId = await channelNameToId(channel);
-  console.log('channelId:', channelId);
+  console.log("channelId:", channelId);
 
   if (!channelId) {
     throw new Error(`Channel "${channel}" not found.`);
@@ -776,14 +776,14 @@ export async function postToTest(res: NextApiResponse, payload: string) {
 }
 
 export async function channelNameToId(channelName: string): Promise<string> {
-  let id: string = '';
+  let id: string = "";
 
   try {
-    const url = 'https://slack.com/api/conversations.list';
+    const url = "https://slack.com/api/conversations.list";
     const response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json; charset=utf-8',
+        "Content-Type": "application/json; charset=utf-8",
         Authorization: `Bearer ${bot_token}`,
       },
     });
@@ -807,9 +807,9 @@ export async function userIdToName(userId: string) {
   try {
     const url: string = `https://slack.com/api/users.info?user=${userId}`;
     const response = await fetch(url, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json; charset=utf-8',
+        "Content-Type": "application/json; charset=utf-8",
         Authorization: `Bearer ${bot_token}`,
       },
     });
@@ -818,7 +818,7 @@ export async function userIdToName(userId: string) {
     if (data.ok) {
       return data.user.name;
     } else {
-      return 'unknown';
+      return "unknown";
     }
   } catch (err) {
     console.log(err);
@@ -829,9 +829,9 @@ export async function emailToUserId(email: string): Promise<string> {
   try {
     const url: string = `https://slack.com/api/users.lookupByEmail?email=${email}`;
     const response = await fetch(url, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json; charset=utf-8',
+        "Content-Type": "application/json; charset=utf-8",
         Authorization: `Bearer ${bot_token}`,
       },
     });
@@ -843,14 +843,14 @@ export async function emailToUserId(email: string): Promise<string> {
   } catch (err) {
     console.log(err);
   }
-  return 'unknown';
+  return "unknown";
 }
 
 export async function deleteMessage(res: NextApiResponse, url: string) {
-  const parts = url.split('/');
+  const parts = url.split("/");
   const channelId = parts[parts.length - 2];
   const lastPartWithP = parts[parts.length - 1];
-  const ts = lastPartWithP.slice(1, -6) + '.' + lastPartWithP.slice(-6);
+  const ts = lastPartWithP.slice(1, -6) + "." + lastPartWithP.slice(-6);
 
   const message = {
     channel: channelId,
@@ -858,21 +858,21 @@ export async function deleteMessage(res: NextApiResponse, url: string) {
   };
 
   try {
-    const url: string = 'https://slack.com/api/chat.delete';
+    const url: string = "https://slack.com/api/chat.delete";
     await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json; charset=utf-8',
+        "Content-Type": "application/json; charset=utf-8",
         Authorization: `Bearer ${bot_token}`,
       },
       body: JSON.stringify(message),
     });
 
-    res.status(200).send('');
+    res.status(200).send("");
   } catch (err) {
     console.log(err);
     res.send({
-      response_type: 'ephemeral',
+      response_type: "ephemeral",
       text: `${err}`,
     });
   }
@@ -880,39 +880,39 @@ export async function deleteMessage(res: NextApiResponse, url: string) {
 
 export async function getAddedUserId(name: string) {
   var myHeaders = new Headers();
-  myHeaders.append('authority', 'moegoworkspace.slack.com');
-  myHeaders.append('accept', '*/*');
-  myHeaders.append('accept-language', 'en,zh-CN;q=0.9,zh;q=0.8');
-  myHeaders.append('cookie', personalCookie);
+  myHeaders.append("authority", "moegoworkspace.slack.com");
+  myHeaders.append("accept", "*/*");
+  myHeaders.append("accept-language", "en,zh-CN;q=0.9,zh;q=0.8");
+  myHeaders.append("cookie", personalCookie);
   myHeaders.append(
-    'user-agent',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    "user-agent",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
   );
 
   var formdata = new FormData();
-  formdata.append('token', personalToken);
-  formdata.append('page', '1');
-  formdata.append('count', '2');
-  formdata.append('sort_by', 'created');
-  formdata.append('sort_dir', 'desc');
+  formdata.append("token", personalToken);
+  formdata.append("page", "1");
+  formdata.append("count", "2");
+  formdata.append("sort_by", "created");
+  formdata.append("sort_dir", "desc");
 
   const response = await fetch(
-    'https://moegoworkspace.slack.com/api/emoji.adminList',
+    "https://moegoworkspace.slack.com/api/emoji.adminList",
     {
-      method: 'POST',
+      method: "POST",
       headers: myHeaders,
       body: formdata,
-      redirect: 'follow',
+      redirect: "follow",
     },
   );
   const data = await response.json();
   if (data.emoji == undefined) {
-    return 'unknown';
+    return "unknown";
   }
   const foundEmoji = data.emoji.find(
     (emoji: { name: string; user_id: string }) => emoji.name == name,
   );
-  return foundEmoji ? foundEmoji.user_id : 'unknown';
+  return foundEmoji ? foundEmoji.user_id : "unknown";
 }
 
 export async function setProfileStatus(
@@ -928,11 +928,11 @@ export async function setProfileStatus(
   };
 
   try {
-    const url: string = 'https://slack.com/api/users.profile.set';
+    const url: string = "https://slack.com/api/users.profile.set";
     const response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json; charset=utf-8',
+        "Content-Type": "application/json; charset=utf-8",
         Authorization: `Bearer ${user_token}`,
       },
       body: JSON.stringify(message),
@@ -943,11 +943,11 @@ export async function setProfileStatus(
       return res.status(200).send({ message: `${data.error}` });
     }
 
-    return res.status(200).send({ message: 'Status updated' });
+    return res.status(200).send({ message: "Status updated" });
   } catch (err) {
     console.log(err);
     res.send({
-      response_type: 'ephemeral',
+      response_type: "ephemeral",
       text: `${err}`,
     });
   }
@@ -955,11 +955,11 @@ export async function setProfileStatus(
 
 export async function getProfileStatus() {
   try {
-    const url: string = 'https://slack.com/api/users.profile.get';
+    const url: string = "https://slack.com/api/users.profile.get";
     const response = await fetch(url, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json; charset=utf-8',
+        "Content-Type": "application/json; charset=utf-8",
         Authorization: `Bearer ${user_token}`,
       },
     });
@@ -985,9 +985,9 @@ export async function getThreadReply(channelId: string, ts: string) {
 
   try {
     const response = await fetch(url, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json; charset=utf-8',
+        "Content-Type": "application/json; charset=utf-8",
         Authorization: `Bearer ${bot_token}`,
       },
     });
@@ -995,7 +995,7 @@ export async function getThreadReply(channelId: string, ts: string) {
     if (data.ok) {
       return data.messages;
     } else {
-      return 'unknown';
+      return "unknown";
     }
   } catch (err) {
     console.log(err);
@@ -1014,22 +1014,24 @@ export async function threadReply(
     thread_ts: ts,
     blocks: textToMarkdown(text),
   };
-  const url = 'https://slack.com/api/chat.postMessage';
+  const url = "https://slack.com/api/chat.postMessage";
 
   try {
-    await fetch(url, {
-      method: 'POST',
+    const response =  await fetch(url, {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json; charset=utf-8',
+        "Content-Type": "application/json; charset=utf-8",
         Authorization: `Bearer ${bot_token}`,
       },
       body: JSON.stringify(message),
     });
-    return res.status(200).send('');
+    const data = await response.json();
+    console.log("response data: ", data);
+    return res.status(200).send("");
   } catch (err) {
     console.log(err);
     return res.status(200).send({
-      response_type: 'ephemeral',
+      response_type: "ephemeral",
       text: `${err}`,
     });
   }
@@ -1038,12 +1040,12 @@ export async function threadReply(
 export async function responseUrl(url: string, text: string) {
   try {
     const response = await fetch(url.trim(), {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json; charset=utf-8',
+        "Content-Type": "application/json; charset=utf-8",
         Authorization: `Bearer ${bot_token}`,
       },
-      body: JSON.stringify({ text: text, response_type: 'in_channel' }),
+      body: JSON.stringify({ text: text, response_type: "in_channel" }),
     });
   } catch (err) {
     console.log(err);
@@ -1051,14 +1053,14 @@ export async function responseUrl(url: string, text: string) {
 }
 
 export async function publishView(userId: string, view: any) {
-  const url = 'https://slack.com/api/views.publish';
+  const url = "https://slack.com/api/views.publish";
 
   try {
     const response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
         Authorization: `Bearer ${bot_hr_token}`,
-        'Content-type': 'application/json; charset=UTF-8',
+        "Content-type": "application/json; charset=UTF-8",
       },
       body: JSON.stringify({
         user_id: userId,
@@ -1075,19 +1077,19 @@ export async function publishView(userId: string, view: any) {
 
     return data;
   } catch (error) {
-    console.error('Error publishing view:', error);
+    console.error("Error publishing view:", error);
   }
 }
 
 export async function openView(triggerId: string, view: any) {
-  const url = 'https://slack.com/api/views.open';
+  const url = "https://slack.com/api/views.open";
 
   try {
     const response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
         Authorization: `Bearer ${bot_hr_token}`,
-        'Content-type': 'application/json; charset=UTF-8',
+        "Content-type": "application/json; charset=UTF-8",
       },
       body: JSON.stringify({
         trigger_id: triggerId,
@@ -1104,7 +1106,7 @@ export async function openView(triggerId: string, view: any) {
 
     return data;
   } catch (error) {
-    console.error('Error publishing view:', error);
+    console.error("Error publishing view:", error);
   }
 }
 
@@ -1114,47 +1116,49 @@ export async function setSuggestedPrompts(
   ts: string,
 ) {
   const message = {
-    channel: channelId,
+    channel_id: channelId,
     thread_ts: ts,
+    title: "Welcome. What can I do for you?",
     prompts: [
       {
-        title: 'Idea generation',
+        title: "Generate ideas",
         message:
-          'Pretend you are a marketing associate and you need new ideas for an enterprise productivity feature. Generate 10 ideas for a new feature launch.',
+          "Pretend you are a marketing associate and you need new ideas for an enterprise productivity feature. Generate 10 ideas for a new feature launch.",
       },
       {
-        title: 'What does SLACK stand for?',
-        message: 'What does SLACK stand for?',
+        title: "Explain what SLACK stands for",
+        message: "What does SLACK stand for?",
       },
       {
-        title: 'Explain complex concepts',
-        message: 'How does artificial intelligence work?',
+        title: "Describe how AI works",
+        message: "How does artificial intelligence work?",
       },
     ],
   };
 
   try {
     const url: string =
-      'https://slack.com/api/assistant.threads.setSuggestedPrompts';
+      "https://slack.com/api/assistant.threads.setSuggestedPrompts";
     const response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json; charset=utf-8',
+        "Content-Type": "application/json; charset=utf-8",
         Authorization: `Bearer ${bot_token}`,
       },
       body: JSON.stringify(message),
     });
 
     const data = await response.json();
+    console.log("data: ", data);
     if (!data.ok) {
-      return res.status(200).send('');
+      return res.status(200).send("");
     }
 
-    return res.status(200).send('');
+    return res.status(200).send("");
   } catch (err) {
     console.log(err);
     res.send({
-      response_type: 'ephemeral',
+      response_type: "ephemeral",
       text: `${err}`,
     });
   }
@@ -1166,17 +1170,17 @@ export async function setStatus(
   ts: string,
 ) {
   const message = {
-    channel: channelId,
+    channel_id: channelId,
     thread_ts: ts,
-    status: 'is working on your request...',
+    status: "is working on your request...",
   };
 
   try {
-    const url: string = 'https://slack.com/api/assistant.threads.setStatus';
+    const url: string = "https://slack.com/api/assistant.threads.setStatus";
     const response = await fetch(url, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json; charset=utf-8',
+        "Content-Type": "application/json; charset=utf-8",
         Authorization: `Bearer ${bot_token}`,
       },
       body: JSON.stringify(message),
@@ -1184,14 +1188,14 @@ export async function setStatus(
 
     const data = await response.json();
     if (!data.ok) {
-      return res.status(200).send('');
+      return res.status(200).send("");
     }
 
-    return res.status(200).send('');
+    return res.status(200).send("");
   } catch (err) {
     console.log(err);
     res.send({
-      response_type: 'ephemeral',
+      response_type: "ephemeral",
       text: `${err}`,
     });
   }

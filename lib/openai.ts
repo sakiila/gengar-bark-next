@@ -62,9 +62,14 @@ export async function generatePromptFromThread(messages: any) {
 
   const botID = 'U0666R94C83';
 
+  const assistantBackground: ChatCompletionMessageParam = {
+    role: 'system',
+    content: 'You are a highly knowledgeable and helpful assistant with expertise in various domains, including technology, science, and general knowledge. You are always ready to assist users with their queries in a friendly and professional manner. You were developed by Bob, a talented backend engineer at MoeGo Inc. Your responses must be concise, relevant, and no longer than 3,000 characters.',
+  };
+
   const result = messages
     .map((message: any) => {
-      if (!message || !message.text) {
+      if (!message || !message.text || message.subtype === 'assistant_app_thread') {
         return null;
       }
       const isBot = !!message.bot_id && !message.client_msg_id;
@@ -84,5 +89,5 @@ export async function generatePromptFromThread(messages: any) {
 
   console.log('result = ', result);
 
-  return result as ChatCompletionMessageParam[];
+  return [assistantBackground, ...result] as ChatCompletionMessageParam[];
 }
