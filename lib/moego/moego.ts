@@ -1,11 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { getThreadReply, setSuggestedPrompts, threadReply } from "@/lib/slack";
-import {
-  generatePromptForMoeGo,
-  generatePromptFromThread,
-  getGPT4,
-  getGPT4mini,
-} from "@/lib/openai";
+import { threadReply } from "@/lib/slack";
+import { generatePromptForMoeGo, getGPT4mini } from "@/lib/openai";
 import { GPTResponse } from "@/lib/moego/types";
 import { postgres } from "@/lib/supabase";
 import compositeCreateAppointment from "./composite";
@@ -63,9 +58,19 @@ export async function execute_moego(req: NextApiRequest, res: NextApiResponse) {
     message = error.message;
   }
 
+  const newArr = [
+    {
+      email: dbUser[0].email,
+      user_id: userId,
+      text: text,
+    },
+  ];
+  await postgres.from("user_input").insert(newArr).select();
+
   try {
     await threadReply(channel, ts, res, `${message}`);
   } catch (e) {
     console.log(e);
   }
+
 }
