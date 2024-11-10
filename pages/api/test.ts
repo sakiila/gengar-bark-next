@@ -123,7 +123,7 @@ async function create(
     },
     notes: [
       {
-        note: `Created with Gengar Bark AI by ${slackName}`,
+        note: `Created with Gengar AI by ${slackName}`,
         type: 1,
       },
     ],
