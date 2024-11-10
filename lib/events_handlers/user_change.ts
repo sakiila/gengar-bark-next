@@ -1,6 +1,6 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { postToProd } from '@/lib/slack';
-import { postgres } from '@/lib/supabase';
+import { NextApiRequest, NextApiResponse } from "next";
+import { postToProd } from "@/lib/slack";
+import { postgres } from "@/lib/supabase";
 
 export default async function user_change(
   req: NextApiRequest,
@@ -15,12 +15,11 @@ export default async function user_change(
     const isBot = user.is_bot;
     const deleted = user.deleted;
     const teamId = user.team_id;
-    const tz = user.tz;
 
     const { data: dbUser, error } = await postgres
-      .from('user')
-      .select('*')
-      .eq('user_id', id);
+      .from("user")
+      .select("*")
+      .eq("user_id", id);
 
     const userLeft =
       !isBot &&
@@ -31,18 +30,18 @@ export default async function user_change(
     //   !deleted &&
     //   (!dbUser || dbUser.length === 0 || dbUser[0].deleted === true);
 
-    await postgres.from('user').upsert(
+    await postgres.from("user").upsert(
       {
         user_id: id,
         deleted: deleted,
         email: email,
         real_name_normalized: realName,
         updated_at: new Date().toISOString(),
-        tz: tz ?? dbUser?.[0].tz ?? 'Asia/Chongqing',
+        tz: user.tz ?? dbUser?.[0].tz ?? "Asia/Chongqing",
         is_bot: isBot,
         team_id: teamId,
       },
-      { onConflict: 'user_id' },
+      { onConflict: "user_id" },
     );
 
     if (userLeft) {

@@ -1,39 +1,68 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import AppointmentService from "@/lib/moego/AppointmentService";
 import { BusinessAccountResponse, Customer, Service } from "@/lib/moego/types";
 import { dateUtils } from "@/lib/dateUtils";
+import AppointmentService from "./AppointmentService";
 
-export default async function personHandler(
-  req: NextApiRequest,
-  res: NextApiResponse,
-) {
-  const email = req.body.email;
-  const slackName = req.body.slackName;
-  var customerKeyword = req.body.customerKeyword;
-
-  const appointmentService = new AppointmentService("bob@moego.pet");
+export default async function compositeCreateAppointment(
+  slackName: string,
+  email: string,
+  quantity: number,
+  customerKeyword?: string,
+  date?: string,
+  time?: number,
+): Promise<string> {
+  const appointmentService = new AppointmentService(email);
 
   await appointmentService.getLoginToken();
 
   const currentCookies = appointmentService.getCurrentCookies();
   console.log("currentCookies:", currentCookies);
 
-  if (!customerKeyword) {
+  const message = "Created appointment(s) success: ";
+  const ids = [];
+  for (let i = 0; i < quantity; i++) {
+    const id = await compositeCreateOneAppointment(
+      appointmentService,
+      slackName,
+      email,
+      customerKeyword,
+      date,
+      time,
+    );
+    if (!id) {
+      throw new Error("Failed to create appointment");
+    }
+    ids.push(id);
+  }
+
+  appointmentService.logout();
+
+  return message + ids.join(", ");
+}
+
+async function compositeCreateOneAppointment(
+  appointmentService: AppointmentService,
+  slackName: string,
+  email: string,
+  customerKeyword?: string,
+  date?: string,
+  time?: number,
+): Promise<string> {
+  if (!customerKeyword || customerKeyword.length == 0) {
     customerKeyword = getRandomHighFrequencyLetter();
   }
   const customer = await fetchCustomer(appointmentService, customerKeyword);
   if (!customer) {
-    return res.status(500).json({ message: "Failed to fetch customer" });
+    throw new Error("Failed to fetch customer");
   }
 
   const pet = customer.petList[0];
   if (!pet) {
-    return res.status(500).json({ message: "Failed to fetch pet" });
+    throw new Error("Failed to fetch pet");
   }
 
   const accountInfo = await fetchAccount(appointmentService);
   if (!accountInfo) {
-    return res.status(500).json({ message: "Failed to fetch account" });
+    throw new Error("Failed to fetch account");
   }
 
   const service = await fetchService(
@@ -43,7 +72,7 @@ export default async function personHandler(
   );
 
   if (!service) {
-    return res.status(500).json({ message: "Failed to fetch service" });
+    throw new Error("Failed to fetch service");
   }
 
   const result = await create(
@@ -54,9 +83,11 @@ export default async function personHandler(
     String(accountInfo?.staff.staffId),
     service,
     slackName,
+    date,
+    time,
   );
 
-  return res.status(200).json({ message: result });
+  return result?.appointmentId;
 }
 
 async function create(
@@ -67,6 +98,8 @@ async function create(
   staffId: string,
   service: Service,
   slackName: string,
+  date?: string,
+  time?: number,
 ) {
   await appointmentService.getLoginToken();
 
@@ -89,8 +122,10 @@ async function create(
             serviceId: service.id,
             petId: petId,
             serviceName: service.name,
-            startDate: dateUtils.today(),
-            startTime: dateUtils.minutesSinceMidnight(),
+            startDate:
+              date == undefined || date.length == 0 ? dateUtils.today() : date,
+            startTime:
+              time == undefined || time == 0 ? dateUtils.minutesSinceMidnight() : time,
             feedings: [],
             medications: [],
             servicePrice: service.price,
@@ -105,7 +140,10 @@ async function create(
             quantityPerDay: 1,
             endDate: dateUtils.today(),
             serviceTime: service.duration,
-            endTime: dateUtils.minutesSinceMidnight() + service.duration,
+            endTime:
+              time == undefined || time == 0
+                ? dateUtils.minutesSinceMidnight() + service.duration
+                : time + service.duration,
             staffId: service.availableStaffs?.ids[0] ?? staffId,
             serviceItemType: 1,
             serviceType: 1,
@@ -134,13 +172,13 @@ async function create(
     const result = await appointmentService.createAppointment(param);
 
     if (result.success) {
-      console.log("创建预约成功:", result.data);
+      console.log("create success:", result.data);
       return result.data;
     } else {
-      console.error("创建预约失败:", result.error);
+      console.error("create fail:", result.error);
     }
   } catch (error) {
-    console.error("创建预约过程出错:", error);
+    console.error("create error:", error);
   }
   return undefined;
 }
@@ -153,13 +191,13 @@ async function fetchCustomer(
     const result = await appointmentService.fetchCustomers(keyword);
 
     if (result.success) {
-      console.log("创建预约成功:", result.data);
+      console.log("fetchCustomer success:", result.data);
       return result.data;
     } else {
-      console.error("创建预约失败:", result.error);
+      console.error("fetchCustomer fail:", result.error);
     }
   } catch (error) {
-    console.error("创建预约过程出错:", error);
+    console.error("fetchCustomer error:", error);
   }
   return undefined;
 }
@@ -176,13 +214,13 @@ async function fetchService(
     );
 
     if (result.success) {
-      console.log("创建预约成功:", result.data);
+      console.log("fetchService success:", result.data);
       return result.data;
     } else {
-      console.error("创建预约失败:", result.error);
+      console.error("fetchService fail:", result.error);
     }
   } catch (error) {
-    console.error("创建预约过程出错:", error);
+    console.error("fetchService error:", error);
   }
   return undefined;
 }
@@ -194,13 +232,13 @@ async function fetchAccount(
     const result = await appointmentService.fetchAccountInfo();
 
     if (result.success) {
-      console.log("创建预约成功:", result.data);
+      console.log("fetchAccount success:", result.data);
       return result.data;
     } else {
-      console.error("创建预约失败:", result.error);
+      console.error("fetchAccount fail:", result.error);
     }
   } catch (error) {
-    console.error("创建预约过程出错:", error);
+    console.error("fetchAccount error:", error);
   }
   return undefined;
 }

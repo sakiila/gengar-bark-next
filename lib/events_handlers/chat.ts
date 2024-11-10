@@ -8,6 +8,9 @@ import {
 } from "@/lib/slack";
 import { generatePromptFromThread, getGPT4 } from "@/lib/openai";
 import { existsCacheThanSet } from "@/lib/upstash";
+import { aw } from '@upstash/redis/zmscore-Dc6Llqgr';
+import { execute_moego } from '@/lib/moego/moego';
+import { GPTResponse } from '@/lib/moego/types';
 
 /**
  * Send GPT response to the channel
@@ -27,6 +30,12 @@ export async function send_gpt_response_in_channel(
   if (hasSentText) {
     console.log("Already sent same text in 2 minutes:", text);
     return res.status(200).send("Already sent same text in 2 minutes.");
+  }
+
+  const regex = /预约|appointment|appt/i;
+  if (regex.test(text)) {
+    await execute_moego(req, res);
+    return;
   }
 
   const thread = await getThreadReply(channel, ts);
@@ -55,8 +64,8 @@ export async function set_suggested_prompts(
   const channelId = req.body.event.assistant_thread.channel_id;
   const thread_ts = req.body.event.assistant_thread.thread_ts;
 
-  console.log("channelId:", channelId);
-  console.log("thread_ts:", thread_ts);
+  // console.log("channelId:", channelId);
+  // console.log("thread_ts:", thread_ts);
 
   try {
     await setSuggestedPrompts(res, channelId, thread_ts);
@@ -105,6 +114,12 @@ export async function response_container(
     await setStatus(res, channelId, threadTs);
   } catch (e) {
     console.log(e);
+  }
+
+  const regex = /预约|appointment|appt/i;
+  if (regex.test(text)) {
+    await execute_moego(req, res);
+    return;
   }
 
   const thread = await getThreadReply(channelId, threadTs);

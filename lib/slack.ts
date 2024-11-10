@@ -1026,7 +1026,7 @@ export async function threadReply(
       body: JSON.stringify(message),
     });
     const data = await response.json();
-    console.log("response data: ", data);
+    // console.log("response data: ", data);
     return res.status(200).send("");
   } catch (err) {
     console.log(err);
@@ -1118,16 +1118,16 @@ export async function setSuggestedPrompts(
   const message = {
     channel_id: channelId,
     thread_ts: ts,
-    title: "Welcome. What can I do for you?",
+    title: "Welcome buddy. What can I do for you today?",
     prompts: [
+      {
+        title: "Who are you",
+        message: "Who are you?",
+      },
       {
         title: "Generate ideas",
         message:
           "Pretend you are a marketing associate and you need new ideas for an enterprise productivity feature. Generate 10 ideas for a new feature launch.",
-      },
-      {
-        title: "Explain what SLACK stands for",
-        message: "What does SLACK stand for?",
       },
       {
         title: "Describe how AI works",
@@ -1149,7 +1149,7 @@ export async function setSuggestedPrompts(
     });
 
     const data = await response.json();
-    console.log("data: ", data);
+    // console.log("data: ", data);
     if (!data.ok) {
       return res.status(200).send("");
     }
