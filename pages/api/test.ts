@@ -68,11 +68,6 @@ async function create(
   service: Service,
   slackName: string,
 ) {
-  await appointmentService.getLoginToken();
-
-  var currentCookies = appointmentService.getCurrentCookies();
-  console.log("currentCookies:", currentCookies);
-
   const param = {
     businessId: businessId,
     appointment: {

@@ -106,10 +106,6 @@ async function create(
   date?: string,
   time?: number,
 ) {
-
-  var currentCookies = appointmentService.getCurrentCookies();
-  console.log("currentCookies:", currentCookies);
-
   const param = {
     businessId: businessId,
     appointment: {
