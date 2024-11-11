@@ -122,7 +122,7 @@ class AppointmentService {
           "user-agent":
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
           cookie:
-            "MGSID-MIS-T2=1554986.Z5FCHYvDD4e4AVFnl5ZVAUaI0f-FzPFk1qdkHBu-eWw",
+            "MGSID-MIS-T2=1555858.3ELzJLc3Sz0aPXI43Sp_RLhQi7ZSrVLJdMsk31TQNRo",
         },
         credentials: "include", // This will include cookies in the request
         body: JSON.stringify(requestBody),
