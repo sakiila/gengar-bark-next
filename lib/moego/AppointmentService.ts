@@ -1,6 +1,5 @@
 import {
   ApiResponse,
-  BusinessAccountResponse,
   CreateAppointmentRequest,
   Customer,
   LoginCredentials,
