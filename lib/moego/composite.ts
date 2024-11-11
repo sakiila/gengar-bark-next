@@ -36,9 +36,9 @@ export default async function compositeCreateAppointment(
 
   // Check if any appointments failed to create (returned null/undefined)
   if (ids.some((id) => !id)) {
+    appointmentService.logout();
     throw new Error("Failed to create one or more appointments");
   }
-
   appointmentService.logout();
 
   return message + ids.join(", ");
@@ -106,7 +106,6 @@ async function create(
   date?: string,
   time?: number,
 ) {
-  await appointmentService.getLoginToken();
 
   var currentCookies = appointmentService.getCurrentCookies();
   console.log("currentCookies:", currentCookies);
