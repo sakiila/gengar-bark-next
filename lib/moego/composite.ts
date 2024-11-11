@@ -18,20 +18,25 @@ export default async function compositeCreateAppointment(
   console.log("currentCookies:", currentCookies);
 
   const message = "Created appointment(s) success: ";
-  const ids = [];
-  for (let i = 0; i < quantity; i++) {
-    const id = await compositeCreateOneAppointment(
+
+  // Create an array of promises for all appointments
+  const appointmentPromises = Array.from({ length: quantity }, () =>
+    compositeCreateOneAppointment(
       appointmentService,
       slackName,
       email,
       customerKeyword,
       date,
       time,
-    );
-    if (!id) {
-      throw new Error("Failed to create appointment");
-    }
-    ids.push(id);
+    ),
+  );
+
+  // Wait for all promises to resolve in parallel
+  const ids = await Promise.all(appointmentPromises);
+
+  // Check if any appointments failed to create (returned null/undefined)
+  if (ids.some((id) => !id)) {
+    throw new Error("Failed to create one or more appointments");
   }
 
   appointmentService.logout();
@@ -125,7 +130,9 @@ async function create(
             startDate:
               date == undefined || date.length == 0 ? dateUtils.today() : date,
             startTime:
-              time == undefined || time == 0 ? dateUtils.minutesSinceMidnight() : time,
+              time == undefined || time == 0
+                ? dateUtils.minutesSinceMidnight()
+                : time,
             feedings: [],
             medications: [],
             servicePrice: service.price,
@@ -172,7 +179,7 @@ async function create(
     const result = await appointmentService.createAppointment(param);
 
     if (result.success) {
-      console.log("create success:", result.data);
+      // console.log("create success:", result.data);
       return result.data;
     } else {
       console.error("create fail:", result.error);
@@ -191,7 +198,7 @@ async function fetchCustomer(
     const result = await appointmentService.fetchCustomers(keyword);
 
     if (result.success) {
-      console.log("fetchCustomer success:", result.data);
+      // console.log("fetchCustomer success:", result.data);
       return result.data;
     } else {
       console.error("fetchCustomer fail:", result.error);
@@ -214,7 +221,7 @@ async function fetchService(
     );
 
     if (result.success) {
-      console.log("fetchService success:", result.data);
+      // console.log("fetchService success:", result.data);
       return result.data;
     } else {
       console.error("fetchService fail:", result.error);
@@ -232,7 +239,7 @@ async function fetchAccount(
     const result = await appointmentService.fetchAccountInfo();
 
     if (result.success) {
-      console.log("fetchAccount success:", result.data);
+      // console.log("fetchAccount success:", result.data);
       return result.data;
     } else {
       console.error("fetchAccount fail:", result.error);
