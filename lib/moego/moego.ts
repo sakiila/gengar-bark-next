@@ -36,7 +36,7 @@ export async function execute_moego(req: NextApiRequest, res: NextApiResponse) {
     email = result.email;
   }
 
-  var message;
+  let message;
   try {
     switch (result.intent) {
       case "create":
@@ -63,6 +63,7 @@ export async function execute_moego(req: NextApiRequest, res: NextApiResponse) {
       email: dbUser[0].email,
       user_id: userId,
       text: text,
+      result: message,
     },
   ];
   await postgres.from("user_input").insert(newArr).select();
@@ -72,5 +73,4 @@ export async function execute_moego(req: NextApiRequest, res: NextApiResponse) {
   } catch (e) {
     console.log(e);
   }
-
 }

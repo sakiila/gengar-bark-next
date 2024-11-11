@@ -1026,7 +1026,7 @@ export async function threadReply(
       body: JSON.stringify(message),
     });
     const data = await response.json();
-    // console.log("response data: ", data);
+    console.log("threadReply data: ", data);
     return res.status(200).send("");
   } catch (err) {
     console.log(err);
