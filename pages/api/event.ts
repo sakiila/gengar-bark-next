@@ -11,6 +11,7 @@ import {
   send_gpt_response_in_channel,
   set_suggested_prompts,
 } from "@/lib/events_handlers/chat";
+import { log } from "next-axiom";
 
 export const config = {
   maxDuration: 30,
@@ -20,7 +21,8 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  console.log("event req.body = ", JSON.stringify(req.body));
+  // console.log("event req.body = ", JSON.stringify(req.body));
+  log.info("event req.body", req.body);
 
   const type = req.body.type;
   if (type === "url_verification") {
