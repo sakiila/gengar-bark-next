@@ -3,13 +3,13 @@ import crypto from "crypto";
 import { regexOperations, truncateString } from "./helpers";
 import {
   clearDataForTeam,
-  getAccessToken,
+  getAccessToken, getCache,
   getChannel,
   getKeywords,
-  getTeamConfigAndStats,
+  getTeamConfigAndStats, setCache,
   trackBotUsage,
   trackUnfurls,
-} from "./upstash";
+} from './upstash';
 import { getParent, getPost } from "@/lib/hn";
 
 export const bot_token = process.env.SLACK_BOT_TOKEN as string;
@@ -1199,4 +1199,14 @@ export async function setStatus(
       text: `${err}`,
     });
   }
+}
+
+export async function getUserId(email: string): Promise<string> {
+  let userId = await getCache(email);
+  // console.log('userId = ', userId);
+  if (!userId) {
+    userId = await emailToUserId(email);
+    await setCache(email, userId);
+  }
+  return userId;
 }

@@ -1,16 +1,14 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import {
   getThreadReply,
-  responseUrl,
   setStatus,
   setSuggestedPrompts,
   threadReply,
 } from "@/lib/slack";
 import { generatePromptFromThread, getGPT4 } from "@/lib/openai";
 import { existsCacheThanSet } from "@/lib/upstash";
-import { aw } from '@upstash/redis/zmscore-Dc6Llqgr';
-import { execute_moego } from '@/lib/moego/moego';
-import { GPTResponse } from '@/lib/moego/types';
+import { execute_moego } from "@/lib/moego/moego";
+import { execute_build } from "@/lib/ci/build";
 
 /**
  * Send GPT response to the channel
@@ -24,12 +22,18 @@ export async function send_gpt_response_in_channel(
 ) {
   const channel = req.body.event.channel; // channel the message was sent in
   const ts = req.body.event.thread_ts ?? req.body.event.ts; // message timestamp
-  const text = req.body.event.text;
+  const text: string = req.body.event.text;
 
   const hasSentText = await existsCacheThanSet(text);
   if (hasSentText) {
     console.log("Already sent same text in 2 minutes:", text);
     return res.status(200).send("Already sent same text in 2 minutes.");
+  }
+
+  console.log("text:[", text, "]");
+  if (text.trim().startsWith("<@U0666R94C83> build")) {
+    await execute_build(req, res);
+    return;
   }
 
   const regex = /预约|appointment|appt/i;

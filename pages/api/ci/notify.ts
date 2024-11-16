@@ -1,4 +1,4 @@
-import { emailToUserId, postToUserId } from '@/lib/slack';
+import { emailToUserId, getUserId, postToUserId } from '@/lib/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getCache, setCache } from '@/lib/upstash';
 import { postgres } from '@/lib/supabase';
@@ -95,16 +95,6 @@ export default async function handler(
   }
 
   res.status(200).send('Success');
-}
-
-async function getUserId(email: string): Promise<string> {
-  let userId = await getCache(email);
-  // console.log('userId = ', userId);
-  if (!userId) {
-    userId = await emailToUserId(email);
-    await setCache(email, userId);
-  }
-  return userId;
 }
 
 function extractInfo(text: string):
