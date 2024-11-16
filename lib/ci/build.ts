@@ -298,11 +298,11 @@ async function formatResult(result: EmailResult): Promise<string> {
       .join(" ");
 
     // Include both email addresses and user mentions in the result
-    return `*<${result.buildUrl}|${result.repo}>* ${userMentions}`;
+    return `<${result.buildUrl}|${result.repo}> ${userMentions}`;
   } catch (error) {
     console.error("Error formatting result:", error);
     // Fallback to just emails if user ID lookup fails
-    return `*<${result.buildUrl}|${result.repo}>* ${result.emails.join(" ")}`;
+    return `<${result.buildUrl}|${result.repo}> ${result.emails.join(" ")}`;
   }
 }
 
@@ -326,7 +326,7 @@ async function processPipeline(repos: string[]): Promise<string> {
       .map((item, index) => `${index + 1}. ${item}`)
       .join("\n")
       .concat(
-        "\nPlease review the differences carefully and mark them with a :white_check_mark: before QA approval.",
+        "\n*Please review the differences carefully and mark this message with a :white_check_mark: before QA approval.",
       );
   } catch (error) {
     console.error("Error processing pipeline:", error);
