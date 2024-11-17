@@ -7,7 +7,7 @@ const nextConfig = {
   logging: {
     axiom: {
       // Your dataset name from .env
-      dataset: process.env.NEXT_PUBLIC_AXIOM_DATASET,
+      dataset: process.env.AXIOM_DATASET,
     },
   },
 };
