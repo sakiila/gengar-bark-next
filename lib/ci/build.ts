@@ -353,8 +353,9 @@ export async function execute_build(req: NextApiRequest, res: NextApiResponse) {
   let message = "";
   try {
     message = await processPipeline(repos);
-  } catch (e) {
-    console.log(e);
+  } catch (error) {
+    console.log(error);
+    message = "Error processing pipeline: " + error;
   }
 
   try {

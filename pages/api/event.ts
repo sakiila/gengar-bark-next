@@ -30,8 +30,6 @@ export default async function handler(
     log.info("Incoming event request", {
       type: req.body.type,
       event_type: req.body.event?.type,
-      channel_type: req.body.event?.channel_type,
-      user_id: req.body.event?.user,
       timestamp: new Date().toISOString()
     });
 
@@ -56,8 +54,6 @@ export default async function handler(
 
       log.info("Processing event callback", {
         event_type,
-        team_id: req.body.team_id,
-        api_app_id: req.body.api_app_id
       });
 
       try {
