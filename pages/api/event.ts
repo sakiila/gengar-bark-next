@@ -29,14 +29,6 @@ export default async function handler(
 ) {
   const log = createRequestLogger(req);
 
-  // Set a timeout for log flushing
-  const logFlushTimeout = setTimeout(() => {
-    log.flush().catch((err) => {
-      // Use console.error as fallback if logging fails
-      console.error('Failed to flush logs:', err);
-    });
-  }, 2000);
-
   try {
     const eventData = {
       type: req.body.type,

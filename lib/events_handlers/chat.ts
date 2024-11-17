@@ -9,6 +9,7 @@ import { generatePromptFromThread, getGPT4 } from "@/lib/openai";
 import { existsCacheThanSet } from "@/lib/upstash";
 import { execute_moego } from "@/lib/moego/moego";
 import { execute_build } from "@/lib/ci/build";
+import { logger } from '@/lib/logger';
 
 /**
  * Send GPT response to the channel
@@ -26,11 +27,10 @@ export async function send_gpt_response_in_channel(
 
   const hasSentText = await existsCacheThanSet(text);
   if (hasSentText) {
-    console.log("Already sent same text in 2 minutes:", text);
+    logger.info("Already sent same text in 2 minutes:", { text });
     return res.status(200).send("Already sent same text in 2 minutes.");
   }
 
-  console.log("text:[", text, "]");
   if (text.trim().startsWith("<@U0666R94C83> build")) {
     await execute_build(req, res);
     return;
@@ -47,8 +47,6 @@ export async function send_gpt_response_in_channel(
   const prompts = await generatePromptFromThread(thread);
   const gptResponse = await getGPT4(prompts);
 
-  console.log("gptResponse:", gptResponse);
-
   try {
     await threadReply(
       channel,
@@ -56,8 +54,8 @@ export async function send_gpt_response_in_channel(
       res,
       `${gptResponse.choices[0].message.content}`,
     );
-  } catch (e) {
-    console.log(e);
+  } catch (error) {
+    logger.error("send_gpt_response_in_channel", error instanceof Error ? error : new Error('Unknown error'));
   }
 }
 
@@ -78,8 +76,8 @@ export async function set_suggested_prompts(
     //   text: `${gptResponse.choices[0].message.content}`,
     // });
     return res.status(200).send("");
-  } catch (e) {
-    console.log(e);
+  } catch (error) {
+    logger.error("send_gpt_response_in_channel", error instanceof Error ? error : new Error('Unknown error'));
   }
 }
 
@@ -87,8 +85,8 @@ export async function set_status(req: NextApiRequest, res: NextApiResponse) {
   const channelId = req.body.event.assistant_thread.channel_id;
   const thread_ts = req.body.event.assistant_thread.thread_ts;
 
-  console.log("channelId:", channelId);
-  console.log("thread_ts:", thread_ts);
+  // console.log("channelId:", channelId);
+  // console.log("thread_ts:", thread_ts);
 
   try {
     await setStatus(res, channelId, thread_ts);
@@ -97,8 +95,8 @@ export async function set_status(req: NextApiRequest, res: NextApiResponse) {
     //   text: `${gptResponse.choices[0].message.content}`,
     // });
     return res.status(200).send("");
-  } catch (e) {
-    console.log(e);
+  } catch (error) {
+    logger.error("send_gpt_response_in_channel", error instanceof Error ? error : new Error('Unknown error'));
   }
 }
 
@@ -116,8 +114,8 @@ export async function response_container(
 
   try {
     await setStatus(res, channelId, threadTs);
-  } catch (e) {
-    console.log(e);
+  } catch (error) {
+    logger.error("send_gpt_response_in_channel", error instanceof Error ? error : new Error('Unknown error'));
   }
 
   const regex = /预约|appointment|appt/i;
@@ -140,7 +138,7 @@ export async function response_container(
       res,
       `${gptResponse.choices[0].message.content}`,
     );
-  } catch (e) {
-    console.log(e);
+  } catch (error) {
+    logger.error("send_gpt_response_in_channel", error instanceof Error ? error : new Error('Unknown error'));
   }
 }

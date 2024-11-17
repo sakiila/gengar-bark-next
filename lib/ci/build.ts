@@ -1,6 +1,7 @@
 import { setTimeout } from "timers/promises";
 import { getUserId, threadReply } from "@/lib/slack";
 import { NextApiRequest, NextApiResponse } from "next";
+import { AxiomLogger, logger } from '@/lib/logger';
 
 // Types for Pipeline Node response
 interface PipelineNode {
@@ -126,6 +127,19 @@ const baseUrl = "https://ci.devops.moego.pet";
 const token =
   '"jenkins-timestamper-offset=-28800000; jenkins-timestamper=system; jenkins-timestamper-local=true; MGDID=2faf4ece-a16d-11ef-82e4-baef83d8f731; MGSID-MIS=63168842.5c_wKWHmZscydLYDDKDJAYxszWdTIRYQ0AIti-VEmIU; intercom-device-id-oh5g31xm=8c239a5b-e88d-41db-af9e-134cff9a02c0; MGSID-B=63546919.WvMo-tueOCpKDoOc5zvtMstWWrzabWuptMKY9MxSiXU; intercom-session-oh5g31xm=cC9GdFZjWmhHNnQxVkk4V3dtNUl3azRBRWJya21SdWczYjZtUjV0VDR0eG40MDY2cG1xT3pMM2JPZXRUdVJwUi0tbWJWQjNuREhkbjdCQjdqNkVRcXEzQT09--f154454437b50984649700fd8b24f11e0eed6e8e; JSESSIONID.1dda8126=node01i49wtam5e05c1qlgqdrpgyxdg553384.node0; screenResolution=2560x1440"';
 
+const createRequestLogger = (req: NextApiRequest) => {
+  return logger.scope('event-handler', {
+    url: req.url,
+    method: req.method,
+    userAgent: req.headers['user-agent'],
+    ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+    channel: req.body.event.channel,
+    ts: req.body.event.thread_ts ?? req.body.event.ts,
+    userId: req.body.event.user,
+    text: req.body.event.text,
+  });
+};
+
 /**
  * Triggers a Jenkins pipeline and returns the build ID
  * @returns Promise containing the build ID
@@ -158,7 +172,7 @@ async function triggerJenkinsPipeline(repo: string): Promise<string> {
     const data: JenkinsPipelineResponse = await response.json();
     return data.id;
   } catch (error) {
-    console.error("Error triggering Jenkins pipeline:", error);
+    logger.error("triggerJenkinsPipeline", error instanceof Error ? error : new Error('Unknown error'));
     throw error;
   }
 }
@@ -300,7 +314,7 @@ async function formatResult(result: EmailResult): Promise<string> {
     // Include both email addresses and user mentions in the result
     return `<${result.buildUrl}|${result.repo}> ${userMentions}`;
   } catch (error) {
-    console.error("Error formatting result:", error);
+    logger.error("formatResult", error instanceof Error ? error : new Error('Unknown error'));
     // Fallback to just emails if user ID lookup fails
     return `<${result.buildUrl}|${result.repo}> ${result.emails.join(" ")}`;
   }
@@ -309,16 +323,16 @@ async function formatResult(result: EmailResult): Promise<string> {
 async function processEachPipeline(repo: string): Promise<string> {
   try {
     const runId = await triggerJenkinsPipeline(repo);
-    console.log(`Triggered pipeline for ${repo} with run ID ${runId}`);
+    logger.info(`Triggered pipeline for ${repo} with run ID ${runId}`);
     const result = await getJenkinsPipelineData(repo, runId);
     return formatResult(result);
   } catch (error) {
-    console.error("Error processing pipeline:", error);
+    logger.error("processEachPipeline", error instanceof Error ? error : new Error('Unknown error'));
     throw error;
   }
 }
 
-async function processPipeline(repos: string[]): Promise<string> {
+async function processPipeline(repos: string[] ): Promise<string> {
   try {
     const results = await Promise.all(repos.map(processEachPipeline));
 
@@ -329,7 +343,7 @@ async function processPipeline(repos: string[]): Promise<string> {
         "\n*Please review the differences carefully and mark this message with a :white_check_mark: before QA approval.",
       );
   } catch (error) {
-    console.error("Error processing pipeline:", error);
+    logger.error("processPipeline", error instanceof Error ? error : new Error('Unknown error'));
     throw error;
   }
 }
@@ -339,6 +353,9 @@ export async function execute_build(req: NextApiRequest, res: NextApiResponse) {
   const ts = req.body.event.thread_ts ?? req.body.event.ts; // message timestamp
   const text = req.body.event.text.trim();
   const [at, action, ...repos] = text.split(" ");
+
+  const log = createRequestLogger(req);
+  log.info("execute_build", { action, repos });
 
   if (repos.length === 0) {
     await threadReply(
@@ -354,13 +371,13 @@ export async function execute_build(req: NextApiRequest, res: NextApiResponse) {
   try {
     message = await processPipeline(repos);
   } catch (error) {
-    console.log(error);
+    log.error("execute_build", error instanceof Error ? error : new Error('Unknown error'));
     message = "Error processing pipeline: " + error;
   }
 
   try {
     await threadReply(channel, ts, res, `${message}`);
   } catch (e) {
-    console.log(e);
+    log.error("execute_build", e instanceof Error ? e : new Error('Unknown error'));
   }
 }
