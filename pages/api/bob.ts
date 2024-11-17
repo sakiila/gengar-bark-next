@@ -2,10 +2,6 @@ import { verifyRequest } from '@/lib/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { existsCacheThanSet, publishAi } from '@/lib/upstash';
 
-export const config = {
-  maxDuration: 30,
-};
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,

@@ -2,10 +2,6 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { autoMessageReminderTask } from '@/lib/auto_message_reminder_task';
 import { user_update } from '@/lib/user_update';
 
-export const config = {
-  maxDuration: 30,
-};
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,

@@ -8,10 +8,6 @@ import {
   getViewByUserIds,
 } from '@/lib/events_handlers/hr_app_home_opend';
 
-export const config = {
-  maxDuration: 30,
-};
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
