@@ -11,42 +11,52 @@ import {
   send_gpt_response_in_channel,
   set_suggested_prompts,
 } from "@/lib/events_handlers/chat";
-import { Logger } from 'next-axiom';
+import { logger } from "@/lib/logger";
 
-export const config = {
-  maxDuration: 30,
+// Create a request-scoped logger with context
+const createRequestLogger = (req: NextApiRequest) => {
+  return logger.scope('event-handler', {
+    url: req.url,
+    method: req.method,
+    userAgent: req.headers['user-agent'],
+    ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress,
+  });
 };
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  const log = new Logger({
-    source: 'event-handler' // Optional: helps identify the source of logs
-  });
+  const log = createRequestLogger(req);
+
+  // Set a timeout for log flushing
+  const logFlushTimeout = setTimeout(() => {
+    log.flush().catch((err) => {
+      // Use console.error as fallback if logging fails
+      console.error('Failed to flush logs:', err);
+    });
+  }, 2000);
 
   try {
-    // Log incoming request with structured data
-    log.info("Incoming event request", {
+    const eventData = {
       type: req.body.type,
       event_type: req.body.event?.type,
-      timestamp: new Date().toISOString()
-    });
+      timestamp: new Date().toISOString(),
+      request_id: req.headers['x-request-id'] || undefined,
+    };
+
+    log.info("Incoming event request", eventData);
 
     const type = req.body.type;
 
     if (type === "url_verification") {
-      log.debug("Processing URL verification");
-      await log.flush();
-      return res.status(200).json(req.body.challenge);
+      log.debug("Processing URL verification", { challenge: req.body.challenge });
+      return res.status(200).json({ challenge: req.body.challenge });
     }
 
     if (!verifyRequest(req)) {
-      log.warn("Invalid request signature", {
-        ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress
-      });
-      await log.flush();
-      return res.status(403).send("Forbidden");
+      log.warn("Invalid request signature");
+      return res.status(403).json({ error: "Forbidden" });
     }
 
     if (type === "event_callback") {
@@ -54,6 +64,8 @@ export default async function handler(
 
       log.info("Processing event callback", {
         event_type,
+        team_id: req.body.team_id,
+        api_app_id: req.body.api_app_id,
       });
 
       try {
@@ -89,44 +101,27 @@ export default async function handler(
             }
             break;
           default:
-            log.warn("Unhandled event type", { event_type });
+            log.warn("Unhandled event type", {
+              event_type,
+              body: JSON.stringify(req.body)
+            });
             break;
         }
       } catch (error) {
-        log.error("Error processing event", {
-          event_type,
-          error: error instanceof Error ? error.message : 'Unknown error',
-          stack: error instanceof Error ? error.stack : undefined
-        });
-
-        // Ensure logs are flushed before sending error response
-        await log.flush();
-
-        // Only send 500 if response hasn't been sent yet
+        log.error("Error processing event", error instanceof Error ? error : new Error('Unknown error'));
         if (!res.headersSent) {
-          res.status(500).json({ error: "Internal server error" });
+          return res.status(500).json({ error: "Internal server error" });
         }
       }
     }
 
-    // Ensure logs are flushed before sending success response
-    await log.flush();
-
-    // If we haven't sent a response yet, send a 200
     if (!res.headersSent) {
-      res.status(200).end();
+      return res.status(200).end();
     }
   } catch (error) {
-    log.error("Fatal error in event handler", {
-      error: error instanceof Error ? error.message : 'Unknown error',
-      stack: error instanceof Error ? error.stack : undefined
-    });
-
-    // Ensure logs are flushed before sending error response
-    await log.flush();
-
+    log.error("Fatal error in event handler", error instanceof Error ? error : new Error('Unknown error'));
     if (!res.headersSent) {
-      res.status(500).json({ error: "Internal server error" });
+      return res.status(500).json({ error: "Internal server error" });
     }
   }
 }
