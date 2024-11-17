@@ -11,12 +11,20 @@ import {
   send_gpt_response_in_channel,
   set_suggested_prompts,
 } from "@/lib/events_handlers/chat";
-import { log } from "next-axiom";
+import { Logger } from 'next-axiom';
+
+export const config = {
+  maxDuration: 30,
+};
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
+  const log = new Logger({
+    source: 'event-handler' // Optional: helps identify the source of logs
+  });
+
   try {
     // Log incoming request with structured data
     log.info("Incoming event request", {
@@ -24,20 +32,22 @@ export default async function handler(
       event_type: req.body.event?.type,
       channel_type: req.body.event?.channel_type,
       user_id: req.body.event?.user,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date().toISOString()
     });
 
     const type = req.body.type;
 
     if (type === "url_verification") {
       log.debug("Processing URL verification");
+      await log.flush();
       return res.status(200).json(req.body.challenge);
     }
 
     if (!verifyRequest(req)) {
       log.warn("Invalid request signature", {
-        ip: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+        ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress
       });
+      await log.flush();
       return res.status(403).send("Forbidden");
     }
 
@@ -47,7 +57,7 @@ export default async function handler(
       log.info("Processing event callback", {
         event_type,
         team_id: req.body.team_id,
-        api_app_id: req.body.api_app_id,
+        api_app_id: req.body.api_app_id
       });
 
       try {
@@ -89,9 +99,12 @@ export default async function handler(
       } catch (error) {
         log.error("Error processing event", {
           event_type,
-          error: error instanceof Error ? error.message : "Unknown error",
-          stack: error instanceof Error ? error.stack : undefined,
+          error: error instanceof Error ? error.message : 'Unknown error',
+          stack: error instanceof Error ? error.stack : undefined
         });
+
+        // Ensure logs are flushed before sending error response
+        await log.flush();
 
         // Only send 500 if response hasn't been sent yet
         if (!res.headersSent) {
@@ -100,15 +113,21 @@ export default async function handler(
       }
     }
 
+    // Ensure logs are flushed before sending success response
+    await log.flush();
+
     // If we haven't sent a response yet, send a 200
     if (!res.headersSent) {
       res.status(200).end();
     }
   } catch (error) {
     log.error("Fatal error in event handler", {
-      error: error instanceof Error ? error.message : "Unknown error",
-      stack: error instanceof Error ? error.stack : undefined,
+      error: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined
     });
+
+    // Ensure logs are flushed before sending error response
+    await log.flush();
 
     if (!res.headersSent) {
       res.status(500).json({ error: "Internal server error" });
