@@ -1,6 +1,6 @@
 .container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #1a1f3c 0%, #2d1b3d 100%);
+  background: linear-gradient(135deg, #524262 0%, #3d3149 100%);
   color: #ffffff;
   font-family: 'Space Grotesk', sans-serif;
 }
@@ -16,7 +16,7 @@
   padding: 1.5rem 2rem;
   position: fixed;
   width: 100%;
-  background: rgba(26, 31, 60, 0.9);
+  background: rgba(82, 66, 98, 0.9);
   backdrop-filter: blur(8px);
   z-index: 100;
   box-sizing: border-box;
@@ -48,7 +48,7 @@
   font-family: 'Space Grotesk', sans-serif;
   font-size: 3.5rem;
   margin-bottom: 1.5rem;
-  background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+  background: linear-gradient(90deg, #e06357, #b4755e);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   font-weight: 700;
@@ -83,11 +83,11 @@
 }
 
 .featureCard {
-  background: rgba(0, 210, 255, 0.05);
+  background: rgba(180, 117, 94, 0.05);
   border-radius: 1rem;
   padding: 2rem;
   backdrop-filter: blur(8px);
-  border: 1px solid rgba(58, 123, 213, 0.2);
+  border: 1px solid rgba(224, 99, 87, 0.2);
   transition: all 0.3s ease;
   position: relative;
 }
@@ -100,7 +100,7 @@
   right: -1px;
   bottom: -1px;
   border-radius: 1rem;
-  background: linear-gradient(135deg, #00d2ff, #3a7bd5, #7b52ab);
+  background: linear-gradient(135deg, #e06357, #b4755e, #524262);
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: -1;
@@ -115,7 +115,7 @@
   font-weight: 500;
   font-size: 1.5rem;
   margin: 1rem 0;
-  color: #00d2ff;
+  color: #e06357;
 }
 
 .iconWrapper {
@@ -131,21 +131,21 @@
 .demoContainer {
   max-width: 800px;
   margin: 3rem auto;
-  background: rgba(26, 31, 60, 0.15);
+  background: rgba(82, 66, 98, 0.15);
   border-radius: 1rem;
   padding: 2rem;
   min-height: 400px;
-  border: 1px solid rgba(0, 210, 255, 0.2);
-  box-shadow: 0 8px 32px rgba(0, 210, 255, 0.05);
+  border: 1px solid rgba(224, 99, 87, 0.2);
+  box-shadow: 0 8px 32px rgba(82, 66, 98, 0.1);
 }
 
 .cta {
   padding: 5rem 2rem;
   text-align: center;
   background: linear-gradient(135deg, 
-    rgba(0, 210, 255, 0.1),
-    rgba(58, 123, 213, 0.1),
-    rgba(123, 82, 171, 0.1)
+    rgba(224, 99, 87, 0.1),
+    rgba(180, 117, 94, 0.1),
+    rgba(82, 66, 98, 0.1)
   );
 }
 
@@ -154,7 +154,7 @@
 }
 
 .primaryButton {
-  background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+  background: linear-gradient(90deg, #e06357, #b4755e);
   border: none;
   padding: 1rem 2rem;
   border-radius: 2rem;
@@ -168,12 +168,12 @@
 
 .primaryButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(0, 210, 255, 0.4);
+  box-shadow: 0 4px 20px rgba(224, 99, 87, 0.4);
 }
 
 .ctaButton {
-  background: rgba(0, 210, 255, 0.15);
-  border: 1px solid rgba(0, 210, 255, 0.3);
+  background: rgba(224, 99, 87, 0.15);
+  border: 1px solid rgba(224, 99, 87, 0.3);
   padding: 0.75rem 1.5rem;
   border-radius: 2rem;
   color: #ffffff;
@@ -185,7 +185,7 @@
 }
 
 .ctaButton:hover {
-  background: rgba(0, 210, 255, 0.25);
+  background: rgba(224, 99, 87, 0.25);
 }
 
 .footer {
