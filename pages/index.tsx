@@ -1,7 +1,6 @@
 import React from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import styles from '../styles/Home.module.css';
-import Head from 'next/head';
 import { useEffect, useRef, useState } from 'react';
 
 const FeatureCard: React.FC<{ title: string; description: string; icon: string }> = ({
@@ -72,18 +71,6 @@ const HomePage: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <Head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
-          rel="stylesheet"
-        />
-      </Head>
       <nav className={styles.nav}>
         <div className={styles.logo}>Gengar Bark</div>
         <a
@@ -110,7 +97,7 @@ const HomePage: React.FC = () => {
             </h1>
             <p>
               Enhance productivity and collaboration with our intelligent Slack
-              assistant that understands your team's context and needs.
+              assistant that understands your team&apos;s context and needs.
             </p>
             <a
               href="https://app.slack.com/client/T011CF3CMJN/D0668HZ40BG"
