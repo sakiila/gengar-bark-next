@@ -9,6 +9,9 @@ RUN npm install
 # 复制源代码
 COPY . .
 
+# 创建 public/images 目录并确保适当的权限
+RUN mkdir -p public/images
+
 # 构建应用
 RUN npm run build
 
@@ -20,9 +23,20 @@ ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 
 # 复制必要文件
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/.env ./.env
+COPY --from=builder /app/next.config.js ./
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+
+# 创建 public/images 目录（如果不存在）
+RUN mkdir -p public/images
+
+# 设置适当的权限
+RUN chown -R node:node /app
+
+# 切换到非 root 用户
+USER node
 
 # 暴露端口
 EXPOSE 3000
@@ -30,4 +44,4 @@ ENV PORT 3000
 ENV HOSTNAME "0.0.0.0"
 
 # 启动命令
-CMD ["node", "server.js"]
+CMD ["npm", "start"]

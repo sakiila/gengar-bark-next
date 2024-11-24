@@ -302,27 +302,35 @@
   }
 }
 
-/* Add new styles for the divider */
+/* Update divider styles for better visibility */
 .divider {
   position: relative;
-  height: 120px;
+  height: 160px;
   width: 100%;
-  overflow: hidden;
-  margin-top: -60px; /* Pull it up into the hero section a bit */
+  overflow: visible;
+  margin: 4rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, 
+    rgba(224, 99, 87, 0) 0%,
+    rgba(224, 99, 87, 0.05) 50%,
+    rgba(224, 99, 87, 0) 100%
+  );
 }
 
 .dividerLine {
   position: absolute;
   width: 100%;
-  height: 2px;
+  height: 4px;
   background: linear-gradient(90deg, 
     transparent 0%,
-    #e06357 20%,
-    #b4755e 50%,
-    #e06357 80%,
+    #e06357 30%,
+    #e06357 70%,
     transparent 100%
   );
-  opacity: 0.3;
+  opacity: 0.8;
+  box-shadow: 0 0 20px rgba(224, 99, 87, 0.3);
 }
 
 .dividerDot {
@@ -330,11 +338,14 @@
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 12px;
-  height: 12px;
+  width: 20px;
+  height: 20px;
   background: #e06357;
   border-radius: 50%;
-  box-shadow: 0 0 20px #e06357;
+  box-shadow: 
+    0 0 20px #e06357,
+    0 0 40px rgba(224, 99, 87, 0.5);
+  z-index: 2;
 }
 
 .dividerRing {
@@ -342,25 +353,26 @@
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 40px;
-  height: 40px;
-  border: 2px solid #e06357;
+  width: 60px;
+  height: 60px;
+  border: 4px solid #e06357;
   border-radius: 50%;
-  opacity: 0.5;
-  animation: pulse 2s infinite;
+  opacity: 0.8;
+  animation: pulse 3s infinite;
+  z-index: 1;
 }
 
 @keyframes pulse {
   0% {
     transform: translate(-50%, -50%) scale(1);
-    opacity: 0.5;
+    opacity: 0.8;
   }
   50% {
-    transform: translate(-50%, -50%) scale(1.5);
+    transform: translate(-50%, -50%) scale(2);
     opacity: 0;
   }
   100% {
     transform: translate(-50%, -50%) scale(1);
-    opacity: 0.5;
+    opacity: 0.8;
   }
 } 
