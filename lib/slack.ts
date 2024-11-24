@@ -859,7 +859,7 @@ export async function deleteMessage(res: NextApiResponse, url: string) {
 
   try {
     const url: string = "https://slack.com/api/chat.delete";
-    await fetch(url, {
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json; charset=utf-8",
@@ -867,6 +867,7 @@ export async function deleteMessage(res: NextApiResponse, url: string) {
       },
       body: JSON.stringify(message),
     });
+    console.log("response: ", response.body);
 
     res.status(200).send("");
   } catch (err) {

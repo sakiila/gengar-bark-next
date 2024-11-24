@@ -34,12 +34,22 @@ class MyDocument extends Document {
           <meta property="og:image:height" content="630" />
           <meta property="og:site_name" content="Gengar Bark" />
 
-          {/* Twitter */}
+          {/* Enhanced Twitter Card Meta Tags */}
           <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:site" content="@GengarbarkAI" />
+          <meta name="twitter:creator" content="@GengarbarkAI" />
           <meta name="twitter:url" content="https://pearl.baobo.me/" />
           <meta name="twitter:title" content="Gengar Bark | Smart Team Communication" />
           <meta name="twitter:description" content="Transform your Slack workspace with AI-powered chat assistance, automatic meeting summaries, and intelligent scheduling." />
           <meta name="twitter:image" content="https://pearl.baobo.me/images/preview2.png" />
+          <meta name="twitter:label1" content="Available On" />
+          <meta name="twitter:data1" content="Slack" />
+          <meta name="twitter:label2" content="Type" />
+          <meta name="twitter:data2" content="AI Assistant" />
+          <meta name="twitter:label3" content="Features" />
+          <meta name="twitter:data3" content="Chat, Summaries, Scheduling" />
+          <meta name="twitter:label4" content="Integration" />
+          <meta name="twitter:data4" content="One-Click Install" />
 
           {/* Additional Meta Data */}
           <meta name="application-name" content="Gengar Bark" />

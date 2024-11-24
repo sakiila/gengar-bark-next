@@ -5,7 +5,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  console.log('watch command = ', req.body);
+  console.log('message command = ', req.body);
 
   const verification = verifyRequest(req);
   if (!verification.status) {
