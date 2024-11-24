@@ -58,7 +58,7 @@ const TypingText: React.FC = () => {
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  
+
   const phrases = [
     "Transform Your Team Communication with AI",
     "Enhance Your Workspace Productivity",
@@ -189,12 +189,12 @@ const HomePage: React.FC = () => {
             <FeatureCard
               title="Conversation Summarizer"
               description="Never miss important details with automatic meeting notes and discussion highlights generated in real-time. Our advanced AI processes conversations to extract key points, action items, and decisions."
-              imageUrl="/images/ai-chat.png"
+              imageUrl="/images/summarizer.png"
             />
             <FeatureCard
               title="Interactive Scheduling"
               description="Schedule meetings effortlessly through natural dialogue with our AI assistant that handles all the coordination. Simply chat about your availability and let the AI manage the complexities of calendar management."
-              imageUrl="/images/ai-chat.png"
+              imageUrl="/images/scheduling.png"
             />
           </div>
         </section>

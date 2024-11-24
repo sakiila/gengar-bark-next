@@ -22,12 +22,10 @@ WORKDIR /app
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 
-# 复制必要文件
-COPY --from=builder /app/next.config.js ./
+# 复制 standalone 输出和必要文件
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/.env ./.env
 
 # 创建 public/images 目录（如果不存在）
@@ -44,5 +42,5 @@ EXPOSE 3000
 ENV PORT 3000
 ENV HOSTNAME "0.0.0.0"
 
-# 启动命令
-CMD ["npm", "start"]
+# 更新启动命令以使用 standalone server
+CMD ["node", "server.js"]
