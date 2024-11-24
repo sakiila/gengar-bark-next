@@ -25,6 +25,12 @@ export async function send_gpt_response_in_channel(
   const ts = req.body.event.thread_ts ?? req.body.event.ts; // message timestamp
   const text: string = req.body.event.text;
 
+  const notResponse = text.includes("pearl.baobo.me");
+  if (notResponse) {
+    logger.info("Not response to pearl.baobo.me:");
+    return res.status(200).send("");
+  }
+
   const hasSentText = await existsCacheThanSet(text);
   if (hasSentText) {
     logger.info("Already sent same text in 2 minutes:", { text });
