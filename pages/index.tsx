@@ -60,11 +60,11 @@ const TypingText: React.FC = () => {
   const [isPaused, setIsPaused] = useState(false);
 
   const phrases = [
-    "Transform Your Team Communication with AI",
+    "Transform Your Team Communication",
     "Enhance Your Workspace Productivity",
     "Streamline Team Collaboration Instantly",
     "Automate Your Daily Communications",
-    "Power Up Your Team with Smart AI"
+    "Power Up Your Team's Workflow",
   ];
 
   useEffect(() => {
