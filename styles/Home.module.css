@@ -266,7 +266,15 @@
   }
 }
 
-/* Update the typing text styles */
+/* Update the typing text animation styles */
+.typingContainer {
+  height: 7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
 .typingText {
   background: linear-gradient(90deg, #e06357, #b4755e);
   -webkit-background-clip: text;
@@ -275,6 +283,8 @@
   text-fill-color: transparent;
   position: relative;
   display: inline;
+  font-size: 3.5rem;
+  line-height: 1.2;
 }
 
 .typingText::after {
@@ -288,7 +298,6 @@
   animation: blink 1s step-end infinite;
   font-weight: 700;
   font-size: 3.5rem;
-  vertical-align: baseline;
 }
 
 @keyframes blink {
@@ -297,6 +306,14 @@
 }
 
 @media (max-width: 768px) {
+  .typingContainer {
+    height: 5rem;
+  }
+  
+  .typingText {
+    font-size: 2.5rem;
+  }
+  
   .typingText::after {
     font-size: 2.5rem;
   }

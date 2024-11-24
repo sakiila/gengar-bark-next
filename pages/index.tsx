@@ -53,30 +53,79 @@ const FloatingParticles: React.FC = () => {
   );
 };
 
-const TypingText: React.FC<{ text: string }> = ({ text }) => {
+const TypingText: React.FC = () => {
   const [displayText, setDisplayText] = useState('');
-  const [isTypingComplete, setIsTypingComplete] = useState(false);
+  const [phraseIndex, setPhraseIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  
+  const phrases = [
+    "Transform Your Team Communication with AI",
+    "Enhance Your Workspace Productivity",
+    "Streamline Team Collaboration Instantly",
+    "Automate Your Daily Communications",
+    "Power Up Your Team with Smart AI"
+  ];
 
   useEffect(() => {
-    let index = 0;
-    const timer = setInterval(() => {
-      if (index < text.length) {
-        setDisplayText(text.slice(0, index + 1));
-        index++;
-      } else {
-        clearInterval(timer);
-        setIsTypingComplete(true);
-      }
-    }, 100);
-    return () => clearInterval(timer);
-  }, [text]);
+    const currentPhrase = phrases[phraseIndex];
+    let timer: NodeJS.Timeout;
+
+    if (isPaused) {
+      // Wait for 2 seconds when phrase is complete
+      timer = setTimeout(() => {
+        setIsPaused(false);
+        setIsDeleting(true);
+      }, 2000);
+    } else {
+      const speed = isDeleting ? 50 : 100;
+      timer = setTimeout(() => {
+        setDisplayText(prev => {
+          if (!isDeleting) {
+            // Typing
+            if (prev.length < currentPhrase.length) {
+              return currentPhrase.slice(0, prev.length + 1);
+            }
+            // Complete phrase reached, start pause
+            setIsPaused(true);
+            return prev;
+          } else {
+            // Deleting
+            if (prev.length > 0) {
+              return prev.slice(0, -1);
+            }
+            // Move to next phrase
+            setIsDeleting(false);
+            setPhraseIndex((prev) => (prev + 1) % phrases.length);
+            return '';
+          }
+        });
+      }, speed);
+    }
+
+    return () => clearTimeout(timer);
+  }, [displayText, isDeleting, phraseIndex, isPaused]);
 
   return (
-    <span className={`${styles.typingText} ${isTypingComplete ? styles.typingComplete : ''}`}>
+    <span className={styles.typingText}>
       {displayText}
     </span>
   );
 };
+
+const Divider: React.FC = () => (
+  <div className={styles.divider}>
+    <motion.div
+      className={styles.dividerLine}
+      initial={{ width: "0%" }}
+      whileInView={{ width: "100%" }}
+      viewport={{ once: true }}
+      transition={{ duration: 1.5, ease: "easeOut" }}
+    />
+    <div className={styles.dividerDot} />
+    <div className={styles.dividerRing} />
+  </div>
+);
 
 const HomePage: React.FC = () => {
   const { scrollYProgress } = useScroll();
@@ -107,9 +156,11 @@ const HomePage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1>
-              <TypingText text="Transform Your Team Communication with AI" />
-            </h1>
+            <div className={styles.typingContainer}>
+              <h1>
+                <TypingText />
+              </h1>
+            </div>
             <p>
               Enhance productivity and collaboration with our intelligent Slack
               assistant that understands your team&apos;s context and needs.
@@ -125,6 +176,8 @@ const HomePage: React.FC = () => {
           </motion.div>
         </section>
 
+        <Divider />
+
         <section className={styles.features}>
           <h2>Core Features</h2>
           <div className={styles.featureGrid}>
@@ -136,12 +189,12 @@ const HomePage: React.FC = () => {
             <FeatureCard
               title="Conversation Summarizer"
               description="Never miss important details with automatic meeting notes and discussion highlights generated in real-time. Our advanced AI processes conversations to extract key points, action items, and decisions."
-              imageUrl="/images/summarizer.png"
+              imageUrl="/images/ai-chat.png"
             />
             <FeatureCard
-              title="Interactive Scheduling (Beta)"
+              title="Interactive Scheduling"
               description="Schedule meetings effortlessly through natural dialogue with our AI assistant that handles all the coordination. Simply chat about your availability and let the AI manage the complexities of calendar management."
-              imageUrl="/images/scheduling.png"
+              imageUrl="/images/ai-chat.png"
             />
           </div>
         </section>
