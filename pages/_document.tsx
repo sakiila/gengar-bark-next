@@ -3,18 +3,24 @@ import Document, { Html, Head, Main, NextScript } from 'next/document'
 class MyDocument extends Document {
   render() {
     return (
-      <Html>
+      <Html lang="en">
         <Head>
+          {/* Character Set */}
+          <meta charSet="utf-8" />
+          <title>Gengar Bark | AI-Powered Slack Assistant for Smart Team Communication</title>
+          
+          {/* SEO Meta Tags */}
+          <meta name="robots" content="index, follow" />
+          <meta name="keywords" content="AI, Slack, Team Communication, Productivity, Meeting Summary, Scheduling Assistant" />
+          <meta name="author" content="Gengar Bark" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          
+          {/* Fonts */}
           <link rel="preconnect" href="https://fonts.googleapis.com" />
-          <link
-            rel="preconnect"
-            href="https://fonts.gstatic.com"
-            crossOrigin="anonymous"
-          />
-          <link
-            href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
-            rel="stylesheet"
-          />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+          <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+          
+          {/* Favicons */}
           <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
           <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
           <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
@@ -46,16 +52,15 @@ class MyDocument extends Document {
           <meta name="twitter:data1" content="Slack" />
           <meta name="twitter:label2" content="Type" />
           <meta name="twitter:data2" content="AI Assistant" />
-          <meta name="twitter:label3" content="Features" />
-          <meta name="twitter:data3" content="Chat, Summaries, Scheduling" />
-          <meta name="twitter:label4" content="Integration" />
-          <meta name="twitter:data4" content="One-Click Install" />
-
+          
           {/* Additional Meta Data */}
           <meta name="application-name" content="Gengar Bark" />
           <meta name="apple-mobile-web-app-title" content="Gengar Bark" />
           <meta name="format-detection" content="telephone=no" />
           <meta name="theme-color" content="#524262" />
+          <meta name="mobile-web-app-capable" content="yes" />
+          <meta name="apple-mobile-web-app-capable" content="yes" />
+          <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
           <style>{`
             html, body {
