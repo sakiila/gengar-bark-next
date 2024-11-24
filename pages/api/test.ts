@@ -19,16 +19,14 @@ export default async function personHandler(
   console.log("currentCookies:", currentCookies);
 
   if (!customerKeyword?.trim()) {
-    customerKeyword = getRandomHighFrequencyLetter();
-    console.log("customerKeyword:", customerKeyword);
+    customerKeyword = "";
   }
   const customer = await fetchCustomer(appointmentService, customerKeyword);
   if (!customer) {
     return res.status(500).json({ message: "Failed to fetch customer" });
   }
 
-  const firstName = customer.firstName;
-  console.log("firstName:", firstName);
+  const name = customer.firstName + " " + customer.lastName;
 
   // const pet = customer.petList[0];
   // if (!pet) {
@@ -60,7 +58,7 @@ export default async function personHandler(
   //   slackName,
   // );
 
-  return res.status(200).json({ message: "Success" });
+  return res.status(200).json({ message: name });
 }
 
 async function create(
