@@ -100,7 +100,7 @@ export default async function handler(
 
 async function todayIsHoliday() {
   const dateString = new Date().toISOString().split('T')[0];
-  const url = `https://api.haoshenqi.top/holiday?date=${dateString}`;
+  const url = `http://api.haoshenqi.top/holiday?date=${dateString}`;
 
   try {
     const response = await fetch(url);
