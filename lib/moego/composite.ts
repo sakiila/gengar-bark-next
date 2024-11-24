@@ -52,7 +52,7 @@ async function compositeCreateOneAppointment(
   date?: string,
   time?: number,
 ): Promise<string> {
-  if (!customerKeyword || customerKeyword.trim().length == 0) {
+  if (!customerKeyword?.trim()) {
     customerKeyword = getRandomHighFrequencyLetter();
   }
   const customer = await fetchCustomer(appointmentService, customerKeyword);
