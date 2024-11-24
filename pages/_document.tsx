@@ -15,6 +15,14 @@ class MyDocument extends Document {
             href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap"
             rel="stylesheet"
           />
+          <style>{`
+            html, body {
+              margin: 0;
+              padding: 0;
+              overflow-x: hidden;
+              width: 100%;
+            }
+          `}</style>
         </Head>
         <body>
           <Main />

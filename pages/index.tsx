@@ -3,20 +3,29 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import styles from '../styles/Home.module.css';
 import { useEffect, useRef, useState } from 'react';
 
-const FeatureCard: React.FC<{ title: string; description: string; icon: string }> = ({
-  title,
-  description,
-  icon,
-}) => (
+const FeatureCard: React.FC<{
+  title: string;
+  description: string;
+  imageUrl: string;
+}> = ({ title, description, imageUrl }) => (
   <motion.div
-    whileHover={{ scale: 1.05 }}
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    viewport={{ once: true }}
+    transition={{ duration: 0.8 }}
     className={styles.featureCard}
   >
-    <div className={styles.iconWrapper}>
-      <span className={styles.icon}>{icon}</span>
+    <div className={styles.featureImage}>
+      <img
+        src={imageUrl}
+        alt={title}
+        className={styles.featureImg}
+      />
     </div>
-    <h3>{title}</h3>
-    <p>{description}</p>
+    <div className={styles.featureContent}>
+      <h3>{title}</h3>
+      <p>{description}</p>
+    </div>
   </motion.div>
 );
 
@@ -46,6 +55,7 @@ const FloatingParticles: React.FC = () => {
 
 const TypingText: React.FC<{ text: string }> = ({ text }) => {
   const [displayText, setDisplayText] = useState('');
+  const [isTypingComplete, setIsTypingComplete] = useState(false);
 
   useEffect(() => {
     let index = 0;
@@ -55,12 +65,17 @@ const TypingText: React.FC<{ text: string }> = ({ text }) => {
         index++;
       } else {
         clearInterval(timer);
+        setIsTypingComplete(true);
       }
     }, 100);
     return () => clearInterval(timer);
   }, [text]);
 
-  return <span className={styles.typingText}>{displayText}</span>;
+  return (
+    <span className={`${styles.typingText} ${isTypingComplete ? styles.typingComplete : ''}`}>
+      {displayText}
+    </span>
+  );
 };
 
 const HomePage: React.FC = () => {
@@ -115,52 +130,19 @@ const HomePage: React.FC = () => {
           <div className={styles.featureGrid}>
             <FeatureCard
               title="AI Chat Assistant"
-              description="Experience smart conversations with context-aware responses that understand your team's needs and communication style."
-              icon="🤖"
+              description="Experience smart conversations with context-aware responses that understand your team's needs and communication style. Our AI assistant learns from interactions to provide increasingly personalized and relevant support."
+              imageUrl="/images/ai-chat.png"
             />
             <FeatureCard
               title="Conversation Summarizer"
-              description="Never miss important details with automatic meeting notes and discussion highlights generated in real-time."
-              icon="📝"
+              description="Never miss important details with automatic meeting notes and discussion highlights generated in real-time. Our advanced AI processes conversations to extract key points, action items, and decisions."
+              imageUrl="/images/summarizer.png"
             />
             <FeatureCard
-              title="Interactive Scheduling"
-              description="Schedule meetings effortlessly through natural dialogue with our AI assistant that handles all the coordination."
-              icon="📅"
+              title="Interactive Scheduling (Beta)"
+              description="Schedule meetings effortlessly through natural dialogue with our AI assistant that handles all the coordination. Simply chat about your availability and let the AI manage the complexities of calendar management."
+              imageUrl="/images/scheduling.png"
             />
-          </div>
-        </section>
-
-        <section className={styles.demo} ref={demoRef}>
-          <h2>See It in Action</h2>
-          <div className={styles.demoContainer}>
-            <div className={styles.demoChat}>
-              <div className={styles.terminalHeader}>
-                <div
-                  className={styles.terminalDot}
-                  style={{ background: "#a53932" }}
-                />
-                <div
-                  className={styles.terminalDot}
-                  style={{ background: "#544562" }}
-                />
-                <div
-                  className={styles.terminalDot}
-                  style={{ background: "#b4725f" }}
-                />
-              </div>
-              <motion.div
-                className={styles.terminalContent}
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.5 }}
-              >
-                <div className={styles.commandLine}>
-                  <span className={styles.prompt}>$</span>
-                  <TypingText text=" AI assistant initialized..." />
-                </div>
-              </motion.div>
-            </div>
           </div>
         </section>
 
