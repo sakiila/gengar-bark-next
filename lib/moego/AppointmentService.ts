@@ -265,7 +265,7 @@ class AppointmentService {
     const defaultParams: QueryParams = {
       source: 1,
       pageNum: Math.floor(Math.random() * 10) + 1,
-      pageSize: 10,
+      pageSize: 20,
       sort: {
         property: "first_name",
         order: "asc",
