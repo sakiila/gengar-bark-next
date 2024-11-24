@@ -18,45 +18,49 @@ export default async function personHandler(
   const currentCookies = appointmentService.getCurrentCookies();
   console.log("currentCookies:", currentCookies);
 
-  if (!customerKeyword) {
+  if (!customerKeyword?.trim()) {
     customerKeyword = getRandomHighFrequencyLetter();
+    console.log("customerKeyword:", customerKeyword);
   }
   const customer = await fetchCustomer(appointmentService, customerKeyword);
   if (!customer) {
     return res.status(500).json({ message: "Failed to fetch customer" });
   }
 
-  const pet = customer.petList[0];
-  if (!pet) {
-    return res.status(500).json({ message: "Failed to fetch pet" });
-  }
+  const firstName = customer.firstName;
+  console.log("firstName:", firstName);
 
-  const accountInfo = await fetchAccount(appointmentService);
-  if (!accountInfo) {
-    return res.status(500).json({ message: "Failed to fetch account" });
-  }
+  // const pet = customer.petList[0];
+  // if (!pet) {
+  //   return res.status(500).json({ message: "Failed to fetch pet" });
+  // }
+  //
+  // const accountInfo = await fetchAccount(appointmentService);
+  // if (!accountInfo) {
+  //   return res.status(500).json({ message: "Failed to fetch account" });
+  // }
+  //
+  // const service = await fetchService(
+  //   appointmentService,
+  //   String(accountInfo?.business.id),
+  //   String(pet.petId),
+  // );
+  //
+  // if (!service) {
+  //   return res.status(500).json({ message: "Failed to fetch service" });
+  // }
+  //
+  // const result = await create(
+  //   appointmentService,
+  //   String(accountInfo?.business.id),
+  //   String(customer.customerId),
+  //   String(pet.petId),
+  //   String(accountInfo?.staff.staffId),
+  //   service,
+  //   slackName,
+  // );
 
-  const service = await fetchService(
-    appointmentService,
-    String(accountInfo?.business.id),
-    String(pet.petId),
-  );
-
-  if (!service) {
-    return res.status(500).json({ message: "Failed to fetch service" });
-  }
-
-  const result = await create(
-    appointmentService,
-    String(accountInfo?.business.id),
-    String(customer.customerId),
-    String(pet.petId),
-    String(accountInfo?.staff.staffId),
-    service,
-    slackName,
-  );
-
-  return res.status(200).json({ message: result });
+  return res.status(200).json({ message: "Success" });
 }
 
 async function create(
@@ -202,18 +206,34 @@ async function fetchAccount(
 
 function getRandomHighFrequencyLetter() {
   const highFrequencyLetters = [
-    "e",
-    "t",
     "a",
-    "o",
-    "i",
-    "n",
-    "s",
-    "h",
-    "r",
+    "b",
+    "c",
     "d",
+    "e",
+    "f",
+    "g",
+    "h",
+    "i",
+    "j",
+    "k",
     "l",
+    "m",
+    "n",
+    "o",
+    "p",
+    "q",
+    "r",
+    "s",
+    "t",
+    "u",
+    "v",
+    "w",
+    "x",
+    "y",
+    "z"
   ];
   const randomIndex = Math.floor(Math.random() * highFrequencyLetters.length);
+  console.log("highFrequencyLetters[randomIndex]:", highFrequencyLetters[randomIndex]);
   return highFrequencyLetters[randomIndex];
 }
