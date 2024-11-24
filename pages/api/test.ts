@@ -150,13 +150,13 @@ async function fetchCustomer(
     const result = await appointmentService.fetchCustomers(keyword);
 
     if (result.success) {
-      console.log("创建预约成功:", result.data);
+      console.log("fetch customer success:", result.data);
       return result.data;
     } else {
-      console.error("创建预约失败:", result.error);
+      console.error("fetch customer fail:", result.error);
     }
   } catch (error) {
-    console.error("创建预约过程出错:", error);
+    console.error("fetch customer error:", error);
   }
   return undefined;
 }

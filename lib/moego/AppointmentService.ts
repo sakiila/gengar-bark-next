@@ -264,8 +264,8 @@ class AppointmentService {
 
     const defaultParams: QueryParams = {
       source: 1,
-      pageNum: Math.floor(Math.random() * 10) + 1,
-      pageSize: 20,
+      pageNum: 1,
+      pageSize: 50,
       sort: {
         property: "first_name",
         order: "asc",
@@ -294,7 +294,7 @@ class AppointmentService {
 
       return {
         success: true,
-        data: customers[0],
+        data: customers[Math.floor(Math.random() * customers.length)],
       };
     } catch (error) {
       console.error("Error fetching customers:", error);
