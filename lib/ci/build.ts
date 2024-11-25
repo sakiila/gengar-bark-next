@@ -125,7 +125,9 @@ const raw = JSON.stringify({
 const baseUrl = "https://ci.devops.moego.pet";
 
 const token =
-  '"jenkins-timestamper-offset=-28800000; jenkins-timestamper=system; jenkins-timestamper-local=true; MGDID=2faf4ece-a16d-11ef-82e4-baef83d8f731; intercom-device-id-oh5g31xm=8c239a5b-e88d-41db-af9e-134cff9a02c0; JSESSIONID.1dda8126=node01i49wtam5e05c1qlgqdrpgyxdg553384.node0; screenResolution=2560x1440; MGSID-B=64112236.8n1qSoVfafotFfbwda7orOF6NMNRh194PK7Rlot_6aU; JSESSIONID.eeac9ba4=node0dpodu5ovwcnx14cvh8am41r9v3778.node0; intercom-session-oh5g31xm=dnpuaGFnU3JOMitxY2xWQldMcWhNNUdwVWdJWjVCSjFHRGNmbkxFdTBxK1ZTdldoRFlhMXI2U2NpZ0lVR3FrbC0tT3lnOWlXUFlScnFpRWJvL2JGOHpMQT09--78f3d8087cee4d6c41ebbb3b974ce37f4e2760b4; MGSID-MIS=65131011.P7VlOL6Zp8ThpEXvUYo44d19XiqChHEXYFOC_ziBPTU"';
+  "jenkins-timestamper-offset=-28800000; jenkins-timestamper=system; jenkins-timestamper-local=true; MGDID=2faf4ece-a16d-11ef-82e4-baef83d8f731; intercom-device-id-oh5g31xm=8c239a5b-e88d-41db-af9e-134cff9a02c0; JSESSIONID.1dda8126=node01i49wtam5e05c1qlgqdrpgyxdg553384.node0; screenResolution=2560x1440; MGSID-B=64112236.8n1qSoVfafotFfbwda7orOF6NMNRh194PK7Rlot_6aU; JSESSIONID.eeac9ba4=node0dpodu5ovwcnx14cvh8am41r9v3778.node0; intercom-session-oh5g31xm=dnpuaGFnU3JOMitxY2xWQldMcWhNNUdwVWdJWjVCSjFHRGNmbkxFdTBxK1ZTdldoRFlhMXI2U2NpZ0lVR3FrbC0tT3lnOWlXUFlScnFpRWJvL2JGOHpMQT09--78f3d8087cee4d6c41ebbb3b974ce37f4e2760b4; MGSID-MIS=65131011.P7VlOL6Zp8ThpEXvUYo44d19XiqChHEXYFOC_ziBPTU";
+
+const crumb = "feec635da4dc2b33be06d5597db77d936e2577563d33d0ab2bd3bc8c59193aad";
 
 const createRequestLogger = (req: NextApiRequest) => {
   return logger.scope('event-handler', {
@@ -156,8 +158,7 @@ async function triggerJenkinsPipeline(repo: string): Promise<string> {
         "content-type": "application/json",
         "user-agent":
           "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
-        "jenkins-crumb":
-          "89d4a053c350b054ecb8bcfc40a5fe88606c4db55c1a2f329ef6f966607bd698",
+        "jenkins-crumb": crumb,
         origin: baseUrl,
         cookie: token,
       },
@@ -208,8 +209,7 @@ async function getJenkinsPipelineData(
     "content-type": "application/json",
     "user-agent":
       "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
-    "jenkins-crumb":
-      "89d4a053c350b054ecb8bcfc40a5fe88606c4db55c1a2f329ef6f966607bd698",
+    "jenkins-crumb": crumb,
     origin: baseUrl,
     cookie: token,
   };
