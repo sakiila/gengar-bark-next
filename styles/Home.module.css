@@ -180,7 +180,7 @@
 .cta {
   padding: 5rem 2rem;
   text-align: center;
-  background: linear-gradient(135deg, 
+  background: linear-gradient(135deg,
     rgba(224, 99, 87, 0.1),
     rgba(180, 117, 94, 0.1),
     rgba(82, 66, 98, 0.1)
@@ -242,24 +242,24 @@
   .hero h1 {
     font-size: 2.5rem;
   }
-  
+
   .featureCard {
     grid-template-columns: 1fr;
     gap: 2rem;
   }
-  
+
   .featureCard:nth-child(even) {
     direction: ltr;
   }
-  
+
   .features {
     padding: 4rem 2rem;
   }
-  
+
   .featureGrid {
     gap: 4rem;
   }
-  
+
   .featureImage {
     max-width: 100%;
     aspect-ratio: 1/1;
@@ -309,11 +309,11 @@
   .typingContainer {
     height: 5rem;
   }
-  
+
   .typingText {
     font-size: 2.5rem;
   }
-  
+
   .typingText::after {
     font-size: 2.5rem;
   }
@@ -329,7 +329,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(180deg, 
+  background: linear-gradient(180deg,
     rgba(224, 99, 87, 0) 0%,
     rgba(224, 99, 87, 0.05) 50%,
     rgba(224, 99, 87, 0) 100%
@@ -340,7 +340,7 @@
   position: absolute;
   width: 100%;
   height: 4px;
-  background: linear-gradient(90deg, 
+  background: linear-gradient(90deg,
     transparent 0%,
     #e06357 30%,
     #e06357 70%,
@@ -359,7 +359,7 @@
   height: 20px;
   background: #e06357;
   border-radius: 50%;
-  box-shadow: 
+  box-shadow:
     0 0 20px #e06357,
     0 0 40px rgba(224, 99, 87, 0.5);
   z-index: 2;
@@ -434,7 +434,7 @@
 .separatorLine {
   height: 1px;
   width: 60px;
-  background: linear-gradient(90deg, 
+  background: linear-gradient(90deg,
     transparent,
     rgba(224, 99, 87, 0.5),
     transparent
@@ -463,8 +463,10 @@
 
 .video {
   width: 100%;
+  height: 100%;
   display: block;
   border-radius: 20px;
+  object-fit: contain;
 }
 
 /* Add responsive styles for video */
@@ -472,12 +474,12 @@
   .videoSection {
     padding: 1rem;
   }
-  
+
   .videoWrapper {
     border-radius: 12px;
   }
-  
+
   .video {
     border-radius: 12px;
   }
-} 
+}

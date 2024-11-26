@@ -187,12 +187,12 @@ const HomePage: React.FC = () => {
             <p>Watch how our AI assistant transforms team communication and boosts productivity in Slack.</p>
           </div>
           <div className={styles.videoWrapper}>
-            <video 
+            <video
               className={styles.video}
               controls
               playsInline
               preload="auto"
-              poster="/images/preview2.png"
+              poster="/images/cover.png"
             >
               <source src="https://gengar.baobo.me/gengar_bark_ai.mov" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"' />
               <source src="https://gengar.baobo.me/gengar_bark_ai.mov" type="video/quicktime" />
