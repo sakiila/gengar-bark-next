@@ -138,7 +138,7 @@ const HomePage: React.FC = () => {
       <nav className={styles.nav}>
         <div className={styles.logo}>Gengar Bark</div>
         <a
-          href="https://app.slack.com/client/T011CF3CMJN/D0668HZ40BG"
+          href="https://slack.com/app_redirect?app=A06697P9VTN&team=T011CF3CMJN"
           target="_blank"
           rel="noopener noreferrer"
           className={styles.ctaButton}
@@ -166,7 +166,7 @@ const HomePage: React.FC = () => {
               assistant that understands your team&apos;s context and needs.
             </p>
             <a
-              href="https://app.slack.com/client/T011CF3CMJN/D0668HZ40BG"
+              href="https://slack.com/app_redirect?app=A06697P9VTN&team=T011CF3CMJN"
               target="_blank"
               rel="noopener noreferrer"
               className={styles.primaryButton}
@@ -206,7 +206,7 @@ const HomePage: React.FC = () => {
             productivity.
           </p>
           <a
-            href="https://app.slack.com/client/T011CF3CMJN/D0668HZ40BG"
+            href="https://slack.com/app_redirect?app=A06697P9VTN&team=T011CF3CMJN"
             target="_blank"
             rel="noopener noreferrer"
             className={styles.primaryButton}
