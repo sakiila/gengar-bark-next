@@ -176,6 +176,32 @@ const HomePage: React.FC = () => {
           </motion.div>
         </section>
 
+        <section className={styles.videoSection}>
+          <div className={styles.sectionIntro}>
+            <div className={styles.separator}>
+              <span className={styles.separatorLine}></span>
+              <span className={styles.separatorText}>Watch Demo</span>
+              <span className={styles.separatorLine}></span>
+            </div>
+            <h2>See Gengar Bark in Action</h2>
+            <p>Watch how our AI assistant transforms team communication and boosts productivity in Slack.</p>
+          </div>
+          <div className={styles.videoWrapper}>
+            <video 
+              className={styles.video}
+              controls
+              playsInline
+              preload="auto"
+              poster="/images/preview2.png"
+            >
+              <source src="https://gengar.baobo.me/gengar_bark_ai.mov" type='video/mp4; codecs="avc1.42E01E, mp4a.40.2"' />
+              <source src="https://gengar.baobo.me/gengar_bark_ai.mov" type="video/quicktime" />
+              <source src="https://gengar.baobo.me/gengar_bark_ai.webm" type="video/webm" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        </section>
+
         <Divider />
 
         <section className={styles.features}>
