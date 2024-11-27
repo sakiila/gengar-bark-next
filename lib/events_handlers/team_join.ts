@@ -10,7 +10,7 @@ export default async function team_join(
   const id = user.id;
   const realName = user.profile.real_name_normalized;
   const email = user.profile.email;
-  const tz = user.tz?? 'Asia/Chongqing';
+  const tz = user?.tz ?? 'Asia/Chongqing';
   const isBot = user.is_bot;
   const deleted = user.deleted;
   const teamId = user.team_id;
