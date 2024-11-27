@@ -10,7 +10,7 @@ export default async function team_join(
   const id = user.id;
   const realName = user.profile.real_name_normalized;
   const email = user.profile.email;
-  const tz = user.tz;
+  const tz = user.tz?? 'Asia/Chongqing';
   const isBot = user.is_bot;
   const deleted = user.deleted;
   const teamId = user.team_id;
@@ -35,6 +35,12 @@ export default async function team_join(
       tz: tz,
       is_bot: isBot,
       team_id: teamId,
+      entry_date: new Date(),
+      confirm_date: new Date(
+        new Date().setMonth(
+          new Date().getMonth() + 3,
+        ),
+      )
     },
     { onConflict: 'user_id' },
   );
