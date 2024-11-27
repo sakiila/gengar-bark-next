@@ -22,6 +22,7 @@ enum ReminderType {
   CONFIRM = 2,
   BIRTHDAY = 3,
   ANNIVERSARY = 4,
+  ONE_MONTH = 5,
 }
 
 interface MessageRecipient {
@@ -45,7 +46,11 @@ const userQueries = {
 
   getAnniversaryReminders: async () => {
     return await postgres.rpc('get_anniversary_reminders');
-  }
+  },
+
+  getOneMonthReminders: async () => {
+    return await postgres.rpc('get_one_month_reminders');
+  },
 };
 
 // Message formatting
@@ -142,6 +147,10 @@ export async function autoMessageReminderTaskV2(): Promise<void> {
       {
         type: ReminderType.ANNIVERSARY,
         query: userQueries.getAnniversaryReminders,
+      },
+      {
+        type: ReminderType.ONE_MONTH,
+        query: userQueries.getOneMonthReminders,
       },
     ];
 
