@@ -2,6 +2,8 @@ import React from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import styles from '../styles/Home.module.css';
 import { useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import Head from 'next/head';
 
 const FeatureCard: React.FC<{
   title: string;
@@ -135,16 +137,27 @@ const HomePage: React.FC = () => {
 
   return (
     <div className={styles.container}>
+      <Head>
+        <title>Gengar Bark | AI-Powered Slack Assistant for Smart Team Communication</title>
+        <meta name="title" content="Gengar Bark - Your AI-Powered Slack Assistant" />
+        <meta property="og:title" content="Gengar Bark | Smart Team Communication" />
+        <meta name="twitter:title" content="Gengar Bark | Smart Team Communication" />
+      </Head>
       <nav className={styles.nav}>
-        <div className={styles.logo}>Gengar Bark</div>
-        <a
-          href="https://slack.com/app_redirect?app=A06697P9VTN&team=T011CF3CMJN"
-          target="_blank"
-          rel="noopener noreferrer"
-          className={styles.ctaButton}
-        >
-          Chat on Slack
-        </a>
+        <Link href="/" className={styles.logo}>Gengar Bark</Link>
+        <div className={styles.navLinks}>
+          <Link href="/guide" className={styles.guideLink}>
+            User Guide
+          </Link>
+          <a
+            href="https://slack.com/app_redirect?app=A06697P9VTN&team=T011CF3CMJN"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.ctaButton}
+          >
+            Chat on Slack
+          </a>
+        </div>
       </nav>
 
       <FloatingParticles />
@@ -243,7 +256,7 @@ const HomePage: React.FC = () => {
       </main>
 
       <footer className={styles.footer}>
-        <p>© 2024 Gengar Bark. All rights reserved.</p>
+        <p> 2024 Gengar Bark. All rights reserved.</p>
       </footer>
     </div>
   );

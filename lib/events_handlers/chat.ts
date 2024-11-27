@@ -43,7 +43,7 @@ export async function send_gpt_response_in_channel(
   }
 
   const regex = /预约|appointment|appt/i;
-  if (regex.test(text)) {
+  if (text.trim().toLowerCase().startsWith("<@u0666r94c83> create") && regex.test(text)) {
     await execute_moego(req, res);
     return;
   }
@@ -112,7 +112,7 @@ export async function response_container(
 ) {
   const channelId = req.body.event.channel;
   const threadTs = req.body.event.thread_ts ?? req.body.event.ts;
-  const text = req.body.event.text;
+  const text: string  = req.body.event.text;
 
   // console.log("channelId:", channelId);
   // console.log("threadTs:", threadTs);
@@ -125,7 +125,7 @@ export async function response_container(
   }
 
   const regex = /预约|appointment|appt/i;
-  if (regex.test(text)) {
+  if (text.trim().toLowerCase().startsWith("create") && regex.test(text)) {
     await execute_moego(req, res);
     return;
   }

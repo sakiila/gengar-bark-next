@@ -32,6 +32,9 @@
   font-family: 'Space Grotesk', sans-serif;
   font-size: 1.5rem;
   font-weight: 700;
+  color: #ffffff;
+  text-decoration: none;
+  cursor: pointer;
 }
 
 .hero {
@@ -238,6 +241,135 @@
   margin: 0;
 }
 
+.navLinks {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.guideLink {
+  color: #ffffff;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.guideLink:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.guideGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.guideContent {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.guideSection {
+  display: flex;
+  align-items: center;
+  gap: 4rem;
+  margin-bottom: 6rem;
+  padding: 2.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+  backdrop-filter: blur(12px);
+}
+
+.guideSectionImage {
+  flex: 1.2;
+  min-width: 0;
+}
+
+.guideSectionImage img {
+  width: 100%;
+  height: auto;
+}
+
+.guideSectionText {
+  flex: 1;
+  min-width: 0;
+}
+
+.guideSectionText h3 {
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  color: #ffffff;
+  background: linear-gradient(90deg, #e06357, #b4755e);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.guideDescription {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.guideDescription code {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+  font-size: 0.9em;
+  color: #e06357;
+  margin: 0 0.2em;
+  display: inline-block;
+}
+
+.guideDescription a {
+  color: #e06357;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.guideDescription a:hover {
+  color: #b4755e;
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .guideSection {
+    flex-direction: column;
+    padding: 1.5rem;
+    gap: 2rem;
+    margin-bottom: 4rem;
+  }
+
+  .guideSectionImage,
+  .guideSectionText {
+    width: 100%;
+  }
+
+  .modalContent {
+    width: 95vw;
+  }
+}
+
+.largeCard {
+  grid-column: span 2;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 1rem;
+  overflow: hidden;
+  transition: transform 0.3s ease;
+}
+
+.largeCard:hover {
+  transform: translateY(-5px);
+}
+
 @media (max-width: 768px) {
   .hero h1 {
     font-size: 2.5rem;
@@ -263,6 +395,29 @@
   .featureImage {
     max-width: 100%;
     aspect-ratio: 1/1;
+  }
+
+  .guideGrid {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+
+  .guideContent {
+    flex-direction: column;
+    padding: 1rem;
+  }
+
+  .guideText {
+    order: 2;
+  }
+
+  .guideImage {
+    order: 1;
+    margin-bottom: 1rem;
+  }
+
+  .largeCard {
+    grid-column: span 1;
   }
 }
 
