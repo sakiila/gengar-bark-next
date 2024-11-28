@@ -28,6 +28,7 @@ FROM "user"
 WHERE deleted = false
   AND is_bot = false
   AND team_id = 'T011CF3CMJN'
+  AND tz = 'Asia/Chongqing'
   AND confirm_date = CURRENT_DATE
   AND (
     (tz IS NULL AND EXTRACT(HOUR FROM now() AT TIME ZONE 'Asia/Chongqing') = 9)
@@ -36,7 +37,7 @@ WHERE deleted = false
     );
 $$;
 
--- 3. Birthday Reminders
+-- 3. Birthday Reminders (For users who have birthday today)
 CREATE OR REPLACE FUNCTION get_birthday_reminders()
     returns SETOF "user"
     language sql
@@ -57,7 +58,7 @@ WHERE deleted = false
     );
 $$;
 
--- 4. Anniversary Reminders
+-- 4. Anniversary Reminders (For users who have been in the company for entire year)
 CREATE OR REPLACE FUNCTION get_anniversary_reminders()
     returns SETOF "user"
     language sql
@@ -79,7 +80,7 @@ WHERE deleted = false
     );
 $$;
 
--- 5. One-Month Reminders
+-- 5. One-Month Reminders (For users who entered one month ago)
 CREATE OR REPLACE FUNCTION get_one_month_reminders()
     returns SETOF "user"
     language sql
