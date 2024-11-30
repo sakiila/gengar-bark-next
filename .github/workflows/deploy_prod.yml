@@ -32,7 +32,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          platforms: linux/arm64
+          platforms: linux/amd64,linux/arm64  # Add both platforms
           file: ./Dockerfile
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/gengar-bark:latest
@@ -45,8 +45,8 @@ jobs:
           key: ${{ secrets.HOST_SSHKEY }}
           command_timeout: 20m
           script: |
-            docker stop gengar-bark
-            docker rm gengar-bark
-            docker rmi  ${{ secrets.DOCKERHUB_USERNAME }}/gengar-bark:latest
-            docker pull  ${{ secrets.DOCKERHUB_USERNAME }}/gengar-bark:latest
+            docker stop gengar-bark || true
+            docker rm gengar-bark || true
+            docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/gengar-bark:latest || true
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/gengar-bark:latest
             docker run -d --name gengar-bark -p 3001:3000 ${{ secrets.DOCKERHUB_USERNAME }}/gengar-bark
