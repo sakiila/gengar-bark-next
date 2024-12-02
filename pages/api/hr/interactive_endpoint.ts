@@ -1,13 +1,18 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { postgres } from "@/lib/supabase";
-import { openView, postToUserIdHrDirectSchedule, publishView, sharedPublicURL } from '@/lib/slack';
+import {
+  openView,
+  postToUserIdHrDirectSchedule,
+  publishView,
+  sharedPublicURL,
+} from "@/lib/slack";
 import {
   adminUser,
   banView,
   getView,
   getViewByUserIds,
 } from "@/lib/events_handlers/hr_app_home_opend";
-import { map } from '@smithy/smithy-client';
+import { map } from "@smithy/smithy-client";
 
 interface SlackScheduledMessageResponse {
   ok: boolean;
@@ -160,25 +165,55 @@ export default async function handler(
       const text_value =
         values.template_text_input.template_text_input_action.rich_text_value;
 
-      const image_value = values.file_input_block.file_input_action.files.map((file: any) => {
-        return {
+      const image_values = [
+        {
           type: "image",
-          title: {
-            type: "plain_text",
-            text: file.title,
-          },
-          image_url: file.permalink_public,
-          alt_text: file.name,
-        };
-      });
+          image_url: values.url_text_input_block1.url_text_input_action1.value,
+          alt_text: "",
+        },
+        {
+          type: "image",
+          image_url: values.url_text_input_block2.url_text_input_action2.value,
+          alt_text: "",
+        },
+        {
+          type: "image",
+          image_url: values.url_text_input_block3.url_text_input_action3.value,
+          alt_text: "",
+        },
+        {
+          type: "image",
+          image_url: values.url_text_input_block4.url_text_input_action4.value,
+          alt_text: "",
+        },
+        {
+          type: "image",
+          image_url: values.url_text_input_block5.url_text_input_action5.value,
+          alt_text: "",
+        },
+      ];
 
-      await Promise.all(
-        values.file_input_block.file_input_action.files.map((file: any) => {
-          sharedPublicURL(file.id);
-        }),
-      );
+      // const image_value = values.file_input_block.file_input_action.files.map(
+      //   (file: any) => {
+      //     return {
+      //       type: "image",
+      //       title: {
+      //         type: "plain_text",
+      //         text: file.title,
+      //       },
+      //       image_url: file.permalink_public,
+      //       alt_text: file.name,
+      //     };
+      //   },
+      // );
 
-      const blocks = [text_value, ...image_value];
+      // await Promise.all(
+      //   values.file_input_block.file_input_action.files.map((file: any) => {
+      //     sharedPublicURL(file.id);
+      //   }),
+      // );
+
+      const blocks = [text_value, ...image_values];
       console.log("blocks = ", JSON.stringify(blocks));
 
       const { data: data, error: error } = await postgres
@@ -197,19 +232,15 @@ export default async function handler(
       const selected_date_time =
         values.datetimepicker_block.datetimepicker_action.selected_date_time;
 
-      const scheduledMessages = await Promise.all(
+      const scheduledMessages = (await Promise.all(
         selected_channels.map((channel: string) =>
-          postToUserIdHrDirectSchedule(
-            channel,
-            blocks,
-            selected_date_time,
-          )
-        )
-      ) as SlackScheduledMessageResponse[];
+          postToUserIdHrDirectSchedule(channel, blocks, selected_date_time),
+        ),
+      )) as SlackScheduledMessageResponse[];
 
-      const scheduledMessageDetails = scheduledMessages.map(msg => ({
+      const scheduledMessageDetails = scheduledMessages.map((msg) => ({
         channel: msg.channel,
-        scheduled_message_id: msg.scheduled_message_id
+        scheduled_message_id: msg.scheduled_message_id,
       }));
       console.log("Scheduled message details:", scheduledMessageDetails);
 
@@ -217,18 +248,18 @@ export default async function handler(
       .from("hr_auto_message_task")
       .insert({
         template_id: template_id,
-        template_text: blocks,
-        plan_send_time: selected_date_time,
+        template_text: JSON.stringify(blocks),
+        plan_send_time: new Date(selected_date_time).toISOString(), // Ensure the date is in ISO format
         user_id: userId,
         public_channel: selected_channels,
-        send_info: scheduledMessageDetails,
+        send_info: JSON.stringify(scheduledMessageDetails), // Ensure send_info is a string
       });
 
       if (error) {
         console.error("Error updating message template:", error);
       }
       if (taskError) {
-        console.error("Error updating task message:", error);
+        console.error("Error updating task message:", taskError);
       }
       await publishView(userId, await getView(userId, page));
     }
@@ -536,20 +567,6 @@ async function getPushTemplateInfo(
         },
       },
       {
-        type: "input",
-        block_id: "file_input_block",
-        label: {
-          type: "plain_text",
-          text: "Upload Files",
-        },
-        element: {
-          type: "file_input",
-          action_id: "file_input_action",
-          filetypes: ["jpg", "png", "gif"],
-          max_files: 10,
-        },
-      },
-      {
         type: "section",
         block_id: "multi_channels_select_block",
         text: {
@@ -575,6 +592,71 @@ async function getPushTemplateInfo(
         label: {
           type: "plain_text",
           text: "Plan sending time",
+          emoji: true,
+        },
+      },
+      {
+        type: "input",
+        block_id: "url_text_input_block1",
+        element: {
+          type: "url_text_input",
+          action_id: "url_text_input_action1",
+        },
+        label: {
+          type: "plain_text",
+          text: "Label",
+          emoji: true,
+        },
+      },
+      {
+        type: "input",
+        block_id: "url_text_input_block2",
+        element: {
+          type: "url_text_input",
+          action_id: "url_text_input_action2",
+        },
+        label: {
+          type: "plain_text",
+          text: "Label",
+          emoji: true,
+        },
+      },
+      {
+        type: "input",
+        block_id: "url_text_input_block3",
+        element: {
+          type: "url_text_input",
+          action_id: "url_text_input_action3",
+        },
+        label: {
+          type: "plain_text",
+          text: "Label",
+          emoji: true,
+        },
+      },
+      {
+        type: "input",
+        block_id: "url_text_input_block4",
+        element: {
+          type: "url_text_input",
+          action_id: "url_text_input_action4",
+        },
+        label: {
+          type: "plain_text",
+          text: "Label",
+          emoji: true,
+        },
+      },
+      {
+        type: "input",
+        block_id: "url_text_input_block5",
+        element: {
+          type: "url_text_input",
+          action_id: "url_text_input_action5",
+        },
+        label: {
+          type: "plain_text",
+          text: "Label",
           emoji: true,
         },
       },
