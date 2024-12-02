@@ -751,6 +751,52 @@ export async function postToUserIdHrDirect(
   }
 }
 
+export async function postToUserIdHrDirectSchedule(
+  userId: string,
+  text: string,
+  postAt: number,
+): Promise<any> {
+  const message = {
+    channel: userId,
+    // text: text,
+    blocks: [JSON.parse(text)],
+    unfurl_links: false,
+    postAt: postAt,
+  };
+
+  const url = "https://slack.com/api/chat.scheduleMessage";
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        Authorization: `Bearer ${bot_hr_token}`,
+      },
+      body: JSON.stringify(message),
+    });
+
+    // Check if the response status is not successful
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    // Make sure to handle this error in your calling function
+    if (data.error) {
+      throw new Error(data.error);
+    }
+
+    return data; // now it returns a JavaScript object
+  } catch (err) {
+    if (err instanceof Error) {
+      throw new Error(`postToUserIdHrDirect failed: ${err.message}`);
+    } else {
+      throw new Error(`postToUserIdHrDirect failed: ${err}`);
+    }
+  }
+}
+
 export async function postToChannel(
   channel: string,
   res: NextApiResponse,

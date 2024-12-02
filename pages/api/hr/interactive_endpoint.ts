@@ -1,29 +1,29 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import { postgres } from '@/lib/supabase';
-import { openView, publishView } from '@/lib/slack';
+import { NextApiRequest, NextApiResponse } from "next";
+import { postgres } from "@/lib/supabase";
+import { openView, postToUserIdHrDirectSchedule, publishView } from '@/lib/slack';
 import {
   adminUser,
   banView,
   getView,
   getViewByUserIds,
-} from '@/lib/events_handlers/hr_app_home_opend';
+} from "@/lib/events_handlers/hr_app_home_opend";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
   const payload = JSON.parse(req.body.payload);
-  console.log('payload = ', JSON.stringify(payload));
+  console.log("payload = ", JSON.stringify(payload));
 
   const userId = payload.user.id;
   if (!adminUser.includes(userId)) {
     await publishView(userId, banView);
-    res.status(200).send('');
+    res.status(200).send("");
   }
 
-  let metadata = JSON.parse(payload.view.private_metadata || '{}');
+  let metadata = JSON.parse(payload.view.private_metadata || "{}");
 
-  if (payload.type === 'block_actions') {
+  if (payload.type === "block_actions") {
     const triggerId = payload.trigger_id;
     let actions = Array.isArray(payload.actions)
       ? payload.actions
@@ -40,41 +40,53 @@ export default async function handler(
       const userIds = metadata.user_ids;
 
       switch (actionId) {
-        case 'manage_user':
+        case "manage_user":
           await getUserInfo(
-            action.value.split('_')[1],
+            action.value.split("_")[1],
             triggerId,
             page,
             userIds,
           );
           break;
-        case 'refresh':
-        case 'refresh_template':
+        case "refresh":
+        case "refresh_template":
+        case "refresh_push_template":
           await publishView(userId, await getView(userId, page));
           break;
-        case 'last':
+        case "last":
           await publishView(userId, await getView(userId, Number(page) - 1));
           break;
-        case 'next':
+        case "next":
           await publishView(userId, await getView(userId, Number(page) + 1));
           break;
-        case 'multi_users_select':
+        case "multi_users_select":
           await publishView(
             userId,
             await getViewByUserIds(action.selected_users),
           );
           break;
-        case 'edit_template':
-          await getTemplateInfo(action.value.split('_')[1], triggerId, page);
+        case "edit_template":
+          await getReminderTemplateInfo(
+            action.value.split("_")[1],
+            triggerId,
+            page,
+          );
+          break;
+        case "edit_push_template":
+          await getPushTemplateInfo(
+            action.value.split("_")[1],
+            triggerId,
+            page,
+          );
           break;
       }
     }
-  } else if (payload.type === 'view_submission') {
+  } else if (payload.type === "view_submission") {
     const userId = payload.user.id;
     const page = metadata.page;
     const values = payload.view.state.values;
 
-    if (payload.view.callback_id === 'manage_user_modal') {
+    if (payload.view.callback_id === "manage_user_modal") {
       const user_id = metadata.user_id;
       const userIds = metadata.user_ids;
 
@@ -84,7 +96,7 @@ export default async function handler(
         values.birthday_date.birthday_date_action.selected_date;
       const tz = values.timezone_select.timezone_select.selected_option.value;
       const { data: date, error: error } = await postgres
-        .from('user')
+        .from("user")
         .update({
           entry_date: entryDate,
           confirm_date: confirmDate
@@ -97,12 +109,12 @@ export default async function handler(
                 )
               : null,
           birthday_date: birthdayDate,
-          tz: tz || 'Asia/Chongqing',
+          tz: tz || "Asia/Chongqing",
         })
-        .eq('user_id', user_id);
+        .eq("user_id", user_id);
 
       if (error) {
-        console.error('Error updating user:', error);
+        console.error("Error updating user:", error);
       }
 
       if (userIds) {
@@ -110,31 +122,95 @@ export default async function handler(
       } else {
         await publishView(userId, await getView(userId, page));
       }
-    } else if (payload.view.callback_id === 'manage_template_modal') {
+    } else if (payload.view.callback_id === "manage_template_modal") {
       const template_id = metadata.template_id;
 
-      console.log('values = ', JSON.stringify(values));
+      console.log("values = ", JSON.stringify(values));
       const name = values.template_name_input.template_name_input_action.value;
       const text_value =
         values.template_text_input.template_text_input_action.rich_text_value;
       const { data: data, error: error } = await postgres
-        .from('hr_auto_message_template')
+        .from("hr_auto_message_template")
         .update({
           template_name: name,
           template_text: text_value,
           update_time: new Date(),
           update_user_id: userId,
         })
-        .eq('id', template_id);
+        .eq("id", template_id);
 
       if (error) {
-        console.error('Error updating user:', error);
+        console.error("Error updating user:", error);
+      }
+      await publishView(userId, await getView(userId, page));
+    } else if (payload.view.callback_id === "manage_push_template_modal") {
+      const template_id = metadata.template_id;
+
+      console.log("values = ", JSON.stringify(values));
+      const name = values.template_name_input.template_name_input_action.value;
+      const text_value =
+        values.template_text_input.template_text_input_action.rich_text_value;
+
+      const image_value = values.file_input_action.files.forEach(
+        (file: any) => {
+          return {
+            type: "image",
+            title: {
+              type: "plain_text",
+              text: file.title,
+            },
+            image_url: file.permalink,
+            alt_text: file.name,
+          };
+        },
+      );
+
+      const blocks = [text_value, ...image_value];
+      console.log("blocks = ", JSON.stringify(blocks));
+
+      const { data: data, error: error } = await postgres
+        .from("hr_auto_message_template")
+        .update({
+          template_name: name,
+          template_text: blocks,
+          update_time: new Date(),
+          update_user_id: userId,
+        })
+        .eq("id", template_id);
+
+      const selected_channels =
+        values.multi_channels_select_block.multi_channels_select_action
+          .selected_channels;
+      const selected_date_time =
+        values.datetimepicker_block.datetimepicker_action.selected_date_time;
+
+      const { data: taskData, error: taskError } = await postgres
+        .from("hr_auto_message_task")
+        .insert({
+          template_id: template_id,
+          template_text: text_value,
+          plan_send_time: selected_date_time,
+          user_id: userId,
+          public_channel: selected_channels,
+          image_id: "F03FZLJUZ",
+        });
+
+      selected_channels.forEach(async (channel: string) => {
+        await postToUserIdHrDirectSchedule(
+          channel,
+          text_value,
+          selected_date_time,
+        );
+      });
+
+      if (error) {
+        console.error("Error updating user:", error);
       }
       await publishView(userId, await getView(userId, page));
     }
   }
 
-  res.status(200).send('');
+  res.status(200).send("");
 }
 
 async function getUserInfo(
@@ -144,9 +220,9 @@ async function getUserInfo(
   userIds: string[],
 ) {
   const { data: users } = await postgres
-    .from('user')
-    .select('*')
-    .eq('user_id', userId);
+    .from("user")
+    .select("*")
+    .eq("user_id", userId);
 
   if (!users) {
     return;
@@ -159,127 +235,127 @@ async function getUserInfo(
       user_id: `${userId}`,
       user_ids: userIds,
     }),
-    type: 'modal',
-    callback_id: 'manage_user_modal',
+    type: "modal",
+    callback_id: "manage_user_modal",
     title: {
-      type: 'plain_text',
+      type: "plain_text",
       text: `${user.real_name_normalized}`,
     },
     blocks: [
       {
-        type: 'input',
+        type: "input",
         optional: true,
-        block_id: 'entry_date',
+        block_id: "entry_date",
         element: {
-          type: 'datepicker',
+          type: "datepicker",
           ...(user.entry_date ? { initial_date: `${user.entry_date}` } : {}),
           placeholder: {
-            type: 'plain_text',
-            text: 'Select a date',
+            type: "plain_text",
+            text: "Select a date",
           },
-          action_id: 'entry_date_action',
+          action_id: "entry_date_action",
         },
         label: {
-          type: 'plain_text',
-          text: 'Entry date',
+          type: "plain_text",
+          text: "Entry date",
         },
       },
       {
-        type: 'input',
+        type: "input",
         optional: true,
-        block_id: 'confirm_date',
+        block_id: "confirm_date",
         element: {
-          type: 'datepicker',
+          type: "datepicker",
           ...(user.confirm_date
             ? { initial_date: `${user.confirm_date}` }
             : {}),
           placeholder: {
-            type: 'plain_text',
-            text: 'Select a date',
+            type: "plain_text",
+            text: "Select a date",
           },
-          action_id: 'confirm_date_action',
+          action_id: "confirm_date_action",
         },
         label: {
-          type: 'plain_text',
-          text: 'Confirm date',
+          type: "plain_text",
+          text: "Confirm date",
         },
       },
       {
-        type: 'input',
+        type: "input",
         optional: true,
-        block_id: 'birthday_date',
+        block_id: "birthday_date",
         element: {
-          type: 'datepicker',
+          type: "datepicker",
           ...(user.birthday_date
             ? { initial_date: `${user.birthday_date}` }
             : {}),
           placeholder: {
-            type: 'plain_text',
-            text: 'Select a date',
+            type: "plain_text",
+            text: "Select a date",
           },
-          action_id: 'birthday_date_action',
+          action_id: "birthday_date_action",
         },
         label: {
-          type: 'plain_text',
-          text: 'Birthday date',
+          type: "plain_text",
+          text: "Birthday date",
         },
       },
       {
-        type: 'section',
-        block_id: 'timezone_select',
+        type: "section",
+        block_id: "timezone_select",
         text: {
-          type: 'mrkdwn',
-          text: '*Timezone*',
+          type: "mrkdwn",
+          text: "*Timezone*",
         },
         accessory: {
-          action_id: 'timezone_select',
-          type: 'static_select',
+          action_id: "timezone_select",
+          type: "static_select",
 
           initial_option: {
             text: {
-              type: 'plain_text',
-              text: `${user.tz || 'Asia/Chongqing'}`,
+              type: "plain_text",
+              text: `${user.tz || "Asia/Chongqing"}`,
             },
-            value: `${user.tz || 'Asia/Chongqing'}`,
+            value: `${user.tz || "Asia/Chongqing"}`,
           },
 
           placeholder: {
-            type: 'plain_text',
-            text: 'Select an item',
+            type: "plain_text",
+            text: "Select an item",
           },
           options: [
             {
               text: {
-                type: 'plain_text',
-                text: 'Asia/Chongqing',
+                type: "plain_text",
+                text: "Asia/Chongqing",
               },
-              value: 'Asia/Chongqing',
+              value: "Asia/Chongqing",
             },
             {
               text: {
-                type: 'plain_text',
-                text: 'America/Los_Angeles',
+                type: "plain_text",
+                text: "America/Los_Angeles",
               },
-              value: 'America/Los_Angeles',
+              value: "America/Los_Angeles",
             },
             {
               text: {
-                type: 'plain_text',
-                text: 'America/New_York',
+                type: "plain_text",
+                text: "America/New_York",
               },
-              value: 'America/New_York',
+              value: "America/New_York",
             },
           ],
         },
       },
     ],
     submit: {
-      type: 'plain_text',
-      text: 'Submit',
+      type: "plain_text",
+      text: "Submit",
     },
     close: {
-      type: 'plain_text',
-      text: 'Cancel',
+      type: "plain_text",
+      text: "Cancel",
       emoji: true,
     },
   };
@@ -289,15 +365,15 @@ async function getUserInfo(
   await openView(triggerId, modalView);
 }
 
-async function getTemplateInfo(
+async function getReminderTemplateInfo(
   templateId: string,
   triggerId: string,
   page: number,
 ) {
   const { data: templates } = await postgres
-    .from('hr_auto_message_template')
-    .select('*')
-    .eq('id', templateId);
+    .from("hr_auto_message_template")
+    .select("*")
+    .eq("id", templateId);
 
   if (!templates) {
     return;
@@ -309,64 +385,188 @@ async function getTemplateInfo(
       page: `${page}`,
       template_id: `${templateId}`,
     }),
-    type: 'modal',
-    callback_id: 'manage_template_modal',
+    type: "modal",
+    callback_id: "manage_template_modal",
     title: {
-      type: 'plain_text',
+      type: "plain_text",
       text: `${template.template_name}`,
     },
     blocks: [
       {
-        type: 'input',
-        block_id: 'template_name_input',
+        type: "input",
+        block_id: "template_name_input",
         element: {
-          type: 'plain_text_input',
-          action_id: 'template_name_input_action',
+          type: "plain_text_input",
+          action_id: "template_name_input_action",
           initial_value: `${template.template_name}`,
           max_length: 20,
         },
         label: {
-          type: 'plain_text',
-          text: 'Template Name',
+          type: "plain_text",
+          text: "Template Name",
           emoji: true,
         },
       },
       {
-        type: 'input',
-        block_id: 'template_text_input',
+        type: "input",
+        block_id: "template_text_input",
         element: {
-          type: 'rich_text_input',
-          action_id: 'template_text_input_action',
+          type: "rich_text_input",
+          action_id: "template_text_input_action",
           initial_value: JSON.parse(template.template_text),
         },
         label: {
-          type: 'plain_text',
-          text: 'Template Text',
+          type: "plain_text",
+          text: "Template Text",
           emoji: true,
         },
       },
       {
-        type: 'section',
+        type: "section",
         text: {
-          type: 'plain_text',
-          text: `${template.note || ''}`,
+          type: "plain_text",
+          text: `${template.note || ""}`,
           emoji: true,
         },
       },
     ],
     submit: {
-      type: 'plain_text',
-      text: 'Submit',
+      type: "plain_text",
+      text: "Submit",
     },
     close: {
-      type: 'plain_text',
-      text: 'Cancel',
+      type: "plain_text",
+      text: "Cancel",
       emoji: true,
     },
   };
 
   // console.log();
   // console.log('modalView = ', JSON.stringify(modalView));
+
+  await openView(triggerId, modalView);
+}
+
+async function getPushTemplateInfo(
+  templateId: string,
+  triggerId: string,
+  page: number,
+) {
+  const { data: templates } = await postgres
+    .from("hr_auto_message_template")
+    .select("*")
+    .eq("id", templateId);
+
+  if (!templates) {
+    return;
+  }
+  const template = templates[0];
+
+  const modalView = {
+    private_metadata: JSON.stringify({
+      page: `${page}`,
+      template_id: `${templateId}`,
+    }),
+    type: "modal",
+    callback_id: "manage_push_template_modal",
+    title: {
+      type: "plain_text",
+      text: `${template.template_name}`,
+    },
+    blocks: [
+      {
+        type: "input",
+        block_id: "template_name_input",
+        element: {
+          type: "plain_text_input",
+          action_id: "template_name_input_action",
+          initial_value: `${template.template_name}`,
+          max_length: 20,
+        },
+        label: {
+          type: "plain_text",
+          text: "Template Name",
+          emoji: true,
+        },
+      },
+      {
+        type: "input",
+        block_id: "template_text_input",
+        element: {
+          type: "rich_text_input",
+          action_id: "template_text_input_action",
+          initial_value: JSON.parse(template.template_text),
+        },
+        label: {
+          type: "plain_text",
+          text: "Template Text",
+          emoji: true,
+        },
+      },
+      {
+        type: "section",
+        text: {
+          type: "plain_text",
+          text: `${template.note || " "}`,
+          emoji: true,
+        },
+      },
+      {
+        type: "input",
+        block_id: "file_input_block",
+        label: {
+          type: "plain_text",
+          text: "Upload Files",
+        },
+        element: {
+          type: "file_input",
+          action_id: "file_input_action",
+          filetypes: ["jpg", "png"],
+          max_files: 5,
+        },
+      },
+      {
+        type: "section",
+        block_id: "multi_channels_select_block",
+        text: {
+          type: "mrkdwn",
+          text: "Pick channels from the list",
+        },
+        accessory: {
+          action_id: "multi_channels_select_action",
+          type: "multi_channels_select",
+          placeholder: {
+            type: "plain_text",
+            text: "Select channels",
+          },
+        },
+      },
+      {
+        type: "input",
+        block_id: "datetimepicker_block",
+        element: {
+          type: "datetimepicker",
+          action_id: "datetimepicker_action",
+        },
+        label: {
+          type: "plain_text",
+          text: "Plan sending time",
+          emoji: true,
+        },
+      },
+    ],
+    submit: {
+      type: "plain_text",
+      text: "Submit",
+    },
+    close: {
+      type: "plain_text",
+      text: "Cancel",
+      emoji: true,
+    },
+  };
+
+  // console.log("modalView = ", JSON.stringify(modalView));
 
   await openView(triggerId, modalView);
 }

@@ -58,7 +58,8 @@ export async function autoMessageReminderTask() {
 
   const { data: templates } = await postgres
   .from('hr_auto_message_template')
-  .select('*');
+  .select('*')
+  .gt('template_type', 0);
 
   if (!templates || templates.length === 0) {
     console.log('No template found');

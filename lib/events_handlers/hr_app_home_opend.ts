@@ -43,12 +43,13 @@ export async function getView(userId: string, page: number) {
     page = 1;
   }
 
-  const [niceDayBlock, userBlocks, templateBlocks, templateLogBlocks] =
+  const [niceDayBlock, userBlocks, templateBlocks, templateLogBlocks, pushTemplateBlocks] =
     await Promise.all([
       fetchUser(userId),
       fetchUserBlocks(page),
-      fetchTemplateBlocks(),
-      fetchTemplateLogBlocks(),
+      fetchReminderTemplateBlocks(),
+      fetchReminderTemplateLogBlocks(),
+      fetchPushTemplateBlocks(),
     ]);
 
   const view = {
@@ -144,7 +145,7 @@ export async function getView(userId: string, page: number) {
         type: 'header',
         text: {
           type: 'plain_text',
-          text: 'Manage Templates (5 templates)',
+          text: 'Manage Reminder Templates (5 templates)',
           emoji: true,
         },
       },
@@ -182,7 +183,45 @@ export async function getView(userId: string, page: number) {
         type: 'header',
         text: {
           type: 'plain_text',
-          text: 'Send Logs (latest 10)',
+          text: 'Manage Push Templates',
+          emoji: true,
+        },
+      },
+      ...pushTemplateBlocks,
+      {
+        type: 'actions',
+        elements: [
+          {
+            type: 'button',
+            style: 'primary',
+            text: {
+              type: 'plain_text',
+              emoji: true,
+              text: 'Refresh',
+            },
+            value: 'refresh_push_template',
+            action_id: 'refresh_push_template',
+          },
+        ],
+      },
+      {
+        type: 'divider',
+      },
+      {
+        type: 'context',
+        elements: [
+          {
+            type: 'plain_text',
+            text: ' ',
+            emoji: true,
+          },
+        ],
+      },
+      {
+        type: 'header',
+        text: {
+          type: 'plain_text',
+          text: 'Reminder Send Logs (latest 10)',
           emoji: true,
         },
       },
@@ -307,7 +346,7 @@ function getUserBlock(user: any) {
   };
 }
 
-function getTemplateBlock(template: any) {
+function getReminderTemplateBlock(template: any) {
   return {
     type: 'section',
     text: {
@@ -323,6 +362,26 @@ function getTemplateBlock(template: any) {
       },
       value: `edit_${template.id}`,
       action_id: 'edit_template',
+    },
+  };
+}
+
+function getPushTemplateBlock(template: any) {
+  return {
+    type: 'section',
+    text: {
+      type: 'mrkdwn',
+      text: `*${template.template_name}*\n`,
+    },
+    accessory: {
+      type: 'button',
+      text: {
+        type: 'plain_text',
+        text: `Edit ${template.template_name}`,
+        emoji: true,
+      },
+      value: `edit_${template.id}`,
+      action_id: 'edit_push_template',
     },
   };
 }
@@ -433,10 +492,11 @@ async function fetchUserBlocks(page: number) {
   return data.map(getUserBlock);
 }
 
-async function fetchTemplateBlocks() {
+async function fetchReminderTemplateBlocks() {
   const { data, error } = await postgres
     .from('hr_auto_message_template')
     .select('*')
+    .gt('template_type', 0)
     .order('id', { ascending: true });
 
   if (error) {
@@ -444,10 +504,10 @@ async function fetchTemplateBlocks() {
     return [];
   }
 
-  return data.map(getTemplateBlock);
+  return data.map(getReminderTemplateBlock);
 }
 
-async function fetchTemplateLogBlocks() {
+async function fetchReminderTemplateLogBlocks() {
   const { data, error } = await postgres
     .from('hr_auto_message_template_log')
     .select('*')
@@ -460,6 +520,21 @@ async function fetchTemplateLogBlocks() {
   }
 
   return data.map(getTemplateLogBlock);
+}
+
+async function fetchPushTemplateBlocks() {
+  const { data, error } = await postgres
+  .from('hr_auto_message_template')
+  .select('*')
+  .eq('template_type', 0)
+  .order('id', { ascending: true });
+
+  if (error) {
+    console.error('Error fetching template blocks:', error);
+    return [];
+  }
+
+  return data.map(getPushTemplateBlock);
 }
 
 function formatDateTime(date: Date): string {
