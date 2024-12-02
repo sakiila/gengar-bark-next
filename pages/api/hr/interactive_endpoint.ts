@@ -1,12 +1,21 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { postgres } from "@/lib/supabase";
-import { openView, postToUserIdHrDirectSchedule, publishView } from '@/lib/slack';
+import { openView, postToUserIdHrDirectSchedule, publishView, sharedPublicURL } from '@/lib/slack';
 import {
   adminUser,
   banView,
   getView,
   getViewByUserIds,
 } from "@/lib/events_handlers/hr_app_home_opend";
+import { map } from '@smithy/smithy-client';
+
+interface SlackScheduledMessageResponse {
+  ok: boolean;
+  channel: string;
+  scheduled_message_id: string;
+  post_at: string;
+  error?: string;
+}
 
 export default async function handler(
   req: NextApiRequest,
@@ -151,18 +160,22 @@ export default async function handler(
       const text_value =
         values.template_text_input.template_text_input_action.rich_text_value;
 
-      const image_value = values.file_input_action.files.forEach(
-        (file: any) => {
-          return {
-            type: "image",
-            title: {
-              type: "plain_text",
-              text: file.title,
-            },
-            image_url: file.permalink,
-            alt_text: file.name,
-          };
-        },
+      const image_value = values.file_input_block.file_input_action.files.map((file: any) => {
+        return {
+          type: "image",
+          title: {
+            type: "plain_text",
+            text: file.title,
+          },
+          image_url: file.permalink_public,
+          alt_text: file.name,
+        };
+      });
+
+      await Promise.all(
+        values.file_input_block.file_input_action.files.map((file: any) => {
+          sharedPublicURL(file.id);
+        }),
       );
 
       const blocks = [text_value, ...image_value];
@@ -172,7 +185,7 @@ export default async function handler(
         .from("hr_auto_message_template")
         .update({
           template_name: name,
-          template_text: blocks,
+          template_text: text_value,
           update_time: new Date(),
           update_user_id: userId,
         })
@@ -184,27 +197,38 @@ export default async function handler(
       const selected_date_time =
         values.datetimepicker_block.datetimepicker_action.selected_date_time;
 
-      const { data: taskData, error: taskError } = await postgres
-        .from("hr_auto_message_task")
-        .insert({
-          template_id: template_id,
-          template_text: text_value,
-          plan_send_time: selected_date_time,
-          user_id: userId,
-          public_channel: selected_channels,
-          image_id: "F03FZLJUZ",
-        });
+      const scheduledMessages = await Promise.all(
+        selected_channels.map((channel: string) =>
+          postToUserIdHrDirectSchedule(
+            channel,
+            blocks,
+            selected_date_time,
+          )
+        )
+      ) as SlackScheduledMessageResponse[];
 
-      selected_channels.forEach(async (channel: string) => {
-        await postToUserIdHrDirectSchedule(
-          channel,
-          text_value,
-          selected_date_time,
-        );
+      const scheduledMessageDetails = scheduledMessages.map(msg => ({
+        channel: msg.channel,
+        scheduled_message_id: msg.scheduled_message_id
+      }));
+      console.log("Scheduled message details:", scheduledMessageDetails);
+
+      const { data: taskData, error: taskError } = await postgres
+      .from("hr_auto_message_task")
+      .insert({
+        template_id: template_id,
+        template_text: blocks,
+        plan_send_time: selected_date_time,
+        user_id: userId,
+        public_channel: selected_channels,
+        send_info: scheduledMessageDetails,
       });
 
       if (error) {
-        console.error("Error updating user:", error);
+        console.error("Error updating message template:", error);
+      }
+      if (taskError) {
+        console.error("Error updating task message:", error);
       }
       await publishView(userId, await getView(userId, page));
     }
@@ -521,8 +545,8 @@ async function getPushTemplateInfo(
         element: {
           type: "file_input",
           action_id: "file_input_action",
-          filetypes: ["jpg", "png"],
-          max_files: 5,
+          filetypes: ["jpg", "png", "gif"],
+          max_files: 10,
         },
       },
       {

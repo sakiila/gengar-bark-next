@@ -3,13 +3,15 @@ import crypto from "crypto";
 import { regexOperations, truncateString } from "./helpers";
 import {
   clearDataForTeam,
-  getAccessToken, getCache,
+  getAccessToken,
+  getCache,
   getChannel,
   getKeywords,
-  getTeamConfigAndStats, setCache,
+  getTeamConfigAndStats,
+  setCache,
   trackBotUsage,
   trackUnfurls,
-} from './upstash';
+} from "./upstash";
 import { getParent, getPost } from "@/lib/hn";
 
 export const bot_token = process.env.SLACK_BOT_TOKEN as string;
@@ -753,16 +755,18 @@ export async function postToUserIdHrDirect(
 
 export async function postToUserIdHrDirectSchedule(
   userId: string,
-  text: string,
+  blocks: any,
   postAt: number,
 ): Promise<any> {
   const message = {
     channel: userId,
-    // text: text,
-    blocks: [JSON.parse(text)],
+    text: "HR People Management Message",
+    blocks: blocks,
     unfurl_links: false,
-    postAt: postAt,
+    post_at: postAt,  // Changed from postAt to post_at
   };
+
+  console.log("message: ", JSON.stringify(message));
 
   const url = "https://slack.com/api/chat.scheduleMessage";
   try {
@@ -781,13 +785,55 @@ export async function postToUserIdHrDirectSchedule(
     }
 
     const data = await response.json();
+    console.log("response data: ", data); // Log the response data here instead
 
     // Make sure to handle this error in your calling function
     if (data.error) {
       throw new Error(data.error);
     }
 
-    return data; // now it returns a JavaScript object
+    return data;
+  } catch (err) {
+    if (err instanceof Error) {
+      throw new Error(`postToUserIdHrDirect failed: ${err.message}`);
+    } else {
+      throw new Error(`postToUserIdHrDirect failed: ${err}`);
+    }
+  }
+}
+
+export async function sharedPublicURL(
+  fileId: string,
+): Promise<any> {
+  const message = {
+    file: fileId,
+  };
+
+  const url = "https://slack.com/api/files.sharedPublicURL";
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        Authorization: `Bearer ${bot_hr_token}`,
+      },
+      body: JSON.stringify(message),
+    });
+
+    // Check if the response status is not successful
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("response file data: ", data); // Log the response data here instead
+
+    // Make sure to handle this error in your calling function
+    if (data.error) {
+      throw new Error(data.error);
+    }
+
+    return data;
   } catch (err) {
     if (err instanceof Error) {
       throw new Error(`postToUserIdHrDirect failed: ${err.message}`);
@@ -1064,7 +1110,7 @@ export async function threadReply(
   const url = "https://slack.com/api/chat.postMessage";
 
   try {
-    const response =  await fetch(url, {
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json; charset=utf-8",

@@ -183,7 +183,7 @@ export async function getView(userId: string, page: number) {
         type: 'header',
         text: {
           type: 'plain_text',
-          text: 'Manage Push Templates',
+          text: 'Manage Push Templates (Beta)',
           emoji: true,
         },
       },
