@@ -614,7 +614,7 @@ export default function Report() {
         {/* 其他元数据 */}
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="keywords" content="CI, 持续集成, 年度报告, 构建统计, 开发者报告" />
-        <meta name="author" content="MoeGo" />
+        <meta name="author" content="Gengar Bark" />
 
         {/* 颜色主题 */}
         <meta name="theme-color" content="#7c3aed" />
