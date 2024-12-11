@@ -243,7 +243,7 @@ const WorkingPatternPage = ({ data }: { data: BuildReport }) => {
       transition={{ duration: 0.5 }}
     >
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-4xl font-bold text-white mb-12">���作模式分析</h2>
+        <h2 className="text-4xl font-bold text-white mb-12">工作模式分析</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <StatCard
             title="最长连续工作日天数"
@@ -485,15 +485,23 @@ const FeedbackPage = () => {
             <label htmlFor="feedback" className="block text-white/90 text-sm font-medium">
               您的反馈（字数不限）
             </label>
-            <textarea
-              id="feedback"
-              value={feedback}
-              onChange={(e) => setFeedback(e.target.value)}
-              placeholder="请输入您的想法..."
-              className="w-full h-40 px-4 py-3 rounded-xl bg-white/10 backdrop-blur-lg
-                border border-white/20 text-white placeholder-white/50 focus:outline-none
-                focus:ring-2 focus:ring-purple-400 focus:border-transparent resize-none"
-            />
+            <div className="relative group">
+              <div 
+                className="absolute inset-0 bg-white/10 backdrop-blur-lg rounded-xl 
+                  group-focus-within:bg-white/15 transition-colors duration-200"
+                aria-hidden="true"
+              />
+              <textarea
+                id="feedback"
+                value={feedback}
+                onChange={(e) => setFeedback(e.target.value)}
+                placeholder="请输入您的想法..."
+                className="relative w-full h-40 px-4 py-3 rounded-xl bg-transparent
+                  text-white placeholder-white/50 
+                  focus:outline-none focus:ring-0
+                  resize-none border-0"
+              />
+            </div>
           </div>
           <div>
             <button
@@ -501,8 +509,8 @@ const FeedbackPage = () => {
               disabled={isSubmitting || !feedback.trim()}
               className={`w-full py-3 rounded-xl font-medium transition-all duration-200
                 ${isSubmitting || !feedback.trim() 
-                  ? 'bg-white/30 cursor-not-allowed' 
-                  : 'bg-white/20 hover:bg-white/30 hover:shadow-lg transform hover:-translate-y-0.5'}`}
+                  ? 'bg-white/20 text-white/40 cursor-not-allowed' 
+                  : 'bg-white/20 text-white hover:bg-white/30 hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0'}`}
             >
               {isSubmitting ? '提交中...' : '提交反馈'}
             </button>
@@ -604,7 +612,7 @@ export default function Report() {
 
         {/* 其他元数据 */}
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="keywords" content="CI, 持续集成, 年度报告, ���建统计, 开发者报告" />
+        <meta name="keywords" content="CI, 持续集成, 年度报告, 构建统计, 开发者报告" />
         <meta name="author" content="MoeGo" />
 
         {/* 颜色主题 */}
