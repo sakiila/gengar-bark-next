@@ -1,6 +1,7 @@
 {
-  "name": "Gengar Bark",
-  "short_name": "Gengar Bark",
+  "name": "MoeGo CI 年度报告",
+  "short_name": "CI 年度报告",
+  "description": "查看您的 2024 年 CI 构建统计和分析",
   "icons": [
     {
       "src": "/android-chrome-192x192.png",
@@ -13,7 +14,8 @@
       "type": "image/png"
     }
   ],
-  "theme_color": "#e06357",
-  "background_color": "#524262",
-  "display": "standalone"
+  "theme_color": "#7c3aed",
+  "background_color": "#1a1a1a",
+  "display": "standalone",
+  "start_url": "/report"
 } 
