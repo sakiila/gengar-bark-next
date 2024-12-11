@@ -108,8 +108,9 @@ const OverviewPage = ({ data }: { data: BuildReport }) => (
           value={new Date(data.firstBuildTime).toLocaleDateString('ja-JP')}
         />
         <StatCard
-          title="最后构建"
-          value={new Date(data.lastBuildTime).toLocaleDateString('ja-JP')}
+          title="总体排名"
+          value={`构建量第 ${data.buildsRank} 名`}
+          description={`成功率排名第 ${data.successRateRank} 名`}
         />
         <StatCard
           title="构建成功率"
@@ -361,10 +362,6 @@ const RepositoryStatsPage = ({ data }: { data: BuildReport }) => (
       <h2 className="text-4xl font-bold text-white mb-12">仓库统计</h2>
       <div className="grid grid-cols-1 gap-6">
         <StatCard
-          title="最活跃仓库"
-          value={data.mostActiveRepository}
-        />
-        <StatCard
           title="总体排名"
           value={`构建量第 ${data.buildsRank} 名`}
           description={`成功率排名第 ${data.successRateRank} 名`}
@@ -373,6 +370,10 @@ const RepositoryStatsPage = ({ data }: { data: BuildReport }) => (
           title="日均构建次数"
           value={data.avgDailyBuilds}
           description="次"
+        />
+        <StatCard
+          title="最活跃仓库"
+          value={data.mostActiveRepository}
         />
       </div>
     </div>
@@ -486,8 +487,8 @@ const FeedbackPage = () => {
               您的反馈（字数不限）
             </label>
             <div className="relative group">
-              <div 
-                className="absolute inset-0 bg-white/10 backdrop-blur-lg rounded-xl 
+              <div
+                className="absolute inset-0 bg-white/10 backdrop-blur-lg rounded-xl
                   group-focus-within:bg-white/15 transition-colors duration-200"
                 aria-hidden="true"
               />
@@ -497,7 +498,7 @@ const FeedbackPage = () => {
                 onChange={(e) => setFeedback(e.target.value)}
                 placeholder="请输入您的想法..."
                 className="relative w-full h-40 px-4 py-3 rounded-xl bg-transparent
-                  text-white placeholder-white/50 
+                  text-white placeholder-white/50
                   focus:outline-none focus:ring-0
                   resize-none border-0"
               />
