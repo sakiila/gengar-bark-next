@@ -101,7 +101,7 @@ const OverviewPage = ({ data }: { data: BuildReport }) => (
         <StatCard
           title="总构建次数"
           value={data.totalBuilds}
-          description="在过去的一年中"
+          description="在过去的一年中（统计自 2024 年 1 月 25 日）"
         />
         <StatCard
           title="首次构建"
@@ -136,11 +136,11 @@ const PerformancePage = ({ data }: { data: BuildReport }) => (
           value={`${Math.round(data.maxDurationSeconds / 60)} 分钟`}
         />
         <StatCard
-          title="仓库数量"
+          title="使用到的仓库数量"
           value={data.totalRepositories}
         />
         <StatCard
-          title="分支数量"
+          title="使用到的分支数量"
           value={data.totalBranches}
         />
       </div>
