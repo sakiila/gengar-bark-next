@@ -601,6 +601,10 @@ async function getPushTemplateInfo(
         element: {
           type: "url_text_input",
           action_id: "url_text_input_action1",
+          placeholder: {
+            type: "plain_text",
+            text: "https://gengar.baobo.me/vision.jpg",
+          },
         },
         label: {
           type: "plain_text",
@@ -614,6 +618,10 @@ async function getPushTemplateInfo(
         element: {
           type: "url_text_input",
           action_id: "url_text_input_action2",
+          placeholder: {
+            type: "plain_text",
+            text: "https://gengar.baobo.me/chris.jpg",
+          },
         },
         label: {
           type: "plain_text",
@@ -627,6 +635,10 @@ async function getPushTemplateInfo(
         element: {
           type: "url_text_input",
           action_id: "url_text_input_action3",
+          placeholder: {
+            type: "plain_text",
+            text: "https://gengar.baobo.me/joanne.jpg",
+          },
         },
         label: {
           type: "plain_text",
@@ -640,6 +652,10 @@ async function getPushTemplateInfo(
         element: {
           type: "url_text_input",
           action_id: "url_text_input_action4",
+          placeholder: {
+            type: "plain_text",
+            text: "https://gengar.baobo.me/pinxuan.jpg",
+          },
         },
         label: {
           type: "plain_text",
@@ -653,6 +669,10 @@ async function getPushTemplateInfo(
         element: {
           type: "url_text_input",
           action_id: "url_text_input_action5",
+          placeholder: {
+            type: "plain_text",
+            text: "https://gengar.baobo.me/bob.jpg",
+          },
         },
         label: {
           type: "plain_text",
