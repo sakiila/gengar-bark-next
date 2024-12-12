@@ -27,6 +27,7 @@ import {
 } from 'react-share';
 import { useRouter } from 'next/router';
 import { ErrorMessage, LoadingSpinner, NoDataFound } from '@/components/ui';
+import Image from 'next/image';
 
 interface MonthlyData {
   month: string;
@@ -65,12 +66,55 @@ interface BuildReport {
 
 const CoverPage = ({ email }: { email: string }) => (
   <motion.div
-    className="h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 to-blue-500"
+    className="h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 to-blue-500 relative overflow-hidden"
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     transition={{ duration: 1 }}
   >
-    <div className="text-center text-white">
+    <motion.div
+      className="absolute top-20 right-20"
+      animate={{
+        y: [0, -15, 0],
+      }}
+      transition={{
+        duration: 3,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      }}
+    >
+      <Image
+        src="/assets/saly6.png"
+        alt="Decorative element"
+        width={400}
+        height={400}
+        className="opacity-90"
+        priority
+      />
+    </motion.div>
+
+
+    <motion.div
+      className="absolute bottom-20 left-20"
+      animate={{
+        y: [0, -15, 0],
+      }}
+      transition={{
+        duration: 3,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      }}
+    >
+      <Image
+        src="/assets/saly0.png"
+        alt="Decorative element"
+        width={300}
+        height={300}
+        className="opacity-90"
+        priority
+      />
+    </motion.div>
+
+    <div className="text-center text-white relative z-10">
       <h1 className="text-6xl font-bold mb-8">2024 MoeGo CI 年度报告</h1>
       <p className="text-2xl opacity-80">{email}</p>
       <p className="mt-12 text-lg animate-bounce">
@@ -94,7 +138,28 @@ const StatCard = ({ title, value, description }: { title: string; value: string 
 );
 
 const OverviewPage = ({ data }: { data: BuildReport }) => (
-  <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 p-8">
+  <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 p-8 relative">
+    <motion.div
+      className="absolute bottom-40 left-40"
+      animate={{
+        x: [0, 20, 0],
+        rotate: [0, 10, 0],
+      }}
+      transition={{
+        duration: 5,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      }}
+    >
+      <Image
+        src="/assets/saly2.png"
+        alt="Decorative element"
+        width={500}
+        height={500}
+        className="opacity-80"
+      />
+    </motion.div>
+
     <div className="max-w-4xl mx-auto">
       <h2 className="text-4xl font-bold text-white mb-12">构建概览</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -123,7 +188,28 @@ const OverviewPage = ({ data }: { data: BuildReport }) => (
 );
 
 const PerformancePage = ({ data }: { data: BuildReport }) => (
-  <div className="min-h-screen bg-gradient-to-br from-purple-600 to-blue-500 p-8">
+  <div className="min-h-screen bg-gradient-to-br from-purple-600 to-blue-500 p-8 relative">
+    <motion.div
+      className="absolute bottom-40 right-40"
+      animate={{
+        y: [0, -15, 0],
+        rotate: [0, 5, 0],
+      }}
+      transition={{
+        duration: 4,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      }}
+    >
+      <Image
+        src="/assets/saly3.png"
+        alt="Decorative element"
+        width={500}
+        height={500}
+        className="opacity-80"
+      />
+    </motion.div>
+
     <div className="max-w-4xl mx-auto">
       <h2 className="text-4xl font-bold text-white mb-12">构建表现</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -153,11 +239,31 @@ const MonthlyTrendsPage = ({ data }: { data: BuildReport }) => {
 
   return (
     <motion.div
-      className="min-h-screen bg-gradient-to-br from-indigo-600 to-purple-600 p-8"
+      className="min-h-screen bg-gradient-to-br from-indigo-600 to-purple-600 p-8 relative"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
+      <motion.div
+        className="absolute bottom-40 left-40"
+        animate={{
+          y: [0, -15, 0],
+        }}
+        transition={{
+          duration: 3,
+          repeat: Infinity,
+          ease: 'easeInOut',
+        }}
+      >
+        <Image
+          src="/assets/saly4.png"
+          alt="Decorative element"
+          width={500}
+          height={500}
+          className="opacity-90"
+        />
+      </motion.div>
+
       <div className="max-w-6xl mx-auto">
         <h2 className="text-4xl font-bold text-white mb-12">月度构建趋势</h2>
         <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 h-[400px]">
@@ -238,11 +344,29 @@ const WorkingPatternPage = ({ data }: { data: BuildReport }) => {
 
   return (
     <motion.div
-      className="min-h-screen bg-gradient-to-br from-purple-600 to-pink-500 p-8"
+      className="min-h-screen bg-gradient-to-br from-purple-600 to-pink-500 p-8 relative"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
+
+      <motion.div
+        className="absolute bottom-0 left-1/2 -translate-x-1/2"
+        transition={{
+          duration: 3,
+          repeat: Infinity,
+          ease: 'easeInOut',
+        }}
+      >
+        <Image
+          src="/assets/saly13.png"
+          alt="Decorative element"
+          width={800}
+          height={800}
+          className="opacity-90 cursor-pointer"
+        />
+      </motion.div>
+
       <div className="max-w-4xl mx-auto">
         <h2 className="text-4xl font-bold text-white mb-12">工作模式分析</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -307,7 +431,7 @@ const WorkingPatternPage = ({ data }: { data: BuildReport }) => {
                   stroke: '#ffffff44',
                   strokeWidth: 2,
                   strokeDasharray: '4 4',
-                  radius: 8
+                  radius: 8,
                 }}
               />
               <Scatter
@@ -353,11 +477,32 @@ const WorkingPatternPage = ({ data }: { data: BuildReport }) => {
 
 const RepositoryStatsPage = ({ data }: { data: BuildReport }) => (
   <motion.div
-    className="min-h-screen bg-gradient-to-br from-pink-500 to-orange-500 p-8"
+    className="min-h-screen bg-gradient-to-br from-pink-500 to-orange-500 p-8 relative"
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     transition={{ duration: 0.5 }}
   >
+    <motion.div
+      className="absolute bottom-40 right-40"
+      animate={{
+        x: [0, 15, 0],
+        y: [0, -10, 0],
+      }}
+      transition={{
+        duration: 4,
+        repeat: Infinity,
+        ease: 'easeInOut',
+      }}
+    >
+      <Image
+        src="/assets/saly8.png"
+        alt="Decorative element"
+        width={500}
+        height={500}
+        className="opacity-80"
+      />
+    </motion.div>
+
     <div className="max-w-4xl mx-auto">
       <h2 className="text-4xl font-bold text-white mb-12">仓库统计</h2>
       <div className="grid grid-cols-1 gap-6">
@@ -457,11 +602,21 @@ const FeedbackPage = () => {
 
   return (
     <motion.div
-      className="min-h-screen bg-gradient-to-br from-purple-600 to-blue-500 p-8"
+      className="min-h-screen bg-gradient-to-br from-purple-600 to-blue-500 p-8 relative"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2">
+        <Image
+          src="/assets/saly14.png"
+          alt="Decorative element"
+          width={400}
+          height={400}
+          className="opacity-90"
+        />
+      </div>
+
       <div className="max-w-2xl mx-auto">
         <h2 className="text-4xl font-bold text-white mb-4">反馈建议</h2>
 
@@ -509,9 +664,9 @@ const FeedbackPage = () => {
               type="submit"
               disabled={isSubmitting || !feedback.trim()}
               className={`w-full py-3 rounded-xl font-medium transition-all duration-200
-                ${isSubmitting || !feedback.trim() 
-                  ? 'bg-white/20 text-white/40 cursor-not-allowed' 
-                  : 'bg-white/20 text-white hover:bg-white/30 hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0'}`}
+                ${isSubmitting || !feedback.trim()
+                ? 'bg-white/20 text-white/40 cursor-not-allowed'
+                : 'bg-white/20 text-white hover:bg-white/30 hover:shadow-lg transform hover:-translate-y-0.5 active:translate-y-0'}`}
             >
               {isSubmitting ? '提交中...' : '提交反馈'}
             </button>
