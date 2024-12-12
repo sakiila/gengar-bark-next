@@ -14,15 +14,6 @@ export default async function handler(
     });
   }
 
-  // const verification = verifyRequest(req);
-  // if (!verification.status) {
-  //   // verify that the request is coming from the correct Slack team
-  //   return res.status(403).json({
-  //     response_type: 'ephemeral',
-  //     text: 'Nice try buddy. Slack signature mismatch.',
-  //   });
-  // }
-
   console.info('/ci/notify req.body = ', req.body);
 
   const message = req.body.message as string;
@@ -44,16 +35,15 @@ export default async function handler(
    * BUILD FAILURE
    */
   let notification = message;
-  if (message.includes('SUCCESS')) {
-    if (email.toLowerCase() === 'pc@moego.pet') {
-      return res.status(200).send('');
-    }
+  const lowerCaseMessage = message.toLowerCase();
+
+  if (lowerCaseMessage.includes('success')) {
     notification = `:tada: ${message}`;
-  } else if (message.includes('NOT_BUILT') || message.includes('UNSTABLE')) {
+  } else if (lowerCaseMessage.includes('not_built') || lowerCaseMessage.includes('unstable')) {
     notification = `:warning: ${message}`;
-  } else if (message.includes('ABORTED')) {
+  } else if (lowerCaseMessage.includes('aborted')) {
     notification = `:negative_squared_cross_mark: ${message}`;
-  } else if (message.includes('FAILURE')) {
+  } else if (lowerCaseMessage.includes('failure')) {
     notification = `:red_circle: ${message}`;
   }
 
@@ -76,14 +66,19 @@ export default async function handler(
     }
   }
 
-  await postToUserId(userId, res, notification);
+  // filter
+  if (email.toLowerCase() === 'pc@moego.pet') {
+    // no opt
+  } else {
+    await postToUserId(userId, res, notification);
+  }
 
   if (record) {
     let { data: build_watchs, error } = await postgres
-      .from('build_watch')
-      .select('*')
-      .eq('repository', record.repository.trim())
-      .eq('branch', record.branch.trim());
+    .from('build_watch')
+    .select('*')
+    .eq('repository', record.repository.trim())
+    .eq('branch', record.branch.trim());
 
     build_watchs?.forEach(async (build_watch) => {
       await postToUserId(
@@ -99,12 +94,12 @@ export default async function handler(
 
 function extractInfo(text: string):
   | {
-      result: string;
-      repository: string;
-      duration: string;
-      branch: string;
-      sequence: string;
-    }
+  result: string;
+  repository: string;
+  duration: string;
+  branch: string;
+  sequence: string;
+}
   | undefined {
   const match = text.match(
     /(BUILD \w+) \(([\w\s]+)\).*» ([a-z0-9-]+) » ([a-z0-9-]+) #(\d+)/i,
