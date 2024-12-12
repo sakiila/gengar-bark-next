@@ -17,10 +17,8 @@ export default async function handler(
     const reportService = ReportService.getInstance();
     const report = await reportService.getReport2024(email as string);
 
-    console.log('Report data:', report ? 'Found' : 'Not found');
-
     if (!report) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         error: 'Report not found',
         message: `No report found for ${email}`
       });
@@ -29,7 +27,7 @@ export default async function handler(
     return res.status(200).json(report);
   } catch (error) {
     console.error('Detailed API Error:', error);
-    return res.status(500).json({ 
+    return res.status(500).json({
       error: 'Internal server error',
       message: error instanceof Error ? error.message : 'Unknown error'
     });

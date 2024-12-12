@@ -23,7 +23,7 @@ import {
   WhatsappIcon,
   WhatsappShareButton,
   TelegramIcon,
-  TelegramShareButton,
+  TelegramShareButton, WeiboShareButton, WeiboIcon,
 } from 'react-share';
 import { useRouter } from 'next/router';
 import { ErrorMessage, LoadingSpinner, NoDataFound } from '@/components/ui';
@@ -175,12 +175,12 @@ const OverviewPage = ({ data }: { data: BuildReport }) => (
         <StatCard
           title="总体排名"
           value={`构建量第 ${data.buildsRank} 名`}
-          description={`成功率排名第 ${data.successRateRank} 名`}
+          description={`Nam suscipit`}
         />
         <StatCard
           title="构建成功率"
           value={`${data.successRate}%`}
-          description={`排名第 ${data.successRateRank} 位`}
+          description={`排名第 ${data.successRateRank} 名（共 67 名）`}
         />
       </div>
     </div>
@@ -275,6 +275,11 @@ const MonthlyTrendsPage = ({ data }: { data: BuildReport }) => {
               <Tooltip
                 contentStyle={{ backgroundColor: '#1a1a1a', border: 'none' }}
                 labelStyle={{ color: '#fff' }}
+                formatter={(value, name) => {
+                  if (name === 'builds') return [value, '构建次数'];
+                  if (name === 'successRate') return [`${value}%`, '成功率'];
+                  return [value, name];
+                }}
               />
               <Line
                 type="monotone"
@@ -509,16 +514,17 @@ const RepositoryStatsPage = ({ data }: { data: BuildReport }) => (
         <StatCard
           title="总体排名"
           value={`构建量第 ${data.buildsRank} 名`}
-          description={`成功率排名第 ${data.successRateRank} 名`}
+          description={`共 67 名`}
         />
         <StatCard
           title="日均构建次数"
-          value={data.avgDailyBuilds}
-          description="次"
+          value={`${data.avgDailyBuilds} 次`}
+          description="Nam suscipit"
         />
         <StatCard
           title="最活跃仓库"
-          value={data.mostActiveRepository}
+          value={data.mostActiveRepository.split(' ')[0]}
+          description={data.mostActiveRepository.split(' ').slice(1).join(' ')}
         />
       </div>
     </div>
@@ -537,12 +543,9 @@ const ShareSection = ({ data }: { data: BuildReport }) => {
       <LinkedinShareButton url={shareUrl} title={shareTitle}>
         <LinkedinIcon size={32} round />
       </LinkedinShareButton>
-      <WhatsappShareButton url={shareUrl} title={shareTitle}>
-        <WhatsappIcon size={32} round />
-      </WhatsappShareButton>
-      <TelegramShareButton url={shareUrl} title={shareTitle}>
-        <TelegramIcon size={32} round />
-      </TelegramShareButton>
+      <WeiboShareButton url={shareUrl} title={shareTitle}>
+        <WeiboIcon size={32} round />
+      </WeiboShareButton>
       <EmailShareButton url={shareUrl} subject="2024 MoeGo CI 年度报告" body={shareTitle}>
         <EmailIcon size={32} round />
       </EmailShareButton>
@@ -699,12 +702,59 @@ const FeedbackPage = () => {
   );
 };
 
+const Footer = () => (
+  <motion.div
+    className="bg-black/30 backdrop-blur-lg text-white/70 py-6 px-8"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ duration: 0.5 }}
+  >
+    <div className="max-w-4xl mx-auto text-center space-y-3">
+      <div className="text-sm space-y-1">
+        <p>© 2024 Gengar Bark. All rights reserved.</p>
+        <p>
+          Powered by{' '}
+          <a
+            href="https://baobo.me"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hover:text-white transition-colors duration-200"
+          >
+            https://baobo.me
+          </a>
+        </p>
+      </div>
+    </div>
+  </motion.div>
+);
+
+// 修改 ScrollHint 组件样式，使其更醒目
+const ScrollHint = () => (
+  <motion.div
+    className="fixed bottom-24 left-1/2 -translate-x-1/2 text-white/90 text-center pointer-events-none z-50"
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5 }}
+  >
+    <motion.div
+      animate={{ y: [0, -8, 0] }}
+      transition={{ duration: 1.5, repeat: Infinity }}
+      className="bg-black/30 backdrop-blur-lg px-6 py-3 rounded-full"
+    >
+      <p className="text-sm mb-2">继续下滑访问我的主页</p>
+      <span className="text-2xl">↓</span>
+    </motion.div>
+  </motion.div>
+);
+
 export default function Report() {
   const router = useRouter();
   const { username } = router.query;
   const [data, setData] = useState<BuildReport | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showScrollHint, setShowScrollHint] = useState(false);
+  const [canOpenLink, setCanOpenLink] = useState(false);
 
   useEffect(() => {
     const fetchReport = async () => {
@@ -738,6 +788,114 @@ export default function Report() {
     fetchReport();
   }, [username]);
 
+  // 修改滚动处理逻辑
+  useEffect(() => {
+    let touchStartY = 0;
+    let isAtBottomStart = false;
+    let scrollTimeout: NodeJS.Timeout;
+    let lastOpenTime = 0;
+    let attemptCount = 0;
+
+    const checkIfAtBottom = (element: HTMLElement) => {
+      return Math.abs(
+        element.scrollHeight - element.scrollTop - element.clientHeight
+      ) < 50;
+    };
+
+    const openLink = () => {
+      const now = Date.now();
+      if (now - lastOpenTime > 500) {
+        window.open('https://baobo.me', '_blank');
+        lastOpenTime = now;
+        setShowScrollHint(false);
+        attemptCount = 0;
+      }
+    };
+
+    const handleScroll = (e: Event) => {
+      const scrollContainer = e.target as HTMLElement;
+      const isAtBottom = checkIfAtBottom(scrollContainer);
+      
+      clearTimeout(scrollTimeout);
+      
+      if (isAtBottom) {
+        attemptCount++;
+        scrollTimeout = setTimeout(() => {
+          setShowScrollHint(true);
+          setCanOpenLink(true);
+          if (attemptCount > 2) {
+            openLink();
+          }
+        }, 50);
+      } else {
+        setShowScrollHint(false);
+        attemptCount = Math.max(0, attemptCount - 1);
+      }
+    };
+
+    const handleWheel = (e: WheelEvent) => {
+      const scrollContainer = document.querySelector('.snap-y') as HTMLElement;
+      if (!scrollContainer) return;
+      
+      const isAtBottom = checkIfAtBottom(scrollContainer);
+      
+      if (isAtBottom) {
+        e.preventDefault();
+        if (e.deltaY > 0) {
+          attemptCount++;
+          if (attemptCount > 1) {
+            openLink();
+          }
+        }
+      }
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      const scrollContainer = document.querySelector('.snap-y') as HTMLElement;
+      if (!scrollContainer) return;
+      
+      touchStartY = e.touches[0].clientY;
+      isAtBottomStart = checkIfAtBottom(scrollContainer);
+      
+      if (isAtBottomStart) {
+        setShowScrollHint(true);
+        setCanOpenLink(true);
+        attemptCount++;
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isAtBottomStart) return;
+      
+      const touchY = e.touches[0].clientY;
+      const deltaY = touchStartY - touchY;
+      
+      if (deltaY > 10) {
+        attemptCount++;
+        if (attemptCount > 1) {
+          openLink();
+        }
+        touchStartY = touchY;
+      }
+    };
+
+    const container = document.querySelector('.snap-y');
+    if (container) {
+      container.addEventListener('scroll', handleScroll, { passive: false });
+      container.addEventListener('wheel', handleWheel as EventListener, { passive: false } as AddEventListenerOptions);
+      container.addEventListener('touchstart', handleTouchStart as EventListener);
+      container.addEventListener('touchmove', handleTouchMove as EventListener);
+
+      return () => {
+        clearTimeout(scrollTimeout);
+        container.removeEventListener('scroll', handleScroll);
+        container.removeEventListener('wheel', handleWheel as EventListener);
+        container.removeEventListener('touchstart', handleTouchStart as EventListener);
+        container.removeEventListener('touchmove', handleTouchMove as EventListener);
+      };
+    }
+  }, [canOpenLink, showScrollHint]);
+
   // 添加加载状态组件
   if (!username) return <LoadingSpinner />;
   if (loading) return <LoadingSpinner />;
@@ -766,7 +924,7 @@ export default function Report() {
         <meta name="twitter:description" content={pageDescription} />
         <meta name="twitter:image" content={shareImage} />
 
-        {/* 其他元数据 */}
+        {/* 他元数据 */}
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="keywords" content="CI, 持续集成, 年度报告, 构建统计, 开发者报告" />
         <meta name="author" content="Gengar Bark" />
@@ -801,8 +959,10 @@ export default function Report() {
         <div className="snap-start">
           <FeedbackPage />
         </div>
+        <Footer />
       </div>
       <ShareSection data={data} />
+      {showScrollHint && <ScrollHint />}
     </>
   );
 }
