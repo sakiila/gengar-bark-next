@@ -139,7 +139,10 @@ const StartPage = ({ onAccept }: { onAccept: () => void }) => {
         </div>
 
         <p className="text-white/70 text-sm">
-          注意：本次数据统计因为技术原因，可能会有一定失真，仅供参考。
+          *注意 1：本次数据统计因为技术原因，可能会有一定失真，仅供参考。
+        </p>
+        <p className="text-white/70 text-sm">
+          *注意 2：本次数据统计不包含 Boarding_Desktop 项目。
         </p>
         <p className="text-white/70 text-sm">
           如有任何问题，请联系 bob@moego.pet

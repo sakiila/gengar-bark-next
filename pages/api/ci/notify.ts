@@ -43,6 +43,22 @@ export default async function handler(
     if (error) {
       console.log('insert Error:', error);
     }
+  } else {
+    const { data, error } = await postgres.from('build_record').insert([
+      {
+        result: "",
+        duration: "",
+        repository: "",
+        branch:"",
+        sequence: "",
+        email: email,
+        user_id: userId,
+        text: message,
+      },
+    ]);
+    if (error) {
+      console.log('insert Error:', error);
+    }
   }
 
   /**
@@ -91,6 +107,10 @@ export default async function handler(
   res.status(200).send('Success');
 }
 
+/**
+ * *<https://ci.devops.moego.pet/job/MoeGolibrary/job/moego-server-business/job/feature-account-structure/151/display/redirect|BUILD FAILURE (43 sec) - Moement, Inc » moego-server-business » feature-account-structure #151>*
+ * <https://github.com/MoeGolibrary/Boarding_Desktop/actions/runs/12311337827|* Deploy success (4 min 20 sec): Boarding_Desktop » bugfix-time-check (run #12311337827)*>
+ */
 function extractInfo(text: string):
   | {
   result: string;
@@ -101,7 +121,9 @@ function extractInfo(text: string):
 }
   | undefined {
   const match = text.match(
-    /(BUILD \w+) \(([\w\s]+)\).*» ([a-z0-9-]+) » ([a-z0-9-]+) #(\d+)/i,
+    /(BUILD \w+) \(([\w\s]+)\).*» ([a-zA-Z0-9_-]+) » ([a-zA-Z0-9-]+) #(\d+)/i
+  ) || text.match(
+    /\* (Deploy \w+) \(([\w\s]+)\): ([a-zA-Z0-9_-]+) » ([a-zA-Z0-9-]+) \(run #(\d+)\)\*/
   );
   if (match) {
     return {
