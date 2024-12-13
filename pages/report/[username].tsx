@@ -97,7 +97,7 @@ const StartPage = ({ onAccept }: { onAccept: () => void }) => {
       </motion.div>
 
       <div className="max-w-2xl mx-auto text-center text-white relative z-10 p-8">
-        <h1 className="text-6xl font-bold mb-8">2024 MoeGo CI 年度报告</h1>
+        <h1 className="text-6xl font-bold mb-8">2024 MoeGo CI 年度���告</h1>
 
         <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8 mb-8">
           <p className="text-lg mb-6">
@@ -140,6 +140,9 @@ const StartPage = ({ onAccept }: { onAccept: () => void }) => {
           </motion.button>
         </div>
 
+        <p className="text-white/70 text-sm">
+          注意：本次数据统计因为技术原因，可能会有一定失真，仅供参考。
+        </p>
         <p className="text-white/70 text-sm">
           如有任何问题，请联系 bob@moego.pet
         </p>
@@ -874,9 +877,10 @@ export default function Report() {
     fetchReport();
   }, [username]);
 
-  // 修改滚动处理逻辑
+  // 将现有的触摸事件处理和防止水平滚动的逻辑合并到一个 useEffect 中
   useEffect(() => {
     let touchStartY = 0;
+    let touchStartX = 0;
     let isAtBottomStart = false;
     let scrollTimeout: NodeJS.Timeout;
     let lastOpenTime = 0;
@@ -895,6 +899,42 @@ export default function Report() {
         lastOpenTime = now;
         setShowScrollHint(false);
         attemptCount = 0;
+      }
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      const scrollContainer = document.querySelector('.snap-y') as HTMLElement;
+      if (!scrollContainer) return;
+
+      touchStartY = e.touches[0].clientY;
+      touchStartX = e.touches[0].clientX;
+      isAtBottomStart = checkIfAtBottom(scrollContainer);
+
+      if (isAtBottomStart) {
+        setShowScrollHint(true);
+        setCanOpenLink(true);
+        attemptCount++;
+      }
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const touchY = e.touches[0].clientY;
+      const touchX = e.touches[0].clientX;
+      const deltaY = touchStartY - touchY;
+      const deltaX = touchStartX - touchX;
+
+      // 如果水平滑动距离大于垂直滑动距离，阻止默认行为
+      if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        e.preventDefault();
+        return;
+      }
+
+      if (isAtBottomStart && deltaY > 10) {
+        attemptCount++;
+        if (attemptCount > 1) {
+          openLink();
+        }
+        touchStartY = touchY;
       }
     };
 
@@ -925,60 +965,33 @@ export default function Report() {
 
       const isAtBottom = checkIfAtBottom(scrollContainer);
 
-      if (isAtBottom) {
+      if (isAtBottom && e.deltaY > 0) {
         e.preventDefault();
-        if (e.deltaY > 0) {
-          attemptCount++;
-          if (attemptCount > 1) {
-            openLink();
-          }
-        }
-      }
-    };
-
-    const handleTouchStart = (e: TouchEvent) => {
-      const scrollContainer = document.querySelector('.snap-y') as HTMLElement;
-      if (!scrollContainer) return;
-
-      touchStartY = e.touches[0].clientY;
-      isAtBottomStart = checkIfAtBottom(scrollContainer);
-
-      if (isAtBottomStart) {
-        setShowScrollHint(true);
-        setCanOpenLink(true);
-        attemptCount++;
-      }
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      if (!isAtBottomStart) return;
-
-      const touchY = e.touches[0].clientY;
-      const deltaY = touchStartY - touchY;
-
-      if (deltaY > 10) {
         attemptCount++;
         if (attemptCount > 1) {
           openLink();
         }
-        touchStartY = touchY;
       }
     };
 
-    const container = document.querySelector('.snap-y');
-    if (container) {
-      container.addEventListener('scroll', handleScroll, { passive: false });
-      container.addEventListener('wheel', handleWheel as EventListener, { passive: false } as AddEventListenerOptions);
-      container.addEventListener('touchstart', handleTouchStart as EventListener);
-      container.addEventListener('touchmove', handleTouchMove as EventListener);
+    // 只在客户端添加事件监听
+    if (typeof window !== 'undefined') {
+      const container = document.querySelector('.snap-y');
+      if (container) {
+        // 使用类型断言确保事件处理器类型正确
+        container.addEventListener('scroll', handleScroll as EventListener, { passive: true });
+        container.addEventListener('wheel', handleWheel as EventListener, { passive: false });
+        container.addEventListener('touchstart', handleTouchStart as EventListener, { passive: true });
+        container.addEventListener('touchmove', handleTouchMove as EventListener, { passive: false });
 
-      return () => {
-        clearTimeout(scrollTimeout);
-        container.removeEventListener('scroll', handleScroll);
-        container.removeEventListener('wheel', handleWheel as EventListener);
-        container.removeEventListener('touchstart', handleTouchStart as EventListener);
-        container.removeEventListener('touchmove', handleTouchMove as EventListener);
-      };
+        return () => {
+          clearTimeout(scrollTimeout);
+          container.removeEventListener('scroll', handleScroll as EventListener);
+          container.removeEventListener('wheel', handleWheel as EventListener);
+          container.removeEventListener('touchstart', handleTouchStart as EventListener);
+          container.removeEventListener('touchmove', handleTouchMove as EventListener);
+        };
+      }
     }
   }, [canOpenLink, showScrollHint]);
 
@@ -1028,7 +1041,7 @@ export default function Report() {
         <meta http-equiv="Pragma" content="no-cache" />
         <meta http-equiv="Expires" content="0" />
       </Head>
-      <div className="snap-y snap-mandatory h-screen overflow-y-scroll">
+      <div className="snap-y snap-mandatory h-screen overflow-y-scroll overflow-x-hidden touch-pan-y">
         <div className="snap-start">
           <CoverPage email={data.email} />
         </div>

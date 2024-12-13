@@ -52,7 +52,7 @@ export class ReportService {
       const { data, error } = await postgres
         .from('report_2024')
         .select('*')
-        .eq('email', email)
+        .eq('email', email.toLowerCase().trim())
         .single();
 
       if (error) {
