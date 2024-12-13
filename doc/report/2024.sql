@@ -42,14 +42,14 @@ heatmap_stats AS (SELECT email_lower                   as email,
 -- avg_build_duration: 平均构建时长(秒)
 -- max_build_duration: 最长构建时长(秒)
 -- min_build_duration: 最短构建时长(秒)
-user_main_stats AS (SELECT email_lower                                        as email,
-                           COUNT(*)                                           as total_builds,
-                           MIN(local_time)                                    as first_build_time,
-                           MAX(local_time)                                    as last_build_time,
+user_main_stats AS (SELECT email_lower                                          as email,
+                           COUNT(*)                                             as total_builds,
+                           MIN(local_time)                                      as first_build_time,
+                           MAX(local_time)                                      as last_build_time,
                            COUNT(CASE WHEN result ILIKE '%SUCCESS%' THEN 1 END) as successful_builds,
-                           ROUND(AVG(duration_seconds), 2)                    as avg_build_duration,
-                           MAX(duration_seconds)                              as max_build_duration,
-                           MIN(duration_seconds)                              as min_build_duration
+                           ROUND(AVG(duration_seconds), 2)                      as avg_build_duration,
+                           MAX(duration_seconds)                                as max_build_duration,
+                           MIN(duration_seconds)                                as min_build_duration
                     FROM base_stats
                     GROUP BY email_lower),
 
@@ -58,11 +58,11 @@ user_main_stats AS (SELECT email_lower                                        as
 -- builds_count: 月度构建总数
 -- success_count: 月度成功构建数
 -- avg_duration: 月度平均构建时长(秒)
-monthly_trends AS (SELECT email_lower                                        as email,
-                          DATE_TRUNC('month', local_time)                    as month,
-                          COUNT(*)                                           as builds_count,
+monthly_trends AS (SELECT email_lower                                          as email,
+                          DATE_TRUNC('month', local_time)                      as month,
+                          COUNT(*)                                             as builds_count,
                           COUNT(CASE WHEN result ILIKE '%SUCCESS%' THEN 1 END) as success_count,
-                          ROUND(AVG(duration_seconds), 2)                    as avg_duration
+                          ROUND(AVG(duration_seconds), 2)                      as avg_duration
                    FROM base_stats
                    GROUP BY email_lower, DATE_TRUNC('month', local_time)),
 
@@ -73,14 +73,14 @@ monthly_trends AS (SELECT email_lower                                        as 
 -- avg_repo_duration: 仓库平均构建时长
 -- first_repo_build: 仓库首次构建时间
 -- last_repo_build: 仓库最后构建时间
-repository_stats AS (SELECT email_lower                                        as email,
-                            repository_lower                                   as repository,
-                            COUNT(*)                                           as repo_builds,
+repository_stats AS (SELECT email_lower                                          as email,
+                            repository_lower                                     as repository,
+                            COUNT(*)                                             as repo_builds,
                             COUNT(CASE WHEN result ILIKE '%SUCCESS%' THEN 1 END) as repo_successes,
-                            COUNT(DISTINCT branch_lower)                       as branch_count,
-                            ROUND(AVG(duration_seconds), 2)                    as avg_repo_duration,
-                            MIN(local_time)                                    as first_repo_build,
-                            MAX(local_time)                                    as last_repo_build
+                            COUNT(DISTINCT branch_lower)                         as branch_count,
+                            ROUND(AVG(duration_seconds), 2)                      as avg_repo_duration,
+                            MIN(local_time)                                      as first_repo_build,
+                            MAX(local_time)                                      as last_repo_build
                      FROM base_stats
                      GROUP BY email_lower, repository_lower),
 
@@ -169,7 +169,8 @@ work_pattern_stats AS (WITH daily_stats AS (SELECT email,
 user_ranks AS (SELECT email_lower                          as email,
                       RANK() OVER (ORDER BY COUNT(*) DESC) as builds_rank,
                       RANK() OVER (
-                          ORDER BY COUNT(CASE WHEN result ILIKE '%SUCCESS%' THEN 1 END)::float / NULLIF(COUNT(*), 0) DESC
+                          ORDER BY COUNT(CASE WHEN result ILIKE '%SUCCESS%' THEN 1 END)::float /
+                                   NULLIF(COUNT(*), 0) DESC
                           )                                as success_rate_rank
                FROM base_stats
                GROUP BY email_lower)
@@ -201,10 +202,10 @@ SELECT
      WHERE b.email_lower = u.email)                                                  as total_branches,             -- 总分支数
 
     -- 最活跃仓库信息
-    (SELECT repository || ' (' || repo_builds || ' builds, ' ||
-            ROUND(CAST(repo_successes AS DECIMAL) / NULLIF(repo_builds, 0) * 100, 1) || '% success, ' ||
+    (SELECT repository || ' '  || repo_builds || ' 次构建, ' ||
+            ROUND(CAST(repo_successes AS DECIMAL) / NULLIF(repo_builds, 0) * 100, 1) || '% 成功率, ' ||
             '首次: ' || TO_CHAR(first_repo_build, 'YYYY-MM-DD HH24:MI:SS') || ', ' ||
-            '最后: ' || TO_CHAR(last_repo_build, 'YYYY-MM-DD HH24:MI:SS') || ')'
+            '最后: ' || TO_CHAR(last_repo_build, 'YYYY-MM-DD HH24:MI:SS')
      FROM repository_stats rs
      WHERE rs.email = u.email
      ORDER BY rs.repo_builds DESC
