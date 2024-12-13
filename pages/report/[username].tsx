@@ -28,6 +28,7 @@ import {
 import { useRouter } from 'next/router';
 import { ErrorMessage, LoadingSpinner, NoDataFound } from '@/components/ui';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface MonthlyData {
   month: string;
@@ -63,6 +64,89 @@ interface BuildReport {
   buildsRank: number;
   successRateRank: number;
 }
+
+const StartPage = ({ onAccept }: { onAccept: () => void }) => {
+  const [accepted, setAccepted] = useState(false);
+
+  return (
+    <motion.div
+      className="h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 to-blue-500 relative overflow-hidden"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1 }}
+    >
+      <motion.div
+        className="absolute top-20 right-20"
+        animate={{
+          y: [0, -15, 0],
+        }}
+        transition={{
+          duration: 3,
+          repeat: Infinity,
+          ease: 'easeInOut',
+        }}
+      >
+        <Image
+          src="/assets/saly6.png"
+          alt="Decorative element"
+          width={400}
+          height={400}
+          className="opacity-90"
+          priority
+        />
+      </motion.div>
+
+      <div className="max-w-2xl mx-auto text-center text-white relative z-10 p-8">
+        <h1 className="text-6xl font-bold mb-8">2024 MoeGo CI 年度报告</h1>
+
+        <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8 mb-8">
+          <p className="text-lg mb-6">
+            在查看您的年度报告之前，请仔细阅读并同意我们的隐私政策。
+          </p>
+
+          <div className="flex items-center justify-center gap-2 mb-8">
+            <input
+              type="checkbox"
+              id="privacy-accept"
+              checked={accepted}
+              onChange={(e) => setAccepted(e.target.checked)}
+              className="w-5 h-5 rounded border-white/20 bg-white/10 text-purple-600
+                focus:ring-purple-500 focus:ring-offset-0"
+            />
+            <label htmlFor="privacy-accept" className="text-white/90">
+              我已阅读并同意
+              <Link
+                href="/report/privacy-policy"
+                target="_blank"
+                className="text-purple-300 hover:text-purple-200 underline mx-1"
+              >
+                隐私政策
+              </Link>
+            </label>
+          </div>
+
+          <motion.button
+            onClick={onAccept}
+            disabled={!accepted}
+            className={`px-8 py-3 rounded-xl font-medium transition-all duration-200
+              ${accepted
+                ? 'bg-white text-purple-600 hover:bg-purple-100 hover:shadow-lg transform hover:-translate-y-0.5'
+                : 'bg-white/20 text-white/40 cursor-not-allowed'
+              }`}
+            whileHover={accepted ? { scale: 1.02 } : {}}
+            whileTap={accepted ? { scale: 0.98 } : {}}
+          >
+            开始浏览
+          </motion.button>
+        </div>
+
+        <p className="text-white/70 text-sm">
+          如有任何问题，请联系 bob@moego.pet
+        </p>
+      </div>
+    </motion.div>
+  );
+};
 
 const CoverPage = ({ email }: { email: string }) => (
   <motion.div
@@ -755,6 +839,7 @@ export default function Report() {
   const [loading, setLoading] = useState(true);
   const [showScrollHint, setShowScrollHint] = useState(false);
   const [canOpenLink, setCanOpenLink] = useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
 
   useEffect(() => {
     const fetchReport = async () => {
@@ -815,9 +900,9 @@ export default function Report() {
     const handleScroll = (e: Event) => {
       const scrollContainer = e.target as HTMLElement;
       const isAtBottom = checkIfAtBottom(scrollContainer);
-      
+
       clearTimeout(scrollTimeout);
-      
+
       if (isAtBottom) {
         attemptCount++;
         scrollTimeout = setTimeout(() => {
@@ -836,9 +921,9 @@ export default function Report() {
     const handleWheel = (e: WheelEvent) => {
       const scrollContainer = document.querySelector('.snap-y') as HTMLElement;
       if (!scrollContainer) return;
-      
+
       const isAtBottom = checkIfAtBottom(scrollContainer);
-      
+
       if (isAtBottom) {
         e.preventDefault();
         if (e.deltaY > 0) {
@@ -853,10 +938,10 @@ export default function Report() {
     const handleTouchStart = (e: TouchEvent) => {
       const scrollContainer = document.querySelector('.snap-y') as HTMLElement;
       if (!scrollContainer) return;
-      
+
       touchStartY = e.touches[0].clientY;
       isAtBottomStart = checkIfAtBottom(scrollContainer);
-      
+
       if (isAtBottomStart) {
         setShowScrollHint(true);
         setCanOpenLink(true);
@@ -866,10 +951,10 @@ export default function Report() {
 
     const handleTouchMove = (e: TouchEvent) => {
       if (!isAtBottomStart) return;
-      
+
       const touchY = e.touches[0].clientY;
       const deltaY = touchStartY - touchY;
-      
+
       if (deltaY > 10) {
         attemptCount++;
         if (attemptCount > 1) {
@@ -901,6 +986,11 @@ export default function Report() {
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} />;
   if (!data) return <NoDataFound />;
+
+  // 如果未同意隐私协议，显示启动页面
+  if (!privacyAccepted) {
+    return <StartPage onAccept={() => setPrivacyAccepted(true)} />;
+  }
 
   const pageTitle = `2024 MoeGo CI 年度报告 | ${data.email}`;
   const pageDescription = `在 2024 年，共完成 ${data.totalBuilds} 次构建，成功率 ${data.successRate}%。最活跃仓库：${data.mostActiveRepository}`;
