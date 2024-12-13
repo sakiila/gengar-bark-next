@@ -95,7 +95,7 @@ const StartPage = ({ onAccept }: { onAccept: () => void }) => {
       </motion.div>
 
       <div className="max-w-2xl mx-auto text-center text-white relative z-10 p-8">
-        <h1 className="text-6xl font-bold mb-8">2024 MoeGo CI 年度报告</h1>
+        <h1 className="text-6xl font-bold mb-8">2024 MoeGo CI 构建年度报告</h1>
 
         <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8 mb-8">
           <p className="text-lg mb-6">
