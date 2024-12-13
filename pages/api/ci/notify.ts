@@ -27,26 +27,6 @@ export default async function handler(
     });
   }
 
-  /**
-   * BUILD SUCCESS
-   * BUILD UNSTABLE
-   * BUILD NOT_BUILT
-   * BUILD ABORTED
-   * BUILD FAILURE
-   */
-  let notification = message;
-  const lowerCaseMessage = message.toLowerCase();
-
-  if (lowerCaseMessage.includes('success')) {
-    notification = `:tada: ${message}`;
-  } else if (lowerCaseMessage.includes('not_built') || lowerCaseMessage.includes('unstable')) {
-    notification = `:warning: ${message}`;
-  } else if (lowerCaseMessage.includes('aborted')) {
-    notification = `:negative_squared_cross_mark: ${message}`;
-  } else if (lowerCaseMessage.includes('failure')) {
-    notification = `:red_circle: ${message}`;
-  }
-
   const record = extractInfo(message);
   if (record) {
     const { data, error } = await postgres.from('build_record').insert([
@@ -64,6 +44,26 @@ export default async function handler(
     if (error) {
       console.log('insert Error:', error);
     }
+  }
+
+  /**
+   * BUILD SUCCESS
+   * BUILD UNSTABLE
+   * BUILD NOT_BUILT
+   * BUILD ABORTED
+   * BUILD FAILURE
+   */
+  const result = record?.result;
+  let notification = message;
+  const lowerCaseMessage = result?.toLowerCase() || message.toLowerCase();
+  if (lowerCaseMessage.includes('success')) {
+    notification = `:tada: ${message}`;
+  } else if (lowerCaseMessage.includes('not_built') || lowerCaseMessage.includes('unstable')) {
+    notification = `:warning: ${message}`;
+  } else if (lowerCaseMessage.includes('abort') || lowerCaseMessage.includes('cancel')) {
+    notification = `:negative_squared_cross_mark: ${message}`;
+  } else if (lowerCaseMessage.includes('failure')) {
+    notification = `:red_circle: ${message}`;
   }
 
   // filter
