@@ -20,10 +20,8 @@ import {
   LinkedinShareButton,
   TwitterIcon,
   TwitterShareButton,
-  WhatsappIcon,
-  WhatsappShareButton,
-  TelegramIcon,
-  TelegramShareButton, WeiboShareButton, WeiboIcon,
+  WeiboIcon,
+  WeiboShareButton,
 } from 'react-share';
 import { useRouter } from 'next/router';
 import { ErrorMessage, LoadingSpinner, NoDataFound } from '@/components/ui';
@@ -97,7 +95,7 @@ const StartPage = ({ onAccept }: { onAccept: () => void }) => {
       </motion.div>
 
       <div className="max-w-2xl mx-auto text-center text-white relative z-10 p-8">
-        <h1 className="text-6xl font-bold mb-8">2024 MoeGo CI 年度���告</h1>
+        <h1 className="text-6xl font-bold mb-8">2024 MoeGo CI 年度报告</h1>
 
         <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8 mb-8">
           <p className="text-lg mb-6">
@@ -130,9 +128,9 @@ const StartPage = ({ onAccept }: { onAccept: () => void }) => {
             disabled={!accepted}
             className={`px-8 py-3 rounded-xl font-medium transition-all duration-200
               ${accepted
-                ? 'bg-white text-purple-600 hover:bg-purple-100 hover:shadow-lg transform hover:-translate-y-0.5'
-                : 'bg-white/20 text-white/40 cursor-not-allowed'
-              }`}
+              ? 'bg-white text-purple-600 hover:bg-purple-100 hover:shadow-lg transform hover:-translate-y-0.5'
+              : 'bg-white/20 text-white/40 cursor-not-allowed'
+            }`}
             whileHover={accepted ? { scale: 1.02 } : {}}
             whileTap={accepted ? { scale: 0.98 } : {}}
           >
@@ -642,14 +640,15 @@ const ShareSection = ({ data }: { data: BuildReport }) => {
 
 const FeedbackPage = () => {
   const router = useRouter();
-  const { username } = router.query;
+  const { username } = router.query as { username: string };
+  const lowerCaseUsername = username?.toLowerCase();
   const [feedback, setFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!feedback.trim() || !username || isSubmitting) return;
+    if (!feedback.trim() || !lowerCaseUsername || isSubmitting) return;
 
     setIsSubmitting(true);
     try {
@@ -659,7 +658,7 @@ const FeedbackPage = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username,
+          lowerCaseUsername,
           feedback: feedback.trim(),
         }),
       });
@@ -837,7 +836,8 @@ const ScrollHint = () => (
 
 export default function Report() {
   const router = useRouter();
-  const { username } = router.query;
+  const { username } = router.query as { username: string };
+  const lowerCaseUsername = username?.toLowerCase();
   const [data, setData] = useState<BuildReport | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -847,11 +847,11 @@ export default function Report() {
 
   useEffect(() => {
     const fetchReport = async () => {
-      if (!username) return;
+      if (!lowerCaseUsername) return;
 
       try {
-        const email = `${username}@moego.pet`;
-        console.log('Fetching report for:', email);
+        const email = `${lowerCaseUsername}@moego.pet`;
+        console.log('Fetching report for:', lowerCaseUsername);
 
         const response = await fetch(`/api/report/2024/${encodeURIComponent(email)}`);
         const data = await response.json();
@@ -875,7 +875,7 @@ export default function Report() {
     };
 
     fetchReport();
-  }, [username]);
+  }, [lowerCaseUsername]);
 
   // 将现有的触摸事件处理和防止水平滚动的逻辑合并到一个 useEffect 中
   useEffect(() => {
@@ -888,7 +888,7 @@ export default function Report() {
 
     const checkIfAtBottom = (element: HTMLElement) => {
       return Math.abs(
-        element.scrollHeight - element.scrollTop - element.clientHeight
+        element.scrollHeight - element.scrollTop - element.clientHeight,
       ) < 50;
     };
 
@@ -996,7 +996,7 @@ export default function Report() {
   }, [canOpenLink, showScrollHint]);
 
   // 添加加载状态组件
-  if (!username) return <LoadingSpinner />;
+  if (!lowerCaseUsername) return <LoadingSpinner />;
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} />;
   if (!data) return <NoDataFound />;
