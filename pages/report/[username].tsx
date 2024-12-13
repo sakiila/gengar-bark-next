@@ -807,6 +807,7 @@ const Footer = () => (
             https://baobo.me
           </a>
         </p>
+        <p>♥️恭喜你发现了这个小彩蛋，快去找 Bob 要一个小礼品吧！♥️</p>
       </div>
     </div>
   </motion.div>
