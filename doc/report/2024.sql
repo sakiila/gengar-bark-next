@@ -46,7 +46,7 @@ user_main_stats AS (SELECT email_lower                                        as
                            COUNT(*)                                           as total_builds,
                            MIN(local_time)                                    as first_build_time,
                            MAX(local_time)                                    as last_build_time,
-                           COUNT(CASE WHEN text ILIKE '%SUCCESS%' THEN 1 END) as successful_builds,
+                           COUNT(CASE WHEN result ILIKE '%SUCCESS%' THEN 1 END) as successful_builds,
                            ROUND(AVG(duration_seconds), 2)                    as avg_build_duration,
                            MAX(duration_seconds)                              as max_build_duration,
                            MIN(duration_seconds)                              as min_build_duration
@@ -61,7 +61,7 @@ user_main_stats AS (SELECT email_lower                                        as
 monthly_trends AS (SELECT email_lower                                        as email,
                           DATE_TRUNC('month', local_time)                    as month,
                           COUNT(*)                                           as builds_count,
-                          COUNT(CASE WHEN text ILIKE '%SUCCESS%' THEN 1 END) as success_count,
+                          COUNT(CASE WHEN result ILIKE '%SUCCESS%' THEN 1 END) as success_count,
                           ROUND(AVG(duration_seconds), 2)                    as avg_duration
                    FROM base_stats
                    GROUP BY email_lower, DATE_TRUNC('month', local_time)),
@@ -76,7 +76,7 @@ monthly_trends AS (SELECT email_lower                                        as 
 repository_stats AS (SELECT email_lower                                        as email,
                             repository_lower                                   as repository,
                             COUNT(*)                                           as repo_builds,
-                            COUNT(CASE WHEN text ILIKE '%SUCCESS%' THEN 1 END) as repo_successes,
+                            COUNT(CASE WHEN result ILIKE '%SUCCESS%' THEN 1 END) as repo_successes,
                             COUNT(DISTINCT branch_lower)                       as branch_count,
                             ROUND(AVG(duration_seconds), 2)                    as avg_repo_duration,
                             MIN(local_time)                                    as first_repo_build,
@@ -169,7 +169,7 @@ work_pattern_stats AS (WITH daily_stats AS (SELECT email,
 user_ranks AS (SELECT email_lower                          as email,
                       RANK() OVER (ORDER BY COUNT(*) DESC) as builds_rank,
                       RANK() OVER (
-                          ORDER BY COUNT(CASE WHEN text ILIKE '%SUCCESS%' THEN 1 END)::float / NULLIF(COUNT(*), 0) DESC
+                          ORDER BY COUNT(CASE WHEN result ILIKE '%SUCCESS%' THEN 1 END)::float / NULLIF(COUNT(*), 0) DESC
                           )                                as success_rate_rank
                FROM base_stats
                GROUP BY email_lower)

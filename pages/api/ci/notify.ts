@@ -1,6 +1,5 @@
-import { emailToUserId, getUserId, postToUserId } from '@/lib/slack';
+import { getUserId, postToUserId } from '@/lib/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getCache, setCache } from '@/lib/upstash';
 import { postgres } from '@/lib/supabase';
 
 export default async function handler(
