@@ -1,5 +1,6 @@
 import { DataSource } from 'typeorm';
 import { BuildRecord } from './entities/BuildRecord';
+import { Channel } from './entities/Channel';
 
 export const AppDataSource = new DataSource({
     type: "postgres",
@@ -8,9 +9,9 @@ export const AppDataSource = new DataSource({
     username: process.env.POSTGRES_USER,
     password: process.env.POSTGRES_PASSWORD,
     database: process.env.POSTGRES_DATABASE,
-    synchronize: false,
+    synchronize: true,
     logging: process.env.NODE_ENV === "development",
-    entities: [BuildRecord],
+    entities: [BuildRecord, Channel],
 })
 
 // 初始化函数

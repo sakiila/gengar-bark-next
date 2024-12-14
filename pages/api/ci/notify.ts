@@ -2,7 +2,6 @@ import { getUserId, postToUserId } from '@/lib/slack/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { postgres } from '@/lib/database/supabase';
 import { BuildRecordService } from '@/lib/database/services/build-record.service';
-import { postMessage } from '@/lib/slack/bolt';
 
 export default async function handler(
   req: NextApiRequest,

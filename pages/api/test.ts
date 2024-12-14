@@ -2,31 +2,35 @@ import { NextApiRequest, NextApiResponse } from "next";
 import AppointmentService from "@/lib/moego/AppointmentService";
 import { BusinessAccountResponse, Customer, Service } from "@/lib/moego/types";
 import { dateUtils } from "@/lib/utils/date-utils";
+import { conversationsListForIm } from '@/lib/slack/gengar-bolt';
 
 export default async function personHandler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  const email = req.body.email;
-  const slackName = req.body.slackName;
-  var customerKeyword = req.body.customerKeyword;
 
-  const appointmentService = new AppointmentService("bob@moego.pet");
+  await conversationsListForIm();
 
-  await appointmentService.getLoginToken();
-
-  const currentCookies = appointmentService.getCurrentCookies();
-  console.log("currentCookies:", currentCookies);
-
-  if (!customerKeyword?.trim()) {
-    customerKeyword = "";
-  }
-  const customer = await fetchCustomer(appointmentService, customerKeyword);
-  if (!customer) {
-    return res.status(500).json({ message: "Failed to fetch customer" });
-  }
-
-  const name = customer.firstName + " " + customer.lastName;
+  // const email = req.body.email;
+  // const slackName = req.body.slackName;
+  // var customerKeyword = req.body.customerKeyword;
+  //
+  // const appointmentService = new AppointmentService("bob@moego.pet");
+  //
+  // await appointmentService.getLoginToken();
+  //
+  // const currentCookies = appointmentService.getCurrentCookies();
+  // console.log("currentCookies:", currentCookies);
+  //
+  // if (!customerKeyword?.trim()) {
+  //   customerKeyword = "";
+  // }
+  // const customer = await fetchCustomer(appointmentService, customerKeyword);
+  // if (!customer) {
+  //   return res.status(500).json({ message: "Failed to fetch customer" });
+  // }
+  //
+  // const name = customer.firstName + " " + customer.lastName;
 
   // const pet = customer.petList[0];
   // if (!pet) {
@@ -58,7 +62,7 @@ export default async function personHandler(
   //   slackName,
   // );
 
-  return res.status(200).json({ message: name });
+  return res.status(200).json({ message: "Success" });
 }
 
 async function create(
