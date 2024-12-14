@@ -1,12 +1,12 @@
-import { getLatestPost, getPost } from './hn';
+import { getLatestPost, getPost } from "@/lib/hacknews/hn";
 import {
   getLastCheckedId,
   setLastCheckedId,
   checkIfPostWasChecked,
   getTeamsAndKeywords,
-} from '../upstash/upstash';
-import { equalsIgnoreOrder, postScanner } from './helpers';
-import { sendSlackMessage } from '../slack/slack';
+} from "./upstash";
+import { equalsIgnoreOrder, postScanner } from "@/lib/hacknews/helpers";
+import { sendSlackMessage } from "./slack";
 
 export async function cron() {
   // last checked post id from redis, latest post id from hacker news
@@ -17,7 +17,7 @@ export async function cron() {
 
   if (latestPostId === lastCheckedId) {
     // if latest post id is the same as last checked id, do nothing
-    return { results: 'No new posts' };
+    return { results: "No new posts" };
   }
 
   const teamsAndKeywords = await getTeamsAndKeywords(); // get all team keys from redis
@@ -39,18 +39,18 @@ export async function cron() {
     if (post.deleted) {
       continue; // if post is deleted, skip it
     }
-    console.log('checking for keywords in post', i);
+    console.log("checking for keywords in post", i);
     const interestedTeams = Array.from(scanner(post)); // get teams that are interested in this post
     if (interestedTeams.length > 0) {
       results[i] = interestedTeams; // add post id and interested teams to results
       await Promise.all(
         interestedTeams.map(async (teamId) => {
-          console.log('sending post to team', teamId);
+          console.log("sending post to team", teamId);
           try {
             await sendSlackMessage(i, teamId); // send post to team
           } catch (e) {
             console.log(
-              `Error sending post ${i} to team ${teamId}. Cause of error: ${e}`,
+              `Error sending post ${i} to team ${teamId}. Cause of error: ${e}`
             );
             errors.push({
               error: e,
@@ -58,7 +58,7 @@ export async function cron() {
               teamId: teamId,
             }); // if there's an error, add it to errors
           }
-        }),
+        })
       );
     }
   }
@@ -76,7 +76,7 @@ export async function cron() {
 export async function testCron(
   postsToTest: number[],
   fakeTeamsAndKeywords: { [teamId: string]: string[] },
-  fakeInterestedTeams: { [postId: number]: string[] },
+  fakeInterestedTeams: { [postId: number]: string[] }
 ) {
   const scanner = postScanner(fakeTeamsAndKeywords);
   let results: { [postId: number]: string } = {};
@@ -92,15 +92,16 @@ export async function testCron(
     }
     const interestedTeams = Array.from(scanner(post)); // get teams that are interested in this post
     if (!equalsIgnoreOrder(fakeInterestedTeams[id], interestedTeams)) {
-      results[id] =
-        `Interested teams don't match. Expected: ${fakeInterestedTeams[id]}, Actual: ${interestedTeams}`;
+      results[
+        id
+        ] = `Interested teams don't match. Expected: ${fakeInterestedTeams[id]}, Actual: ${interestedTeams}`;
     }
   }
   return {
     message:
       Object.keys(results).length > 0
-        ? 'Some tests failing'
-        : 'All tests passed',
+        ? "Some tests failing"
+        : "All tests passed",
     results,
   };
 }

@@ -49,6 +49,11 @@ export class ReportService {
     try {
       console.log('Querying database for email:', email);
 
+      // todo: remove this line
+      if (email.toLowerCase().trim() !== 'bob@moego.pet') {
+        return null;
+      }
+
       const { data, error } = await postgres
         .from('report_2024')
         .select('*')

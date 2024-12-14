@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import { ChatCompletionMessageParam } from 'openai/resources';
-import { dateUtils } from '@/lib/utils/dateUtils';
+import { dateUtils } from '@/lib/utils/date-utils';
 
 // https://github.com/vercel/examples/blob/main/solutions/slackbot/api/events.ts
 const openai = new OpenAI({

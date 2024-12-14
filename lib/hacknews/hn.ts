@@ -1,5 +1,9 @@
 import pRetry from 'p-retry';
 
+/**
+ * Get the latest post from Hacker News
+ * https://github.com/vercel-labs/slacker
+ */
 export async function getLatestPost() {
   /* get latest post id from hacker news */
   const res = await fetch(
