@@ -1,6 +1,6 @@
-import { postToChannelId } from '@/lib/slack';
+import { postToChannelId } from '@/lib/slack/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { postgres } from '@/lib/supabase';
+import { postgres } from '@/lib/database/supabase';
 
 export const config = {
   maxDuration: 60,

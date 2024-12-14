@@ -1,4 +1,4 @@
-import { verifyRequest, postBoldBlockToChannelId } from '@/lib/slack';
+import { verifyRequest, postBoldBlockToChannelId } from '@/lib/slack/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(

@@ -1,12 +1,12 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { publishView } from '@/lib/slack';
-import { postgres } from '@/lib/supabase';
+import { publishView } from '@/lib/slack/slack';
+import { postgres } from '@/lib/database/supabase';
 
 interface User {
   real_name_normalized: string;
 }
 
-export default async function app_home_opened(
+export default async function openAppHome(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {

@@ -1,7 +1,7 @@
-import { responseUrl } from '@/lib/slack';
+import { responseUrl } from '@/lib/slack/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { ChatCompletionMessageParam } from 'openai/resources';
-import { getGPT4 } from '@/lib/openai';
+import { getGPT4 } from '@/lib/ai/openai';
 
 export default async function handler(
   req: NextApiRequest,

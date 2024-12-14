@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getAddedUserId, postToProd } from '@/lib/slack';
+import { getAddedUserId, postToProd } from '@/lib/slack/slack';
 
-export default async function emoji_changed(
+export default async function emojiChanged(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {

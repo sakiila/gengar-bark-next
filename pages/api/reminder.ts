@@ -1,9 +1,9 @@
-import { postReminderToProd } from '@/lib/slack';
+import { postReminderToProd } from '@/lib/slack/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { postgres } from '@/lib/supabase';
+import { postgres } from '@/lib/database/supabase';
 import { ChatCompletionMessageParam } from 'openai/resources';
-import { getDALLE3, getGPT4mini } from '@/lib/openai';
-import { uploadImageToS3 } from '@/lib/cloudflare';
+import { getDALLE3, getGPT4mini } from '@/lib/ai/openai';
+import { uploadImageToS3 } from '@/lib/cloudflare/cloudflare';
 
 export const config = {
   maxDuration: 60,

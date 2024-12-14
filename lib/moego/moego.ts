@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { threadReply } from "@/lib/slack";
-import { generatePromptForMoeGo, getGPT4mini } from "@/lib/openai";
+import { threadReply } from "@/lib/slack/slack";
+import { generatePromptForMoeGo, getGPT4mini } from "@/lib/ai/openai";
 import { GPTResponse } from "@/lib/moego/types";
-import { postgres } from "@/lib/supabase";
+import { postgres } from "@/lib/database/supabase";
 import compositeCreateAppointment from "./composite";
 
 export async function execute_moego(req: NextApiRequest, res: NextApiResponse) {

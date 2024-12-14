@@ -1,6 +1,6 @@
-import { verifyRequest } from '@/lib/slack';
+import { verifyRequest } from '@/lib/slack/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { existsCacheThanSet, publishAi } from '@/lib/upstash';
+import { existsCacheThanSet, publishAi } from '@/lib/upstash/upstash';
 
 export default async function handler(
   req: NextApiRequest,

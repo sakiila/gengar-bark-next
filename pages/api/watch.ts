@@ -1,8 +1,8 @@
-import { verifyRequest, prodChannel, testChannel } from '@/lib/slack';
+import { verifyRequest, prodChannel, testChannel } from '@/lib/slack/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
-import watch_add from '@/lib/slash_handlers/watch_add';
-import watch_ls from '@/lib/slash_handlers/watch_ls';
-import watch_rm from '@/lib/slash_handlers/watch_rm';
+import watchAdd from '@/lib/slash-handlers/watch-add';
+import watchLs from '@/lib/slash-handlers/watch-ls';
+import watchRm from '@/lib/slash-handlers/watch-rm';
 
 export default async function handler(
   req: NextApiRequest,
@@ -32,13 +32,13 @@ export default async function handler(
 
   switch (action) {
     case 'add':
-      await watch_add(res, data);
+      await watchAdd(res, data);
       break;
     case 'ls':
-      await watch_ls(res, data);
+      await watchLs(res, data);
       break;
     case 'rm':
-      await watch_rm(res, data);
+      await watchRm(res, data);
       break;
     default:
       res.send({

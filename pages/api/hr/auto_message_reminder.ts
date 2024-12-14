@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { autoMessageReminderTask } from '@/lib/auto_message_reminder_task';
+import { autoMessageReminderTask } from '@/lib/hr/auto_message_reminder_task';
 import { autoMessageReminderTaskV2 } from '@/lib/hr/auto_message';
 
 export default async function handler(

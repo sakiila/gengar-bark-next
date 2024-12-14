@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { postToProd } from '@/lib/slack';
-import { postgres } from '@/lib/supabase';
+import { postToProd } from '@/lib/slack/slack';
+import { postgres } from '@/lib/database/supabase';
 
-export default async function team_join(
+export default async function teamJoin(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {

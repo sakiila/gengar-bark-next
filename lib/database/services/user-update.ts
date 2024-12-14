@@ -1,6 +1,6 @@
-import { postgres } from '@/lib/supabase';
+import { postgres } from '@/lib/database/supabase';
 
-export async function user_update(
+export async function userUpdate(
   payload: Array<{
     email: string;
     entry: string;

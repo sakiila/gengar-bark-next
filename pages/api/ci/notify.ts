@@ -1,110 +1,143 @@
-import { getUserId, postToUserId } from '@/lib/slack';
+import { getUserId, postToUserId } from '@/lib/slack/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { postgres } from '@/lib/supabase';
+import { postgres } from '@/lib/database/supabase';
+import { BuildRecordService } from '@/lib/database/services/build-record.service';
+import { postMessage } from '@/lib/slack/bolt';
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({
-      response_type: 'ephemeral',
-      text: 'This endpoint only accepts POST requests',
-    });
-  }
-
-  console.info('/ci/notify req.body = ', req.body);
-
-  const message = req.body.message as string;
-  const email = req.body.email as string;
-
-  const userId = await getUserId(email.trim());
-  if (userId === 'unknown') {
-    return res.status(404).json({
-      response_type: 'ephemeral',
-      text: 'Email not found',
-    });
-  }
-
-  const record = extractInfo(message);
-  if (record) {
-    const { data, error } = await postgres.from('build_record').insert([
-      {
-        result: record.result,
-        duration: record.duration,
-        repository: record.repository,
-        branch: record.branch,
-        sequence: record.sequence,
-        email: email,
-        user_id: userId,
-        text: message,
-      },
-    ]);
-    if (error) {
-      console.log('insert Error:', error);
+  try {
+    if (req.method !== 'POST') {
+      return res.status(405).json({
+        response_type: 'ephemeral',
+        text: 'This endpoint only accepts POST requests',
+      });
     }
-  } else {
-    const { data, error } = await postgres.from('build_record').insert([
-      {
-        result: "",
-        duration: "",
-        repository: "",
-        branch:"",
-        sequence: "",
-        email: email,
-        user_id: userId,
-        text: message,
-      },
-    ]);
-    if (error) {
-      console.log('insert Error:', error);
+
+    const message = req.body.message as string;
+    const email = req.body.email as string;
+
+    const userId = await getUserId(email.trim());
+    if (userId === 'unknown') {
+      return res.status(404).json({
+        response_type: 'ephemeral',
+        text: 'Email not found',
+      });
     }
-  }
 
-  /**
-   * BUILD SUCCESS
-   * BUILD UNSTABLE
-   * BUILD NOT_BUILT
-   * BUILD ABORTED
-   * BUILD FAILURE
-   */
-  const result = record?.result;
-  let notification = message;
-  const lowerCaseMessage = result?.toLowerCase() || message.toLowerCase();
-  if (lowerCaseMessage.includes('success')) {
-    notification = `:tada: ${message}`;
-  } else if (lowerCaseMessage.includes('not_built') || lowerCaseMessage.includes('unstable')) {
-    notification = `:warning: ${message}`;
-  } else if (lowerCaseMessage.includes('abort') || lowerCaseMessage.includes('cancel')) {
-    notification = `:negative_squared_cross_mark: ${message}`;
-  } else if (lowerCaseMessage.includes('failure')) {
-    notification = `:red_circle: ${message}`;
-  }
+    const record = extractInfo(message);
+    const useTypeorm = process.env.USE_TYPEORM === 'true';
 
-  // filter
-  if (email.toLowerCase() === 'pc@moego.pet') {
-    // no opt
-  } else {
-    await postToUserId(userId, res, notification);
-  }
+    if (useTypeorm) {
+      try {
+        const buildRecordService = await BuildRecordService.getInstance();
 
-  if (record) {
-    let { data: build_watchs, error } = await postgres
-    .from('build_watch')
-    .select('*')
-    .eq('repository', record.repository.trim())
-    .eq('branch', record.branch.trim());
+        await buildRecordService.create({
+          result: record?.result || "",
+          duration: record?.duration || "",
+          repository: record?.repository || "",
+          branch: record?.branch || "",
+          sequence: record?.sequence || "",
+          email: email,
+          user_id: userId,
+          text: message,
+        });
+      } catch (error) {
+        console.error('TypeORM insert Error:', error);
+        // 如果 TypeORM 失败，回退到 Supabase
+        await insertWithSupabase(record, email, userId, message);
+      }
+    } else {
+      await insertWithSupabase(record, email, userId, message);
+    }
 
-    build_watchs?.forEach(async (build_watch) => {
-      await postToUserId(
-        build_watch.channel,
-        res,
-        `${notification} by <@${userId}>`,
-      );
+    /**
+     * BUILD SUCCESS
+     * BUILD UNSTABLE
+     * BUILD NOT_BUILT
+     * BUILD ABORTED
+     * BUILD FAILURE
+     */
+    const result = record?.result;
+    let notification = message;
+    const lowerCaseMessage = result?.toLowerCase() || message.toLowerCase();
+    if (lowerCaseMessage.includes('success')) {
+      notification = `:tada: ${message}`;
+    } else if (lowerCaseMessage.includes('not_built') || lowerCaseMessage.includes('unstable')) {
+      notification = `:warning: ${message}`;
+    } else if (lowerCaseMessage.includes('abort') || lowerCaseMessage.includes('cancel')) {
+      notification = `:negative_squared_cross_mark: ${message}`;
+    } else if (lowerCaseMessage.includes('failure')) {
+      notification = `:red_circle: ${message}`;
+    }
+
+    // filter
+    if (email.toLowerCase() === 'pc@moego.pet') {
+      // no opt
+    } else {
+      await postToUserId(userId, res, notification);
+      // await postMessage(userId,  notification);
+    }
+
+    if (record) {
+      let { data: build_watchs, error } = await postgres
+      .from('build_watch')
+      .select('*')
+      .eq('repository', record.repository.trim())
+      .eq('branch', record.branch.trim());
+
+      build_watchs?.forEach(async (build_watch) => {
+        await postToUserId(
+          build_watch.channel,
+          res,
+          `${notification} by <@${userId}>`,
+        );
+      });
+    }
+
+    res.status(200).send('Success');
+  } catch (error) {
+    console.error('Handler error:', error);
+    return res.status(500).json({
+      response_type: 'ephemeral',
+      text: 'Internal server error',
     });
   }
+}
 
-  res.status(200).send('Success');
+async function insertWithSupabase(
+  record: ReturnType<typeof extractInfo>,
+  email: string,
+  userId: string,
+  message: string
+) {
+  const insertData = record ? {
+    result: record.result,
+    duration: record.duration,
+    repository: record.repository,
+    branch: record.branch,
+    sequence: record.sequence,
+    email: email,
+    user_id: userId,
+    text: message,
+  } : {
+    result: "",
+    duration: "",
+    repository: "",
+    branch: "",
+    sequence: "",
+    email: email,
+    user_id: userId,
+    text: message,
+  };
+
+  const { error } = await postgres.from('build_record').insert([insertData]);
+  if (error) {
+    console.error('Supabase insert Error:', error);
+    throw error;
+  }
 }
 
 /**

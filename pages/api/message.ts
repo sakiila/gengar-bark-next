@@ -1,4 +1,4 @@
-import { deleteMessage, verifyRequest } from '@/lib/slack';
+import { deleteMessage, verifyRequest } from '@/lib/slack/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(

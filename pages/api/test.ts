@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import AppointmentService from "@/lib/moego/AppointmentService";
 import { BusinessAccountResponse, Customer, Service } from "@/lib/moego/types";
-import { dateUtils } from "@/lib/dateUtils";
+import { dateUtils } from "@/lib/utils/dateUtils";
 
 export default async function personHandler(
   req: NextApiRequest,

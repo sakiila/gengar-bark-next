@@ -1,4 +1,4 @@
-import { getProfileStatus, setProfileStatus } from '@/lib/slack';
+import { getProfileStatus, setProfileStatus } from '@/lib/slack/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(

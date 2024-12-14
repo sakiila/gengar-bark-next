@@ -1,6 +1,6 @@
-import { verifyRequest } from '@/lib/slack';
+import { verifyRequest } from '@/lib/slack/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
-import ci_add from '@/lib/slash_handlers/ci_add';
+import ciAdd from '@/lib/slash-handlers/ci-add';
 
 export default async function handler(
   req: NextApiRequest,
@@ -24,7 +24,7 @@ export default async function handler(
   const text = req.body.text;
   const [repository, branch] = text.split(' ');
 
-  await ci_add(
+  await ciAdd(
     res,
     repository,
     branch,

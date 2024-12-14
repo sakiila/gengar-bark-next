@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { cron } from '@/lib/cron';
-import { log } from '@/lib/slack';
-import { isDuplicateCron } from '@/lib/upstash';
+import { cron } from '@/lib/hackNews/cron';
+import { log } from '@/lib/slack/slack';
+import { isDuplicateCron } from '@/lib/upstash/upstash';
 
 export default async function handler(
   _req: NextApiRequest,

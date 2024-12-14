@@ -1,5 +1,5 @@
-import { getTeamConfigAndStats } from '@/lib/upstash';
-import { verifyRequest, configureBlocks } from '@/lib/slack';
+import { getTeamConfigAndStats } from '@/lib/upstash/upstash';
+import { verifyRequest, configureBlocks } from '@/lib/slack/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(

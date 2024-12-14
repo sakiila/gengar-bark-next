@@ -4,11 +4,11 @@ import {
   postToProd,
   postToTest,
   prodChannel,
-} from '@/lib/slack';
-import { postgres } from '@/lib/supabase';
-import { getCache, setCacheEx } from '@/lib/upstash';
+} from '@/lib/slack/slack';
+import { postgres } from '@/lib/database/supabase';
+import { getCache, setCacheEx } from '@/lib/upstash/upstash';
 
-export default async function user_status_changed(
+export default async function userStatusChanged(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {

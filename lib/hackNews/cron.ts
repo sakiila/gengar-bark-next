@@ -4,9 +4,9 @@ import {
   setLastCheckedId,
   checkIfPostWasChecked,
   getTeamsAndKeywords,
-} from './upstash';
+} from '../upstash/upstash';
 import { equalsIgnoreOrder, postScanner } from './helpers';
-import { sendSlackMessage } from './slack';
+import { sendSlackMessage } from '../slack/slack';
 
 export async function cron() {
   // last checked post id from redis, latest post id from hacker news

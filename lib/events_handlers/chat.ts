@@ -4,12 +4,12 @@ import {
   setStatus,
   setSuggestedPrompts,
   threadReply,
-} from "@/lib/slack";
-import { generatePromptFromThread, getGPT4 } from "@/lib/openai";
-import { existsCacheThanSet } from "@/lib/upstash";
+} from "@/lib/slack/slack";
+import { generatePromptFromThread, getGPT4 } from "@/lib/ai/openai";
+import { existsCacheThanSet } from "@/lib/upstash/upstash";
 import { execute_moego } from "@/lib/moego/moego";
-import { execute_build } from "@/lib/ci/build";
-import { logger } from '@/lib/logger';
+import { execute_build } from "@/lib/jenkins/build";
+import { logger } from '@/lib/utils/logger';
 
 /**
  * Send GPT response to the channel

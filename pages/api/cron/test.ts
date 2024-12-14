@@ -1,4 +1,4 @@
-import { testCron } from '@/lib/cron';
+import { testCron } from '@/lib/hackNews/cron';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 const postsToTest = [

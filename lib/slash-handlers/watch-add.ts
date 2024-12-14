@@ -1,8 +1,8 @@
 import { NextApiResponse } from 'next';
-import { postgres } from '@/lib/supabase';
-import { userIdToName } from '@/lib/slack';
+import { postgres } from '@/lib/database/supabase';
+import { userIdToName } from '@/lib/slack/slack';
 
-export default async function watch_add(
+export default async function watchAdd(
   res: NextApiResponse,
   commandArray: string[],
 ) {

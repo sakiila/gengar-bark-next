@@ -1,7 +1,7 @@
 import { NextApiResponse } from 'next';
-import { postgres } from '@/lib/supabase';
+import { postgres } from '@/lib/database/supabase';
 
-export default async function ci_add(
+export default async function ciAdd(
   res: NextApiResponse,
   repository: string,
   branch: string,

@@ -1,4 +1,4 @@
-import { postToChannelId } from '@/lib/slack';
+import { postToChannelId } from '@/lib/slack/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(

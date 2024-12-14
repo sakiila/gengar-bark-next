@@ -1,17 +1,17 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { verifyRequest } from "@/lib/slack";
-import emoji_changed from "@/lib/events_handlers/emoji_changed";
-import team_join from "@/lib/events_handlers/team_join";
-import user_status_changed from "@/lib/events_handlers/user_status_changed";
-import user_change from "@/lib/events_handlers/user_change";
-import channel_created from "@/lib/events_handlers/channel_created";
-import channel_archive from "@/lib/events_handlers/channel_archive";
+import { verifyRequest } from "@/lib/slack/slack";
+import emojiChanged from "@/lib/events_handlers/emoji-changed";
+import teamJoin from "@/lib/events_handlers/team-join";
+import userStatusChanged from "@/lib/events_handlers/user-status-changed";
+import userChange from "@/lib/events_handlers/user-change";
+import channelCreated from "@/lib/events_handlers/channel-created";
+import channelArchive from "@/lib/events_handlers/channel-archive";
 import {
   response_container,
   send_gpt_response_in_channel,
   set_suggested_prompts,
 } from "@/lib/events_handlers/chat";
-import { logger } from "@/lib/logger";
+import { logger } from "@/lib/utils/logger";
 
 // Create a request-scoped logger with context
 const createRequestLogger = (req: NextApiRequest) => {
@@ -63,22 +63,22 @@ export default async function handler(
       try {
         switch (event_type) {
           case "emoji_changed":
-            await emoji_changed(req, res);
+            await emojiChanged(req, res);
             break;
           case "team_join":
-            await team_join(req, res);
+            await teamJoin(req, res);
             break;
           case "user_status_changed":
-            await user_status_changed(req, res);
+            await userStatusChanged(req, res);
             break;
           case "user_change":
-            await user_change(req, res);
+            await userChange(req, res);
             break;
           case "channel_created":
-            await channel_created(req, res);
+            await channelCreated(req, res);
             break;
           case "channel_archive":
-            await channel_archive(req, res);
+            await channelArchive(req, res);
             break;
           case "app_mention":
             await send_gpt_response_in_channel(req, res);

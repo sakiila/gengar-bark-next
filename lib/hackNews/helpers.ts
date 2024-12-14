@@ -2,7 +2,7 @@ import { decode } from 'html-entities';
 // @ts-ignore - no type info for this module
 import mrkdwn from 'html-to-mrkdwn';
 import regexEscape from 'escape-string-regexp';
-import { TeamAndKeywords } from '@/lib/upstash';
+import { TeamAndKeywords } from '@/lib/upstash/upstash';
 
 export function combineText(post: any) {
   /* combine text from post's title, text, and url */

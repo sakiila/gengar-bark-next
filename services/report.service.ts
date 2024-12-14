@@ -1,4 +1,4 @@
-import { postgres } from '@/lib/supabase';
+import { postgres } from '@/lib/database/supabase';
 
 export interface ReportData {
   email: string;

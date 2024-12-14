@@ -1,17 +1,17 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { postgres } from "@/lib/supabase";
+import { postgres } from "@/lib/database/supabase";
 import {
   openView,
   postToUserIdHrDirectSchedule,
   publishView,
   sharedPublicURL,
-} from "@/lib/slack";
+} from "@/lib/slack/slack";
 import {
   adminUser,
   banView,
   getView,
   getViewByUserIds,
-} from "@/lib/events_handlers/hr_app_home_opend";
+} from "@/lib/events_handlers/hr-app-home-opend";
 import { map } from "@smithy/smithy-client";
 
 interface SlackScheduledMessageResponse {

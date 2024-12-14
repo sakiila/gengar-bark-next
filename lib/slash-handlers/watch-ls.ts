@@ -1,7 +1,7 @@
-import { postgres } from '@/lib/supabase';
+import { postgres } from '@/lib/database/supabase';
 import { NextApiResponse } from 'next';
 
-export default async function watch_ls(
+export default async function watchLs(
   res: NextApiResponse,
   commandArray: string[],
 ) {

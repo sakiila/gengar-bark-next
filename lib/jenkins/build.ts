@@ -1,7 +1,7 @@
 import { setTimeout } from "timers/promises";
-import { getUserId, threadReply } from "@/lib/slack";
+import { getUserId, threadReply } from "@/lib/slack/slack";
 import { NextApiRequest, NextApiResponse } from "next";
-import { AxiomLogger, logger } from '@/lib/logger';
+import { AxiomLogger, logger } from '@/lib/utils/logger';
 
 // Types for Pipeline Node response
 interface PipelineNode {

@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { autoMessageReminderTask } from '@/lib/auto_message_reminder_task';
-import { user_update } from '@/lib/user_update';
+import { autoMessageReminderTask } from '@/lib/hr/auto-message-reminder-task';
+import { userUpdate } from '@/lib/database/services/user-update';
 
 export default async function handler(
   req: NextApiRequest,
@@ -20,7 +20,7 @@ export default async function handler(
   //   console.log('load = ', JSON.stringify(load));
   // });
 
-  await user_update(payload);
+  await userUpdate(payload);
 
   return res.status(200).json({ message: 'Update successful!' });
 }

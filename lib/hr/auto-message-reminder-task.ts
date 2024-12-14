@@ -1,5 +1,5 @@
-import { postToUserIdHrDirect } from '@/lib/slack';
-import { postgres } from '@/lib/supabase';
+import { postToUserIdHrDirect } from '@/lib/slack/slack';
+import { postgres } from '@/lib/database/supabase';
 
 export async function autoMessageReminderTask() {
   const { data: dbUser, error } = await postgres.rpc('get_reminder_user');

@@ -1,5 +1,5 @@
 import { BusinessAccountResponse, Customer, Service } from "@/lib/moego/types";
-import { dateUtils } from "@/lib/dateUtils";
+import { dateUtils } from "@/lib/utils/dateUtils";
 import AppointmentService from "./AppointmentService";
 
 export default async function compositeCreateAppointment(
