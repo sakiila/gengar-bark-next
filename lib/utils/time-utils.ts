@@ -27,5 +27,5 @@ export const timeUtils = {
 
 export function convertToDate(slackTimestamp: string): Date {
   const [seconds, milliseconds] = slackTimestamp.split('.').map(Number);
-  return new Date(seconds * 1000 + milliseconds);
+  return new Date(seconds * 1000);
 }
