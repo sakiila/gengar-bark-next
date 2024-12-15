@@ -1,8 +1,7 @@
 import { BuildRecord } from '@/lib/database/entities/BuildRecord';
 import { AppDataSource, initializeDatabase } from '../data-source';
 import { In, Repository } from 'typeorm';
-import { getUserId } from '@/lib/slack/slack';
-import { getUser, insertWithSupabase } from '@/lib/database/supabase';
+import { getUser } from '@/lib/database/supabase';
 
 export class BuildRecordService {
   private repository: Repository<BuildRecord>;
@@ -148,6 +147,6 @@ export class BuildRecordService {
       };
     }
 
-    console.log('no commonMatch = ', text);
+    console.log('no match = ', text);
   }
 }

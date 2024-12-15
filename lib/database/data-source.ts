@@ -10,7 +10,7 @@ export const AppDataSource = new DataSource({
     password: process.env.POSTGRES_PASSWORD,
     database: process.env.POSTGRES_DATABASE,
     synchronize: true,
-    logging: false,
+    logging: process.env.NODE_ENV === "development",
     entities: [BuildRecord, Channel],
 })
 
