@@ -249,10 +249,12 @@ const MESSAGES_PER_REQUEST = 1000;
 
 async function importConversationsHistory(
   channel: Channel,
-  cursor?: string,
-  accumulator: any[] = []
+  initialCursor?: string,
 ): Promise<any[]> {
-  try {
+  const accumulator: any[] = [];
+  let cursor = initialCursor;
+
+  while (true) {
     const response = await botClient.conversations.history({
       channel: channel.channel_id,
       limit: MESSAGES_PER_REQUEST,
@@ -263,7 +265,6 @@ async function importConversationsHistory(
       throw new Error(response.error || 'Failed to fetch messages');
     }
 
-    // Accumulate valid messages
     const validMessages = (response.messages || [])
       .filter(isValidMessage)
       .map(msg => ({
@@ -282,22 +283,16 @@ async function importConversationsHistory(
 
     accumulator.push(...validMessages);
 
-    // If there are more messages, wait briefly and continue
-    if (response.response_metadata?.next_cursor) {
-      // Add a small delay to respect rate limits
-      await new Promise(resolve => setTimeout(resolve, 200));
-      return importConversationsHistory(
-        channel,
-        response.response_metadata.next_cursor,
-        accumulator
-      );
+    if (!response.response_metadata?.next_cursor) {
+      break;
     }
 
-    return accumulator;
-  } catch (error) {
-    console.error(`Error fetching conversation history for channel ${channel.channel_id}:`, error);
-    return accumulator;
+    cursor = response.response_metadata.next_cursor;
+    // 添加延迟以遵守速率限制
+    await new Promise(resolve => setTimeout(resolve, 200));
   }
+
+  return accumulator;
 }
 
 async function processChannelBatch(channels: Channel[]): Promise<void> {
@@ -308,15 +303,57 @@ async function processChannelBatch(channels: Channel[]): Promise<void> {
     limit(async () => {
       console.log(`Processing channel: ${channel.channel_id}`);
       try {
-        // Get all messages for the channel
-        const allMessages = await importConversationsHistory(channel);
+        let cursor: string | undefined;
+        let messageBuffer: any[] = [];
+        
+        while (true) {
+          const response = await botClient.conversations.history({
+            channel: channel.channel_id,
+            limit: MESSAGES_PER_REQUEST,
+            cursor,
+          });
 
-        // Process messages in batches
-        const messageBatches = chunk(allMessages, MESSAGE_BATCH_SIZE);
+          if (!response.ok) {
+            throw new Error(response.error || 'Failed to fetch messages');
+          }
 
-        for (const batch of messageBatches) {
-          await buildRecordService.batchCreate(batch);
-          console.log(`Inserted ${batch.length} messages for channel ${channel.channel_id}`);
+          const validMessages = (response.messages || [])
+            .filter(isValidMessage)
+            .map(msg => ({
+              text: msg.text!,
+              user_id: channel.user_id,
+              created_at: convertToDate(msg.ts!),
+              ...BuildRecordService.extractInfo(msg.text!) || {
+                result: '',
+                duration: '',
+                repository: '',
+                branch: '',
+                sequence: '',
+              },
+              email: channel.email,
+            }));
+
+          messageBuffer.push(...validMessages);
+
+          // 当缓冲区达到批处理大小时，进行处理
+          if (messageBuffer.length >= MESSAGE_BATCH_SIZE) {
+            await buildRecordService.batchCreate(messageBuffer);
+            console.log(`Inserted ${messageBuffer.length} messages for channel ${channel.channel_id}`);
+            messageBuffer = []; // 清空缓冲区
+          }
+
+          if (!response.response_metadata?.next_cursor) {
+            break;
+          }
+
+          cursor = response.response_metadata.next_cursor;
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+
+        // 处理剩余的消息
+        if (messageBuffer.length > 0) {
+          await buildRecordService.batchCreate(messageBuffer);
+          console.log(`Inserted final ${messageBuffer.length} messages for channel ${channel.channel_id}`);
         }
       } catch (error) {
         console.error(`Error processing channel ${channel.channel_id}:`, error);
@@ -327,26 +364,35 @@ async function processChannelBatch(channels: Channel[]): Promise<void> {
   await Promise.all(channelPromises);
 }
 
-export async function dataImport() {
+export async function dataImport(timeoutMinutes: number = 30) {
+  const timeout = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error('Data import timeout')), timeoutMinutes * 60 * 1000);
+  });
+
   try {
-    const channelService = await ChannelService.getInstance();
-    const channels = await channelService.findAll();
+    await Promise.race([
+      (async () => {
+        const channelService = await ChannelService.getInstance();
+        const channels = await channelService.findAll();
 
-    console.log(`Starting import for ${channels.length} channels`);
+        console.log(`Starting import for ${channels.length} channels`);
 
-    // Process channels in batches
-    const channelBatches = chunk(channels, CHANNEL_BATCH_SIZE);
+        // Process channels in batches
+        const channelBatches = chunk(channels, CHANNEL_BATCH_SIZE);
 
-    for (let i = 0; i < channelBatches.length; i++) {
-      console.log(`Processing batch ${i + 1}/${channelBatches.length}`);
-      await processChannelBatch(channelBatches[i]);
+        for (let i = 0; i < channelBatches.length; i++) {
+          console.log(`Processing batch ${i + 1}/${channelBatches.length}`);
+          await processChannelBatch(channelBatches[i]);
 
-      // Add delay between batches to prevent overwhelming the system
-      if (i < channelBatches.length - 1) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-    }
-
+          // Add delay between batches to prevent overwhelming the system
+          if (i < channelBatches.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        }
+      })(),
+      timeout
+    ]);
+    
     console.log('Data import completed successfully');
   } catch (error) {
     console.error('Error in data import:', error);
