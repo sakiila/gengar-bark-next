@@ -268,7 +268,7 @@ async function importConversationsHistory(
       .filter(isValidMessage)
       .map(msg => ({
         text: msg.text!,
-        user_id: msg.user!,
+        user_id: channel.user_id,
         created_at: convertToDate(msg.ts!),
         ...BuildRecordService.extractInfo(msg.text!) || {
           result: '',
