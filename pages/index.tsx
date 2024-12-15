@@ -4,6 +4,7 @@ import styles from '../styles/Home.module.css';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
+import type { NextPage } from 'next'
 
 const FeatureCard: React.FC<{
   title: string;
@@ -129,7 +130,7 @@ const Divider: React.FC = () => (
   </div>
 );
 
-const HomePage: React.FC = () => {
+const Home: NextPage = () => {
   const { scrollYProgress } = useScroll();
   const demoRef = useRef<HTMLDivElement>(null);
 
@@ -262,4 +263,4 @@ const HomePage: React.FC = () => {
   );
 };
 
-export default HomePage;
+export default Home;

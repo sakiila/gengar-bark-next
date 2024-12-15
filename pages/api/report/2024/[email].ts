@@ -1,5 +1,5 @@
+import { ReportService } from '@/lib/services/report.service';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { ReportService } from '@/services/report.service';
 
 export default async function handler(
   req: NextApiRequest,

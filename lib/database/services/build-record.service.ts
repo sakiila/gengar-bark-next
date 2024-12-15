@@ -41,11 +41,11 @@ export class BuildRecordService {
         // Add each chunk insert to promises array
         promises.push(
           this.repository
-            .createQueryBuilder()
-            .insert()
-            .into(BuildRecord)
-            .values(buildRecords)
-            .execute()
+          .createQueryBuilder()
+          .insert()
+          .into(BuildRecord)
+          .values(buildRecords)
+          .execute(),
         );
       }
 
@@ -114,21 +114,40 @@ export class BuildRecordService {
     sequence: string;
   }
     | undefined {
-    const match = text.match(
-      /(BUILD \w+) \(([\w\s]+)\).*» ([a-zA-Z0-9_-]+) » ([a-zA-Z0-9-]+) #(\d+)/i,
-    ) || text.match(
-      /\* (Deploy \w+) \(([\w\s]+)\): ([a-zA-Z0-9_-]+) » ([a-zA-Z0-9-]+) \(run #(\d+)\)\*/,
-    );
-    if (match) {
+    const boardingDesktopMatch = text.match(/(Deploy \w+): ([\w\s]+) » ([a-zA-Z0-9._-]+) \(#(\d+)\)/i);
+    if (boardingDesktopMatch) {
       return {
-        result: match[1],
-        duration: match[2],
-        repository: match[3],
-        branch: match[4],
-        sequence: match[5],
+        result: boardingDesktopMatch[1],
+        duration: '',
+        repository: boardingDesktopMatch[2],
+        branch: boardingDesktopMatch[3],
+        sequence: boardingDesktopMatch[4],
       };
-    } else {
-      console.log('no match = ', text);
     }
+
+    const commonMatch = text.match(
+      /(BUILD \w+) \(([\w\s]+)\).*» ([a-zA-Z0-9_-]+) » ([a-zA-Z0-9-.]+) #(\d+)/i,
+    ) || text.match(
+      /(BUILD \w+) \(([\w\s]+)\) - MoeGo, Inc » ([a-zA-Z0-9_-]+) » ([a-zA-Z0-9-.]+) #(\d+)/i,
+    ) || text.match(
+      /(BUILD \w+) \(([\w\s]+)\) - Moement, Inc » ([a-zA-Z0-9_-]+) » ([a-zA-Z0-9-.]+) #(\d+)/i,
+    ) || text.match(
+      /(Deploy \w+) \(([\w\s]+)\): ([a-zA-Z0-9_-]+) » ([a-zA-Z0-9-.]+) \(run #(\d+)\)/i,
+    ) || text.match(
+      /(DEPLOY \w+) \(([\w\s]+)\) - MoeGo, Inc » ([a-zA-Z0-9_-]+) » ([a-zA-Z0-9-.]+) #(\d+)/i,
+    ) || text.match(
+      /(DEPLOY \w+) \(([\w\s]+)\) - Moement, Inc » ([a-zA-Z0-9_-]+) » ([a-zA-Z0-9-.]+) #(\d+)/i,
+    );
+    if (commonMatch) {
+      return {
+        result: commonMatch[1],
+        duration: commonMatch[2],
+        repository: commonMatch[3],
+        branch: commonMatch[4],
+        sequence: commonMatch[5],
+      };
+    }
+
+    console.log('no commonMatch = ', text);
   }
 }
