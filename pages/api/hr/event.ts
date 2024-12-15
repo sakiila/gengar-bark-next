@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { verifyHrRequest } from '@/lib/slack/slack';
-import app_home_opened from '@/lib/events_handlers/hr-app-home-opend';
+import app_home_opened from '@/lib/events-handlers/hr-app-home-opened';
 
 export default async function handler(
   req: NextApiRequest,

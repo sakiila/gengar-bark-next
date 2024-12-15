@@ -1,7 +1,11 @@
 import { App, LogLevel } from '@slack/bolt';
-import { ChatPostMessageArguments } from '@slack/web-api';
 import { ChannelService } from '../database/services/channel.service';
 import { Channel } from '@/lib/database/entities/Channel';
+import { BuildRecordService } from '@/lib/database/services/build-record.service';
+import { convertToDate } from '@/lib/utils/time-utils';
+import { getAllUser } from '@/lib/database/supabase';
+import pLimit from 'p-limit';
+import { chunk } from 'lodash';
 
 // Initialize the Slack Bolt app with more configuration options
 const app = new App({
@@ -18,7 +22,7 @@ const botClient = app.client;
  * @param params - Message parameters
  * @param client - WebClient instance to use
  */
-async function sendMessage(params: ChatPostMessageArguments) {
+async function sendMessage(params: any) {
   try {
     return await botClient.chat.postMessage(params);
   } catch (error) {
@@ -173,24 +177,179 @@ export async function conversationsListForIm() {
       throw new Error(error);
     }
 
+    const allUsers = await getAllUser();
+    if (!allUsers) {
+      throw new Error('Failed to retrieve users');
+    }
+    const userMap = new Map(allUsers.map(user => [user.user_id, user]));
+
     // Save channels to database
     const channelService = await ChannelService.getInstance();
-    const channelDOs = channels?.map(channel => {
+
+    // Create array of promises
+    const channelPromises = channels?.map(async channel => {
+      if (!channel.id) {
+        console.error('Channel ID is missing:', channel);
+        return null;
+      }
+
       return {
         channel_id: channel.id,
         created_at: channel.created ? new Date(channel.created * 1000) : new Date(),
-        is_archived: channel.is_archived,
+        is_archived: channel.is_archived || false,
         user_id: channel.user,
-        is_im: channel.is_im,
+        is_im: channel.is_im || false,
         context_team_id: channel.context_team_id,
-        is_user_deleted: channel.is_user_deleted,
+        is_user_deleted: channel.is_user_deleted || false,
+        email: userMap.get(channel.user)?.email || '',
       };
-    });
-    await channelService.saveChannels(channelDOs as Channel[]);
+    }) || [];
 
-    console.log('Conversations list:', channelDOs);
+    // Wait for all promises to resolve and filter out null values
+    const channelDOs = (await Promise.all(channelPromises)).filter((channel): channel is Channel =>
+      channel !== null && channel.channel_id !== undefined,
+    );
+
+    if (channelDOs.length > 0) {
+      await channelService.saveChannels(channelDOs);
+      console.log('Conversations list:', channelDOs);
+    } else {
+      console.log('No valid channels to save');
+    }
+
   } catch (error) {
     console.error('Error getting conversations list:', error);
+    throw error;
+  }
+}
+
+interface SlackMessage {
+  type?: string;
+  subtype?: string;
+  text?: string;
+  user?: string;
+  ts?: string;
+}
+
+const MOEGO_REGEX = /moego/i;
+
+function isValidMessage(message: SlackMessage): boolean {
+  return !message.subtype &&
+    message.type === 'message' &&
+    message.text != null &&
+    message.user != null &&
+    MOEGO_REGEX.test(message.text);
+}
+
+// Add rate limiting configuration
+const CHANNEL_BATCH_SIZE = 10;
+const MESSAGE_BATCH_SIZE = 2000;
+const CONCURRENT_CHANNEL_LIMIT = 3;
+const MESSAGES_PER_REQUEST = 1000;
+
+async function importConversationsHistory(
+  channel: Channel,
+  cursor?: string,
+  accumulator: any[] = []
+): Promise<any[]> {
+  try {
+    const response = await botClient.conversations.history({
+      channel: channel.channel_id,
+      limit: MESSAGES_PER_REQUEST,
+      cursor,
+    });
+
+    if (!response.ok) {
+      throw new Error(response.error || 'Failed to fetch messages');
+    }
+
+    // Accumulate valid messages
+    const validMessages = (response.messages || [])
+      .filter(isValidMessage)
+      .map(msg => ({
+        text: msg.text!,
+        user_id: msg.user!,
+        created_at: convertToDate(msg.ts!),
+        ...BuildRecordService.extractInfo(msg.text!) || {
+          result: '',
+          duration: '',
+          repository: '',
+          branch: '',
+          sequence: '',
+        },
+        email: channel.email,
+      }));
+
+    accumulator.push(...validMessages);
+
+    // If there are more messages, wait briefly and continue
+    if (response.response_metadata?.next_cursor) {
+      // Add a small delay to respect rate limits
+      await new Promise(resolve => setTimeout(resolve, 200));
+      return importConversationsHistory(
+        channel,
+        response.response_metadata.next_cursor,
+        accumulator
+      );
+    }
+
+    return accumulator;
+  } catch (error) {
+    console.error(`Error fetching conversation history for channel ${channel.channel_id}:`, error);
+    return accumulator;
+  }
+}
+
+async function processChannelBatch(channels: Channel[]): Promise<void> {
+  const buildRecordService = await BuildRecordService.getInstance();
+  const limit = pLimit(CONCURRENT_CHANNEL_LIMIT);
+
+  const channelPromises = channels.map(channel =>
+    limit(async () => {
+      console.log(`Processing channel: ${channel.channel_id}`);
+      try {
+        // Get all messages for the channel
+        const allMessages = await importConversationsHistory(channel);
+
+        // Process messages in batches
+        const messageBatches = chunk(allMessages, MESSAGE_BATCH_SIZE);
+
+        for (const batch of messageBatches) {
+          await buildRecordService.batchCreate(batch);
+          console.log(`Inserted ${batch.length} messages for channel ${channel.channel_id}`);
+        }
+      } catch (error) {
+        console.error(`Error processing channel ${channel.channel_id}:`, error);
+      }
+    })
+  );
+
+  await Promise.all(channelPromises);
+}
+
+export async function dataImport() {
+  try {
+    const channelService = await ChannelService.getInstance();
+    const channels = await channelService.findAll();
+
+    console.log(`Starting import for ${channels.length} channels`);
+
+    // Process channels in batches
+    const channelBatches = chunk(channels, CHANNEL_BATCH_SIZE);
+
+    for (let i = 0; i < channelBatches.length; i++) {
+      console.log(`Processing batch ${i + 1}/${channelBatches.length}`);
+      await processChannelBatch(channelBatches[i]);
+
+      // Add delay between batches to prevent overwhelming the system
+      if (i < channelBatches.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+    }
+
+    console.log('Data import completed successfully');
+  } catch (error) {
+    console.error('Error in data import:', error);
     throw error;
   }
 }

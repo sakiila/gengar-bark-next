@@ -1,16 +1,16 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { verifyRequest } from "@/lib/slack/slack";
-import emojiChanged from "@/lib/events_handlers/emoji-changed";
-import teamJoin from "@/lib/events_handlers/team-join";
-import userStatusChanged from "@/lib/events_handlers/user-status-changed";
-import userChange from "@/lib/events_handlers/user-change";
-import channelCreated from "@/lib/events_handlers/channel-created";
-import channelArchive from "@/lib/events_handlers/channel-archive";
+import emojiChanged from "@/lib/events-handlers/emoji-changed";
+import teamJoin from "@/lib/events-handlers/team-join";
+import userStatusChanged from "@/lib/events-handlers/user-status-changed";
+import userChange from "@/lib/events-handlers/user-change";
+import channelCreated from "@/lib/events-handlers/channel-created";
+import channelArchive from "@/lib/events-handlers/channel-archive";
 import {
   response_container,
   send_gpt_response_in_channel,
   set_suggested_prompts,
-} from "@/lib/events_handlers/chat";
+} from "@/lib/events-handlers/chat";
 import { logger } from "@/lib/utils/logger";
 
 // Create a request-scoped logger with context

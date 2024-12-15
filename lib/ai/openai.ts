@@ -1,6 +1,6 @@
 import OpenAI from 'openai';
 import { ChatCompletionMessageParam } from 'openai/resources';
-import { dateUtils } from '@/lib/utils/date-utils';
+import { timeUtils } from '@/lib/utils/time-utils';
 
 // https://github.com/vercel/examples/blob/main/solutions/slackbot/api/events.ts
 const openai = new OpenAI({
@@ -98,7 +98,7 @@ export async function generatePromptForMoeGo(text: string) {
     {
       role: "system",
       content: `Extract appointment details from user input and provide them in JSON format. If any information is missing, leave it blank.
-intent must be one of create/modify/cancel, quantity default is 1, email can be blank if the input have not, the customerName can be blank if the input have not. Today is ${dateUtils.today()}, calculate the date if user mentioned, the time should be the minute of the day if user input.
+intent must be one of create/modify/cancel, quantity default is 1, email can be blank if the input have not, the customerName can be blank if the input have not. Today is ${timeUtils.today()}, calculate the date if user mentioned, the time should be the minute of the day if user input.
 example: {"intent":"Create/Modify/Cancel","quantity":1,"email":"bob@moego.pet","customerName":"bob","date":"2024-11-11","time":600}/Modify/Cancel", "quantity": 1, "email": "bob@moego.pet", "customerName": "bob" }.`,
     },
     {

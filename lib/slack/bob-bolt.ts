@@ -1,5 +1,4 @@
 import { App, LogLevel } from '@slack/bolt';
-import { WebClient, ChatPostMessageArguments } from '@slack/web-api';
 import { bot_token, personalCookie, personalToken } from '@/lib/slack/slack';
 
 // Initialize the Slack Bolt app with more configuration options

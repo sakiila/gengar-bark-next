@@ -1,5 +1,5 @@
 import { BusinessAccountResponse, Customer, Service } from "@/lib/moego/types";
-import { dateUtils } from "@/lib/utils/date-utils";
+import { timeUtils } from "@/lib/utils/time-utils";
 import AppointmentService from "./AppointmentService";
 
 export default async function compositeCreateAppointment(
@@ -123,10 +123,10 @@ async function create(
             petId: petId,
             serviceName: service.name,
             startDate:
-              date == undefined || date.length == 0 ? dateUtils.today() : date,
+              date == undefined || date.length == 0 ? timeUtils.today() : date,
             startTime:
               time == undefined || time == 0
-                ? dateUtils.minutesSinceMidnight()
+                ? timeUtils.minutesSinceMidnight()
                 : time,
             feedings: [],
             medications: [],
@@ -140,11 +140,11 @@ async function create(
             operations: [],
             specificDates: [],
             quantityPerDay: 1,
-            endDate: dateUtils.today(),
+            endDate: timeUtils.today(),
             serviceTime: service.duration,
             endTime:
               time == undefined || time == 0
-                ? dateUtils.minutesSinceMidnight() + service.duration
+                ? timeUtils.minutesSinceMidnight() + service.duration
                 : time + service.duration,
             staffId: service.availableStaffs?.ids[0] ?? staffId,
             serviceItemType: 1,

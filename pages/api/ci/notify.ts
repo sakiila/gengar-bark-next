@@ -1,6 +1,6 @@
 import { getUserId, postToUserId } from '@/lib/slack/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { postgres } from '@/lib/database/supabase';
+import { insertWithSupabase, postgres } from '@/lib/database/supabase';
 import { BuildRecordService } from '@/lib/database/services/build-record.service';
 
 export default async function handler(
@@ -26,14 +26,14 @@ export default async function handler(
       });
     }
 
-    const record = extractInfo(message);
+    const record = BuildRecordService.extractInfo(message);
     const useTypeorm = process.env.USE_TYPEORM === 'true';
 
     if (useTypeorm) {
       try {
         const buildRecordService = await BuildRecordService.getInstance();
 
-        await buildRecordService.create({
+        await buildRecordService.createNow({
           result: record?.result || "",
           duration: record?.duration || "",
           repository: record?.repository || "",
@@ -80,6 +80,7 @@ export default async function handler(
       // await postMessage(userId,  notification);
     }
 
+    // notify watch list
     if (record) {
       let { data: build_watchs, error } = await postgres
       .from('build_watch')
@@ -106,66 +107,5 @@ export default async function handler(
   }
 }
 
-async function insertWithSupabase(
-  record: ReturnType<typeof extractInfo>,
-  email: string,
-  userId: string,
-  message: string
-) {
-  const insertData = record ? {
-    result: record.result,
-    duration: record.duration,
-    repository: record.repository,
-    branch: record.branch,
-    sequence: record.sequence,
-    email: email,
-    user_id: userId,
-    text: message,
-  } : {
-    result: "",
-    duration: "",
-    repository: "",
-    branch: "",
-    sequence: "",
-    email: email,
-    user_id: userId,
-    text: message,
-  };
 
-  const { error } = await postgres.from('build_record').insert([insertData]);
-  if (error) {
-    console.error('Supabase insert Error:', error);
-    throw error;
-  }
-}
 
-/**
- * *<https://ci.devops.moego.pet/job/MoeGolibrary/job/moego-server-business/job/feature-account-structure/151/display/redirect|BUILD FAILURE (43 sec) - Moement, Inc » moego-server-business » feature-account-structure #151>*
- * <https://github.com/MoeGolibrary/Boarding_Desktop/actions/runs/12311337827|* Deploy success (4 min 20 sec): Boarding_Desktop » bugfix-time-check (run #12311337827)*>
- */
-function extractInfo(text: string):
-  | {
-  result: string;
-  repository: string;
-  duration: string;
-  branch: string;
-  sequence: string;
-}
-  | undefined {
-  const match = text.match(
-    /(BUILD \w+) \(([\w\s]+)\).*» ([a-zA-Z0-9_-]+) » ([a-zA-Z0-9-]+) #(\d+)/i
-  ) || text.match(
-    /\* (Deploy \w+) \(([\w\s]+)\): ([a-zA-Z0-9_-]+) » ([a-zA-Z0-9-]+) \(run #(\d+)\)\*/
-  );
-  if (match) {
-    return {
-      result: match[1],
-      duration: match[2],
-      repository: match[3],
-      branch: match[4],
-      sequence: match[5],
-    };
-  } else {
-    console.log('no match = ', text);
-  }
-}

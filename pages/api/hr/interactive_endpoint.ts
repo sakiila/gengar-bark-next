@@ -1,18 +1,7 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import { postgres } from "@/lib/database/supabase";
-import {
-  openView,
-  postToUserIdHrDirectSchedule,
-  publishView,
-  sharedPublicURL,
-} from "@/lib/slack/slack";
-import {
-  adminUser,
-  banView,
-  getView,
-  getViewByUserIds,
-} from "@/lib/events_handlers/hr-app-home-opend";
-import { map } from "@smithy/smithy-client";
+import { NextApiRequest, NextApiResponse } from 'next';
+import { postgres } from '@/lib/database/supabase';
+import { openView, postToUserIdHrDirectSchedule, publishView } from '@/lib/slack/slack';
+import { adminUser, banView, getView, getViewByUserIds } from '@/lib/events-handlers/hr-app-home-opened';
 
 interface SlackScheduledMessageResponse {
   ok: boolean;
@@ -27,17 +16,17 @@ export default async function handler(
   res: NextApiResponse,
 ) {
   const payload = JSON.parse(req.body.payload);
-  console.log("payload = ", JSON.stringify(payload));
+  console.log('payload = ', JSON.stringify(payload));
 
   const userId = payload.user.id;
   if (!adminUser.includes(userId)) {
     await publishView(userId, banView);
-    res.status(200).send("");
+    res.status(200).send('');
   }
 
-  let metadata = JSON.parse(payload.view.private_metadata || "{}");
+  let metadata = JSON.parse(payload.view.private_metadata || '{}');
 
-  if (payload.type === "block_actions") {
+  if (payload.type === 'block_actions') {
     const triggerId = payload.trigger_id;
     let actions = Array.isArray(payload.actions)
       ? payload.actions
@@ -54,53 +43,53 @@ export default async function handler(
       const userIds = metadata.user_ids;
 
       switch (actionId) {
-        case "manage_user":
+        case 'manage_user':
           await getUserInfo(
-            action.value.split("_")[1],
+            action.value.split('_')[1],
             triggerId,
             page,
             userIds,
           );
           break;
-        case "refresh":
-        case "refresh_template":
-        case "refresh_push_template":
+        case 'refresh':
+        case 'refresh_template':
+        case 'refresh_push_template':
           await publishView(userId, await getView(userId, page));
           break;
-        case "last":
+        case 'last':
           await publishView(userId, await getView(userId, Number(page) - 1));
           break;
-        case "next":
+        case 'next':
           await publishView(userId, await getView(userId, Number(page) + 1));
           break;
-        case "multi_users_select":
+        case 'multi_users_select':
           await publishView(
             userId,
             await getViewByUserIds(action.selected_users),
           );
           break;
-        case "edit_template":
+        case 'edit_template':
           await getReminderTemplateInfo(
-            action.value.split("_")[1],
+            action.value.split('_')[1],
             triggerId,
             page,
           );
           break;
-        case "edit_push_template":
+        case 'edit_push_template':
           await getPushTemplateInfo(
-            action.value.split("_")[1],
+            action.value.split('_')[1],
             triggerId,
             page,
           );
           break;
       }
     }
-  } else if (payload.type === "view_submission") {
+  } else if (payload.type === 'view_submission') {
     const userId = payload.user.id;
     const page = metadata.page;
     const values = payload.view.state.values;
 
-    if (payload.view.callback_id === "manage_user_modal") {
+    if (payload.view.callback_id === 'manage_user_modal') {
       const user_id = metadata.user_id;
       const userIds = metadata.user_ids;
 
@@ -110,25 +99,25 @@ export default async function handler(
         values.birthday_date.birthday_date_action.selected_date;
       const tz = values.timezone_select.timezone_select.selected_option.value;
       const { data: date, error: error } = await postgres
-        .from("user")
-        .update({
-          entry_date: entryDate,
-          confirm_date: confirmDate
-            ? confirmDate
-            : entryDate
-              ? new Date(
-                  new Date(entryDate).setMonth(
-                    new Date(entryDate).getMonth() + 3,
-                  ),
-                )
-              : null,
-          birthday_date: birthdayDate,
-          tz: tz || "Asia/Chongqing",
-        })
-        .eq("user_id", user_id);
+      .from('user')
+      .update({
+        entry_date: entryDate,
+        confirm_date: confirmDate
+          ? confirmDate
+          : entryDate
+            ? new Date(
+              new Date(entryDate).setMonth(
+                new Date(entryDate).getMonth() + 3,
+              ),
+            )
+            : null,
+        birthday_date: birthdayDate,
+        tz: tz || 'Asia/Chongqing',
+      })
+      .eq('user_id', user_id);
 
       if (error) {
-        console.error("Error updating user:", error);
+        console.error('Error updating user:', error);
       }
 
       if (userIds) {
@@ -136,60 +125,60 @@ export default async function handler(
       } else {
         await publishView(userId, await getView(userId, page));
       }
-    } else if (payload.view.callback_id === "manage_template_modal") {
+    } else if (payload.view.callback_id === 'manage_template_modal') {
       const template_id = metadata.template_id;
 
-      console.log("values = ", JSON.stringify(values));
+      console.log('values = ', JSON.stringify(values));
       const name = values.template_name_input.template_name_input_action.value;
       const text_value =
         values.template_text_input.template_text_input_action.rich_text_value;
       const { data: data, error: error } = await postgres
-        .from("hr_auto_message_template")
-        .update({
-          template_name: name,
-          template_text: text_value,
-          update_time: new Date(),
-          update_user_id: userId,
-        })
-        .eq("id", template_id);
+      .from('hr_auto_message_template')
+      .update({
+        template_name: name,
+        template_text: text_value,
+        update_time: new Date(),
+        update_user_id: userId,
+      })
+      .eq('id', template_id);
 
       if (error) {
-        console.error("Error updating user:", error);
+        console.error('Error updating user:', error);
       }
       await publishView(userId, await getView(userId, page));
-    } else if (payload.view.callback_id === "manage_push_template_modal") {
+    } else if (payload.view.callback_id === 'manage_push_template_modal') {
       const template_id = metadata.template_id;
 
-      console.log("values = ", JSON.stringify(values));
+      console.log('values = ', JSON.stringify(values));
       const name = values.template_name_input.template_name_input_action.value;
       const text_value =
         values.template_text_input.template_text_input_action.rich_text_value;
 
       const image_values = [
         {
-          type: "image",
+          type: 'image',
           image_url: values.url_text_input_block1.url_text_input_action1.value,
-          alt_text: "",
+          alt_text: '',
         },
         {
-          type: "image",
+          type: 'image',
           image_url: values.url_text_input_block2.url_text_input_action2.value,
-          alt_text: "",
+          alt_text: '',
         },
         {
-          type: "image",
+          type: 'image',
           image_url: values.url_text_input_block3.url_text_input_action3.value,
-          alt_text: "",
+          alt_text: '',
         },
         {
-          type: "image",
+          type: 'image',
           image_url: values.url_text_input_block4.url_text_input_action4.value,
-          alt_text: "",
+          alt_text: '',
         },
         {
-          type: "image",
+          type: 'image',
           image_url: values.url_text_input_block5.url_text_input_action5.value,
-          alt_text: "",
+          alt_text: '',
         },
       ];
 
@@ -214,17 +203,17 @@ export default async function handler(
       // );
 
       const blocks = [text_value, ...image_values];
-      console.log("blocks = ", JSON.stringify(blocks));
+      console.log('blocks = ', JSON.stringify(blocks));
 
       const { data: data, error: error } = await postgres
-        .from("hr_auto_message_template")
-        .update({
-          template_name: name,
-          template_text: text_value,
-          update_time: new Date(),
-          update_user_id: userId,
-        })
-        .eq("id", template_id);
+      .from('hr_auto_message_template')
+      .update({
+        template_name: name,
+        template_text: text_value,
+        update_time: new Date(),
+        update_user_id: userId,
+      })
+      .eq('id', template_id);
 
       const selected_channels =
         values.multi_channels_select_block.multi_channels_select_action
@@ -242,10 +231,10 @@ export default async function handler(
         channel: msg.channel,
         scheduled_message_id: msg.scheduled_message_id,
       }));
-      console.log("Scheduled message details:", scheduledMessageDetails);
+      console.log('Scheduled message details:', scheduledMessageDetails);
 
       const { data: taskData, error: taskError } = await postgres
-      .from("hr_auto_message_task")
+      .from('hr_auto_message_task')
       .insert({
         template_id: template_id,
         template_text: JSON.stringify(blocks),
@@ -256,16 +245,16 @@ export default async function handler(
       });
 
       if (error) {
-        console.error("Error updating message template:", error);
+        console.error('Error updating message template:', error);
       }
       if (taskError) {
-        console.error("Error updating task message:", taskError);
+        console.error('Error updating task message:', taskError);
       }
       await publishView(userId, await getView(userId, page));
     }
   }
 
-  res.status(200).send("");
+  res.status(200).send('');
 }
 
 async function getUserInfo(
@@ -275,9 +264,9 @@ async function getUserInfo(
   userIds: string[],
 ) {
   const { data: users } = await postgres
-    .from("user")
-    .select("*")
-    .eq("user_id", userId);
+  .from('user')
+  .select('*')
+  .eq('user_id', userId);
 
   if (!users) {
     return;
@@ -290,127 +279,127 @@ async function getUserInfo(
       user_id: `${userId}`,
       user_ids: userIds,
     }),
-    type: "modal",
-    callback_id: "manage_user_modal",
+    type: 'modal',
+    callback_id: 'manage_user_modal',
     title: {
-      type: "plain_text",
+      type: 'plain_text',
       text: `${user.real_name_normalized}`,
     },
     blocks: [
       {
-        type: "input",
+        type: 'input',
         optional: true,
-        block_id: "entry_date",
+        block_id: 'entry_date',
         element: {
-          type: "datepicker",
+          type: 'datepicker',
           ...(user.entry_date ? { initial_date: `${user.entry_date}` } : {}),
           placeholder: {
-            type: "plain_text",
-            text: "Select a date",
+            type: 'plain_text',
+            text: 'Select a date',
           },
-          action_id: "entry_date_action",
+          action_id: 'entry_date_action',
         },
         label: {
-          type: "plain_text",
-          text: "Entry date",
+          type: 'plain_text',
+          text: 'Entry date',
         },
       },
       {
-        type: "input",
+        type: 'input',
         optional: true,
-        block_id: "confirm_date",
+        block_id: 'confirm_date',
         element: {
-          type: "datepicker",
+          type: 'datepicker',
           ...(user.confirm_date
             ? { initial_date: `${user.confirm_date}` }
             : {}),
           placeholder: {
-            type: "plain_text",
-            text: "Select a date",
+            type: 'plain_text',
+            text: 'Select a date',
           },
-          action_id: "confirm_date_action",
+          action_id: 'confirm_date_action',
         },
         label: {
-          type: "plain_text",
-          text: "Confirm date",
+          type: 'plain_text',
+          text: 'Confirm date',
         },
       },
       {
-        type: "input",
+        type: 'input',
         optional: true,
-        block_id: "birthday_date",
+        block_id: 'birthday_date',
         element: {
-          type: "datepicker",
+          type: 'datepicker',
           ...(user.birthday_date
             ? { initial_date: `${user.birthday_date}` }
             : {}),
           placeholder: {
-            type: "plain_text",
-            text: "Select a date",
+            type: 'plain_text',
+            text: 'Select a date',
           },
-          action_id: "birthday_date_action",
+          action_id: 'birthday_date_action',
         },
         label: {
-          type: "plain_text",
-          text: "Birthday date",
+          type: 'plain_text',
+          text: 'Birthday date',
         },
       },
       {
-        type: "section",
-        block_id: "timezone_select",
+        type: 'section',
+        block_id: 'timezone_select',
         text: {
-          type: "mrkdwn",
-          text: "*Timezone*",
+          type: 'mrkdwn',
+          text: '*Timezone*',
         },
         accessory: {
-          action_id: "timezone_select",
-          type: "static_select",
+          action_id: 'timezone_select',
+          type: 'static_select',
 
           initial_option: {
             text: {
-              type: "plain_text",
-              text: `${user.tz || "Asia/Chongqing"}`,
+              type: 'plain_text',
+              text: `${user.tz || 'Asia/Chongqing'}`,
             },
-            value: `${user.tz || "Asia/Chongqing"}`,
+            value: `${user.tz || 'Asia/Chongqing'}`,
           },
 
           placeholder: {
-            type: "plain_text",
-            text: "Select an item",
+            type: 'plain_text',
+            text: 'Select an item',
           },
           options: [
             {
               text: {
-                type: "plain_text",
-                text: "Asia/Chongqing",
+                type: 'plain_text',
+                text: 'Asia/Chongqing',
               },
-              value: "Asia/Chongqing",
+              value: 'Asia/Chongqing',
             },
             {
               text: {
-                type: "plain_text",
-                text: "America/Los_Angeles",
+                type: 'plain_text',
+                text: 'America/Los_Angeles',
               },
-              value: "America/Los_Angeles",
+              value: 'America/Los_Angeles',
             },
             {
               text: {
-                type: "plain_text",
-                text: "America/New_York",
+                type: 'plain_text',
+                text: 'America/New_York',
               },
-              value: "America/New_York",
+              value: 'America/New_York',
             },
           ],
         },
       },
     ],
     submit: {
-      type: "plain_text",
-      text: "Submit",
+      type: 'plain_text',
+      text: 'Submit',
     },
     close: {
-      type: "plain_text",
-      text: "Cancel",
+      type: 'plain_text',
+      text: 'Cancel',
       emoji: true,
     },
   };
@@ -426,9 +415,9 @@ async function getReminderTemplateInfo(
   page: number,
 ) {
   const { data: templates } = await postgres
-    .from("hr_auto_message_template")
-    .select("*")
-    .eq("id", templateId);
+  .from('hr_auto_message_template')
+  .select('*')
+  .eq('id', templateId);
 
   if (!templates) {
     return;
@@ -440,58 +429,58 @@ async function getReminderTemplateInfo(
       page: `${page}`,
       template_id: `${templateId}`,
     }),
-    type: "modal",
-    callback_id: "manage_template_modal",
+    type: 'modal',
+    callback_id: 'manage_template_modal',
     title: {
-      type: "plain_text",
+      type: 'plain_text',
       text: `${template.template_name}`,
     },
     blocks: [
       {
-        type: "input",
-        block_id: "template_name_input",
+        type: 'input',
+        block_id: 'template_name_input',
         element: {
-          type: "plain_text_input",
-          action_id: "template_name_input_action",
+          type: 'plain_text_input',
+          action_id: 'template_name_input_action',
           initial_value: `${template.template_name}`,
           max_length: 20,
         },
         label: {
-          type: "plain_text",
-          text: "Template Name",
+          type: 'plain_text',
+          text: 'Template Name',
           emoji: true,
         },
       },
       {
-        type: "input",
-        block_id: "template_text_input",
+        type: 'input',
+        block_id: 'template_text_input',
         element: {
-          type: "rich_text_input",
-          action_id: "template_text_input_action",
+          type: 'rich_text_input',
+          action_id: 'template_text_input_action',
           initial_value: JSON.parse(template.template_text),
         },
         label: {
-          type: "plain_text",
-          text: "Template Text",
+          type: 'plain_text',
+          text: 'Template Text',
           emoji: true,
         },
       },
       {
-        type: "section",
+        type: 'section',
         text: {
-          type: "plain_text",
-          text: `${template.note || ""}`,
+          type: 'plain_text',
+          text: `${template.note || ''}`,
           emoji: true,
         },
       },
     ],
     submit: {
-      type: "plain_text",
-      text: "Submit",
+      type: 'plain_text',
+      text: 'Submit',
     },
     close: {
-      type: "plain_text",
-      text: "Cancel",
+      type: 'plain_text',
+      text: 'Cancel',
       emoji: true,
     },
   };
@@ -508,9 +497,9 @@ async function getPushTemplateInfo(
   page: number,
 ) {
   const { data: templates } = await postgres
-    .from("hr_auto_message_template")
-    .select("*")
-    .eq("id", templateId);
+  .from('hr_auto_message_template')
+  .select('*')
+  .eq('id', templateId);
 
   if (!templates) {
     return;
@@ -522,172 +511,172 @@ async function getPushTemplateInfo(
       page: `${page}`,
       template_id: `${templateId}`,
     }),
-    type: "modal",
-    callback_id: "manage_push_template_modal",
+    type: 'modal',
+    callback_id: 'manage_push_template_modal',
     title: {
-      type: "plain_text",
+      type: 'plain_text',
       text: `${template.template_name}`,
     },
     blocks: [
       {
-        type: "input",
-        block_id: "template_name_input",
+        type: 'input',
+        block_id: 'template_name_input',
         element: {
-          type: "plain_text_input",
-          action_id: "template_name_input_action",
+          type: 'plain_text_input',
+          action_id: 'template_name_input_action',
           initial_value: `${template.template_name}`,
           max_length: 20,
         },
         label: {
-          type: "plain_text",
-          text: "Template Name",
+          type: 'plain_text',
+          text: 'Template Name',
           emoji: true,
         },
       },
       {
-        type: "input",
-        block_id: "template_text_input",
+        type: 'input',
+        block_id: 'template_text_input',
         element: {
-          type: "rich_text_input",
-          action_id: "template_text_input_action",
+          type: 'rich_text_input',
+          action_id: 'template_text_input_action',
           initial_value: JSON.parse(template.template_text),
         },
         label: {
-          type: "plain_text",
-          text: "Template Text",
+          type: 'plain_text',
+          text: 'Template Text',
           emoji: true,
         },
       },
       {
-        type: "section",
+        type: 'section',
         text: {
-          type: "plain_text",
-          text: `${template.note || " "}`,
+          type: 'plain_text',
+          text: `${template.note || ' '}`,
           emoji: true,
         },
       },
       {
-        type: "section",
-        block_id: "multi_channels_select_block",
+        type: 'section',
+        block_id: 'multi_channels_select_block',
         text: {
-          type: "mrkdwn",
-          text: "Pick channels from the list",
+          type: 'mrkdwn',
+          text: 'Pick channels from the list',
         },
         accessory: {
-          action_id: "multi_channels_select_action",
-          type: "multi_channels_select",
+          action_id: 'multi_channels_select_action',
+          type: 'multi_channels_select',
           placeholder: {
-            type: "plain_text",
-            text: "Select channels",
+            type: 'plain_text',
+            text: 'Select channels',
           },
         },
       },
       {
-        type: "input",
-        block_id: "datetimepicker_block",
+        type: 'input',
+        block_id: 'datetimepicker_block',
         element: {
-          type: "datetimepicker",
-          action_id: "datetimepicker_action",
+          type: 'datetimepicker',
+          action_id: 'datetimepicker_action',
         },
         label: {
-          type: "plain_text",
-          text: "Plan sending time",
+          type: 'plain_text',
+          text: 'Plan sending time',
           emoji: true,
         },
       },
       {
-        type: "input",
-        block_id: "url_text_input_block1",
+        type: 'input',
+        block_id: 'url_text_input_block1',
         element: {
-          type: "url_text_input",
-          action_id: "url_text_input_action1",
+          type: 'url_text_input',
+          action_id: 'url_text_input_action1',
           placeholder: {
-            type: "plain_text",
-            text: "https://gengar.baobo.me/vision.jpg",
+            type: 'plain_text',
+            text: 'https://gengar.baobo.me/vision.jpg',
           },
         },
         label: {
-          type: "plain_text",
-          text: "Label",
+          type: 'plain_text',
+          text: 'Label',
           emoji: true,
         },
       },
       {
-        type: "input",
-        block_id: "url_text_input_block2",
+        type: 'input',
+        block_id: 'url_text_input_block2',
         element: {
-          type: "url_text_input",
-          action_id: "url_text_input_action2",
+          type: 'url_text_input',
+          action_id: 'url_text_input_action2',
           placeholder: {
-            type: "plain_text",
-            text: "https://gengar.baobo.me/chris.jpg",
+            type: 'plain_text',
+            text: 'https://gengar.baobo.me/chris.jpg',
           },
         },
         label: {
-          type: "plain_text",
-          text: "Label",
+          type: 'plain_text',
+          text: 'Label',
           emoji: true,
         },
       },
       {
-        type: "input",
-        block_id: "url_text_input_block3",
+        type: 'input',
+        block_id: 'url_text_input_block3',
         element: {
-          type: "url_text_input",
-          action_id: "url_text_input_action3",
+          type: 'url_text_input',
+          action_id: 'url_text_input_action3',
           placeholder: {
-            type: "plain_text",
-            text: "https://gengar.baobo.me/joanne.jpg",
+            type: 'plain_text',
+            text: 'https://gengar.baobo.me/joanne.jpg',
           },
         },
         label: {
-          type: "plain_text",
-          text: "Label",
+          type: 'plain_text',
+          text: 'Label',
           emoji: true,
         },
       },
       {
-        type: "input",
-        block_id: "url_text_input_block4",
+        type: 'input',
+        block_id: 'url_text_input_block4',
         element: {
-          type: "url_text_input",
-          action_id: "url_text_input_action4",
+          type: 'url_text_input',
+          action_id: 'url_text_input_action4',
           placeholder: {
-            type: "plain_text",
-            text: "https://gengar.baobo.me/pinxuan.jpg",
+            type: 'plain_text',
+            text: 'https://gengar.baobo.me/pinxuan.jpg',
           },
         },
         label: {
-          type: "plain_text",
-          text: "Label",
+          type: 'plain_text',
+          text: 'Label',
           emoji: true,
         },
       },
       {
-        type: "input",
-        block_id: "url_text_input_block5",
+        type: 'input',
+        block_id: 'url_text_input_block5',
         element: {
-          type: "url_text_input",
-          action_id: "url_text_input_action5",
+          type: 'url_text_input',
+          action_id: 'url_text_input_action5',
           placeholder: {
-            type: "plain_text",
-            text: "https://gengar.baobo.me/bob.jpg",
+            type: 'plain_text',
+            text: 'https://gengar.baobo.me/bob.jpg',
           },
         },
         label: {
-          type: "plain_text",
-          text: "Label",
+          type: 'plain_text',
+          text: 'Label',
           emoji: true,
         },
       },
     ],
     submit: {
-      type: "plain_text",
-      text: "Submit",
+      type: 'plain_text',
+      text: 'Submit',
     },
     close: {
-      type: "plain_text",
-      text: "Cancel",
+      type: 'plain_text',
+      text: 'Cancel',
       emoji: true,
     },
   };

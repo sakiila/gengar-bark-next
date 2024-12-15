@@ -14,39 +14,32 @@ export class ChannelService {
     return new ChannelService();
   }
 
-  async saveChannels(channels: DeepPartial<Channel>[]): Promise<Channel[]> {
+  async saveChannels(channels: DeepPartial<Channel>[]) {
+    if (!channels || channels.length === 0) {
+      return;
+    }
+
     // For better performance with large datasets, process in chunks
     const chunkSize = 1000;
-    const results: Channel[] = [];
 
     for (let i = 0; i < channels.length; i += chunkSize) {
       const chunk = channels.slice(i, i + chunkSize);
 
       // Use query builder for upsert operation
-      const result = await this.repository
+      await this.repository
       .createQueryBuilder()
       .insert()
       .into(Channel)
       .values(chunk)
       .orUpdate(
-        ['name', 'description', 'updated_at'], // specify columns to update
+        ['is_archived', 'is_user_deleted'], // specify columns to update
         ['channel_id'], // specify conflict columns
         {
           skipUpdateIfNoValuesChanged: true,
-        }
+        },
       )
       .execute();
-
-      // Fetch the inserted/updated records
-      const channelIds = chunk.map(c => c.channel_id);
-      const updatedChannels = await this.repository.find({
-        where: { channel_id: In(channelIds) }
-      });
-
-      results.push(...updatedChannels);
     }
-
-    return results;
   }
 
   async findAll(): Promise<Channel[]> {
@@ -60,4 +53,6 @@ export class ChannelService {
   async deleteChannels(channelIds: string[]): Promise<void> {
     await this.repository.delete({ channel_id: In(channelIds) });
   }
+
+
 }

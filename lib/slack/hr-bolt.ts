@@ -1,5 +1,4 @@
 import { App, LogLevel } from '@slack/bolt';
-import { WebClient, ChatPostMessageArguments } from '@slack/web-api';
 import { bot_hr_token } from '@/lib/slack/slack';
 
 // Initialize the Slack Bolt app with more configuration options
@@ -15,7 +14,7 @@ const botClient = app.client;
  * Base message sender function
  * @param params - Message parameters
  */
-async function sendMessage(params: ChatPostMessageArguments) {
+async function sendMessage(params: any) {
   try {
     return await botClient.chat.postMessage(params);
   } catch (error) {

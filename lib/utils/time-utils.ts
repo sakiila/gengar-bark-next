@@ -1,4 +1,4 @@
-export const dateUtils = {
+export const timeUtils = {
   // 获取当前日期 YYYY-MM-DD
   today(): string {
     const d = new Date()
@@ -23,4 +23,9 @@ export const dateUtils = {
       hour12: false
     })
   }
+}
+
+export function convertToDate(slackTimestamp: string): Date {
+  const [seconds, milliseconds] = slackTimestamp.split('.').map(Number);
+  return new Date(seconds * 1000 + milliseconds);
 }

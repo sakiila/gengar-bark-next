@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { postToProd } from '@/lib/slack/slack';
-import { postgres } from '@/lib/database/supabase';
+import { getUser, postgres } from '@/lib/database/supabase';
 
 export default async function teamJoin(
   req: NextApiRequest,
@@ -15,12 +15,7 @@ export default async function teamJoin(
   const deleted = user.deleted;
   const teamId = user.team_id;
 
-  const { data: dbUser, error } = await postgres
-    .from('user')
-    .select('*')
-    .eq('user_id', id)
-    .eq('deleted', false);
-
+  const dbUser = await getUser(id);
   if (dbUser && dbUser.length > 0) {
     res.status(200).send('');
   }

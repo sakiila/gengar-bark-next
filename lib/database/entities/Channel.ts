@@ -25,4 +25,8 @@ export class Channel {
 
   @Column({ type: "boolean", default: false })
   is_user_deleted!: boolean;
+
+  @Column({ type: "varchar" })
+  email!: string;
+
 }

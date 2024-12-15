@@ -1,15 +1,16 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import AppointmentService from "@/lib/moego/AppointmentService";
-import { BusinessAccountResponse, Customer, Service } from "@/lib/moego/types";
-import { dateUtils } from "@/lib/utils/date-utils";
-import { conversationsListForIm } from '@/lib/slack/gengar-bolt';
+import { NextApiRequest, NextApiResponse } from 'next';
+import AppointmentService from '@/lib/moego/AppointmentService';
+import { BusinessAccountResponse, Customer, Service } from '@/lib/moego/types';
+import { timeUtils } from '@/lib/utils/time-utils';
+import { dataImport } from '@/lib/slack/gengar-bolt';
 
 export default async function personHandler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
 
-  await conversationsListForIm();
+  // await conversationsListForIm();
+  await dataImport();
 
   // const email = req.body.email;
   // const slackName = req.body.slackName;
@@ -90,8 +91,8 @@ async function create(
             serviceId: service.id,
             petId: petId,
             serviceName: service.name,
-            startDate: dateUtils.today(),
-            startTime: dateUtils.minutesSinceMidnight(),
+            startDate: timeUtils.today(),
+            startTime: timeUtils.minutesSinceMidnight(),
             feedings: [],
             medications: [],
             servicePrice: service.price,
@@ -104,9 +105,9 @@ async function create(
             operations: [],
             specificDates: [],
             quantityPerDay: 1,
-            endDate: dateUtils.today(),
+            endDate: timeUtils.today(),
             serviceTime: service.duration,
-            endTime: dateUtils.minutesSinceMidnight() + service.duration,
+            endTime: timeUtils.minutesSinceMidnight() + service.duration,
             staffId: service.availableStaffs?.ids[0] ?? staffId,
             serviceItemType: 1,
             serviceType: 1,
