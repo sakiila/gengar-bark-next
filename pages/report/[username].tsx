@@ -249,12 +249,12 @@ const OverviewPage = ({ data }: { data: BuildReport }) => (
       <h2 className="text-4xl font-bold text-white mb-12">构建概览</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <StatCard
-          title="总构建次数"
+          title="总构建通知次数"
           value={data.totalBuilds}
-          description="统计时间为 2024 年 1 月 25 日 至 12 月 15 日"
+          description="统计时间为 2024 年 1 月 1 日 至 12 月 15 日"
         />
         <StatCard
-          title="首次构建"
+          title="首次使用构建通知"
           value={new Date(data.firstBuildTime).toLocaleDateString('ja-JP')}
         />
         <StatCard

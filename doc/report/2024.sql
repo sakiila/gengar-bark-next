@@ -1,16 +1,22 @@
 WITH
+    -- 构建记录表
+    ranked_builds AS (SELECT *,
+                             ROW_NUMBER() OVER (PARTITION BY email ORDER BY created_at) as rn
+                      FROM build_record),
+
+
 -- 基础数据处理: 处理时区、格式标准化、构建时长解析
 -- local_time: UTC转北京时间(+8小时)
 -- email_lower: 邮箱地址转小写，用于统一大小写
 -- repository_lower: 仓库名转小写，用于统一大小写
 -- branch_lower: 分支名转小写，用于统一大小写
 -- duration_seconds: 将不同格式的构建时长统一转换为秒数
-base_stats AS (SELECT *,
-                      created_at + INTERVAL '8 hour' as local_time,
-    LOWER(email)                   as email_lower,
-    LOWER(repository)              as repository_lower,
-    LOWER(branch)                  as branch_lower,
-    CASE
+    base_stats AS (SELECT *
+                        , created_at + INTERVAL '8 hour' as local_time
+        , LOWER(email)                   as email_lower
+        , LOWER(repository)              as repository_lower
+        , LOWER(branch)                  as branch_lower
+        , CASE
     WHEN duration ~ '(\d+) min (\d+) sec'
     THEN CAST(SUBSTRING(duration FROM '(\d+) min') AS INTEGER) * 60 +
     CAST(SUBSTRING(duration FROM '(\d+) sec') AS INTEGER)
@@ -19,52 +25,63 @@ base_stats AS (SELECT *,
     WHEN duration ~ '(\d+) sec'
     THEN CAST(SUBSTRING(duration FROM '(\d+) sec') AS INTEGER)
     ELSE 0
-END                        as duration_seconds
-               FROM build_record
-               WHERE EXTRACT(YEAR FROM created_at + INTERVAL '8 hour') = 2024),
+END                                          as duration_seconds
+                   FROM build_record
+                   WHERE EXTRACT(YEAR FROM created_at + INTERVAL '8 hour') = 2024)
+        ,
 
 -- 构建热力图数据: 按用户、星期和小时统计构建次数
 -- day: 星期(0=周日,1=周一,...,6=周六)
 -- hour: 小时(0-23)
 -- build_count: 该时间段的构建次数
-heatmap_stats AS (SELECT email_lower                   as email,
-                         EXTRACT(DOW FROM local_time)  as day,
-                         EXTRACT(HOUR FROM local_time) as hour,
-                         COUNT(*)                      as build_count
-                  FROM base_stats
-                  GROUP BY email_lower, EXTRACT(DOW FROM local_time), EXTRACT(HOUR FROM local_time)),
+    heatmap_stats AS (SELECT email_lower                   as email
+                           , EXTRACT(DOW FROM local_time)  as day
+                           , EXTRACT(HOUR FROM local_time) as hour
+                           , COUNT(*)                      as build_count
+                      FROM base_stats
+                      GROUP BY email_lower
+                             , EXTRACT(DOW FROM local_time)
+                             , EXTRACT(HOUR FROM local_time))
+        ,
 
 -- 用户主要统计指标
 -- total_builds: 总构建次数
--- first_build_time: 首次构建时间
+-- first_build_time_2024: 首次构建时间
 -- last_build_time: 最后构建时间
 -- successful_builds: 成功构建次数
 -- avg_build_duration: 平均构建时长(秒)
 -- max_build_duration: 最长构建时长(秒)
 -- min_build_duration: 最短构建时长(秒)
-user_main_stats AS (SELECT email_lower                                          as email,
-                           COUNT(*)                                             as total_builds,
-                           MIN(local_time)                                      as first_build_time,
-                           MAX(local_time)                                      as last_build_time,
-                           COUNT(CASE WHEN result ILIKE '%SUCCESS%' THEN 1 END) as successful_builds,
-                           ROUND(AVG(duration_seconds), 2)                      as avg_build_duration,
-                           MAX(duration_seconds)                                as max_build_duration,
-                           MIN(duration_seconds)                                as min_build_duration
-                    FROM base_stats
-                    GROUP BY email_lower),
+    user_main_stats AS (SELECT email_lower                                          as email
+                             , COUNT(*)                                             as total_builds
+                             , MIN(local_time)                                      as first_build_time_2024
+                             , MAX(local_time)                                      as last_build_time
+                             , COUNT(CASE WHEN result ILIKE '%SUCCESS%' THEN 1 END) as successful_builds
+                             , ROUND(AVG(duration_seconds)
+            , 2)                                                                    as avg_build_duration
+                             , MAX(duration_seconds)                                as max_build_duration
+                             , MIN(duration_seconds)                                as min_build_duration
+                        FROM base_stats
+                        GROUP BY email_lower)
+        ,
 
 -- 月度构建趋势分析
 -- month: 按月分组的时间戳
 -- builds_count: 月度构建总数
 -- success_count: 月度成功构建数
 -- avg_duration: 月度平均构建时长(秒)
-monthly_trends AS (SELECT email_lower                                          as email,
-                          DATE_TRUNC('month', local_time)                      as month,
-                          COUNT(*)                                             as builds_count,
-                          COUNT(CASE WHEN result ILIKE '%SUCCESS%' THEN 1 END) as success_count,
-                          ROUND(AVG(duration_seconds), 2)                      as avg_duration
-                   FROM base_stats
-                   GROUP BY email_lower, DATE_TRUNC('month', local_time)),
+    monthly_trends AS (SELECT email_lower                                          as email
+                            , DATE_TRUNC('month'
+            , local_time)                                                          as month
+                            , COUNT(*)                                             as builds_count
+                            , COUNT(CASE WHEN result ILIKE '%SUCCESS%' THEN 1 END) as success_count
+                            , ROUND(AVG(duration_seconds)
+            , 2)                                                                   as avg_duration
+                       FROM base_stats
+                       GROUP BY email_lower
+                              , DATE_TRUNC('month'
+                           , local_time))
+        ,
 
 -- 仓库级别统计
 -- repo_builds: 仓库构建总数
@@ -73,107 +90,126 @@ monthly_trends AS (SELECT email_lower                                          a
 -- avg_repo_duration: 仓库平均构建时长
 -- first_repo_build: 仓库首次构建时间
 -- last_repo_build: 仓库最后构建时间
-repository_stats AS (SELECT email_lower                                          as email,
-                            repository_lower                                     as repository,
-                            COUNT(*)                                             as repo_builds,
-                            COUNT(CASE WHEN result ILIKE '%SUCCESS%' THEN 1 END) as repo_successes,
-                            COUNT(DISTINCT branch_lower)                         as branch_count,
-                            ROUND(AVG(duration_seconds), 2)                      as avg_repo_duration,
-                            MIN(local_time)                                      as first_repo_build,
-                            MAX(local_time)                                      as last_repo_build
-                     FROM base_stats
-                     GROUP BY email_lower, repository_lower),
+    repository_stats AS (SELECT email_lower                                          as email
+                              , repository_lower                                     as repository
+                              , COUNT(*)                                             as repo_builds
+                              , COUNT(CASE WHEN result ILIKE '%SUCCESS%' THEN 1 END) as repo_successes
+                              , COUNT(DISTINCT branch_lower)                         as branch_count
+                              , ROUND(AVG(duration_seconds)
+            , 2)                                                                     as avg_repo_duration
+                              , MIN(local_time)                                      as first_repo_build
+                              , MAX(local_time)                                      as last_repo_build
+                         FROM base_stats
+                         GROUP BY email_lower
+                                , repository_lower)
+        ,
 
 -- 按小时分布的构建数量统计
 -- hour_of_day: 小时(0-23)
 -- day_of_week: 星期(0-6)
 -- builds_in_timeframe: 时段构建数
-time_distribution AS (SELECT email_lower                   as email,
-                             EXTRACT(HOUR FROM local_time) as hour_of_day,
-                             EXTRACT(DOW FROM local_time)  as day_of_week,
-                             COUNT(*)                      as builds_in_timeframe
-                      FROM base_stats
-                      GROUP BY email_lower, EXTRACT(HOUR FROM local_time), EXTRACT(DOW FROM local_time)),
+    time_distribution AS (SELECT email_lower                   as email
+                               , EXTRACT(HOUR FROM local_time) as hour_of_day
+                               , EXTRACT(DOW FROM local_time)  as day_of_week
+                               , COUNT(*)                      as builds_in_timeframe
+                          FROM base_stats
+                          GROUP BY email_lower
+                                 , EXTRACT(HOUR FROM local_time)
+                                 , EXTRACT(DOW FROM local_time))
+        ,
 
 -- 每日高峰时段识别
 -- peak_hour: 构建次数最多的小时
 -- peak_hour_builds: 该小时的构建次数
-peak_times AS (SELECT email,
-                      hour_of_day         as peak_hour,
-                      builds_in_timeframe as peak_hour_builds
-               FROM (SELECT email,
-                            hour_of_day,
-                            builds_in_timeframe,
-                            ROW_NUMBER() OVER (PARTITION BY email ORDER BY builds_in_timeframe DESC) as rn
-                     FROM time_distribution) ranked
-               WHERE rn = 1),
+    peak_times AS (SELECT email
+                        , hour_of_day         as peak_hour
+                        , builds_in_timeframe as peak_hour_builds
+                   FROM (SELECT email
+                              , hour_of_day
+                              , builds_in_timeframe
+                              , ROW_NUMBER() OVER (PARTITION BY email ORDER BY builds_in_timeframe DESC) as rn
+                         FROM time_distribution) ranked
+                   WHERE rn = 1)
+        ,
 
 -- 每周高峰日识别
 -- peak_day: 构建次数最多的星期
 -- peak_day_builds: 该星期的构建次数
-weekly_peaks AS (SELECT email,
-                        day_of_week         as peak_day,
-                        builds_in_timeframe as peak_day_builds
-                 FROM (SELECT email,
-                              day_of_week,
-                              SUM(builds_in_timeframe)                                                      as builds_in_timeframe,
-                              ROW_NUMBER() OVER (PARTITION BY email ORDER BY SUM(builds_in_timeframe) DESC) as rn
-                       FROM time_distribution
-                       GROUP BY email, day_of_week) ranked
-                 WHERE rn = 1),
+    weekly_peaks AS (SELECT email
+                          , day_of_week         as peak_day
+                          , builds_in_timeframe as peak_day_builds
+                     FROM (SELECT email
+                                , day_of_week
+                                , SUM(builds_in_timeframe)                                                      as builds_in_timeframe
+                                , ROW_NUMBER() OVER (PARTITION BY email ORDER BY SUM(builds_in_timeframe) DESC) as rn
+                           FROM time_distribution
+                           GROUP BY email
+                                  , day_of_week) ranked
+                     WHERE rn = 1)
+        ,
 
 -- 工作日统计（每天只统计一次）
 -- email: 用户邮箱
 -- work_date: 工作日期
 -- is_weekend: 是否为周末
-consecutive_days_temp AS (SELECT DISTINCT email_lower                            as email,
-                                          DATE(local_time)                       as work_date,
-                                          EXTRACT(DOW FROM local_time) IN (0, 6) as is_weekend
-                          FROM base_stats),
+    consecutive_days_temp AS (SELECT DISTINCT email_lower                            as email
+                                            , DATE(local_time)                       as work_date
+                                            , EXTRACT(DOW FROM local_time) IN (0, 6) as is_weekend
+                              FROM base_stats)
+        ,
 
 -- 连续工作日计算
 -- grp: 用于识别连续日期组的标识
-consecutive_days AS (SELECT email,
-                            work_date,
-                            work_date - (DENSE_RANK() OVER (PARTITION BY email ORDER BY work_date))::integer *
-                                        INTERVAL '1 day' as grp
-                     FROM consecutive_days_temp),
+    consecutive_days AS (SELECT email
+                              , work_date
+                              , work_date - (DENSE_RANK() OVER (PARTITION BY email ORDER BY work_date))::integer *
+                                            INTERVAL '1 day' as grp
+                         FROM consecutive_days_temp)
+        ,
 
 -- 工作模式统计（每天去重）
 -- max_continuous_days: 最长连续工作天数
 -- weekend_days: 周末工作天数
 -- total_days: 总工作天数
 -- total_months: 跨越月份数
-work_pattern_stats AS (WITH daily_stats AS (SELECT email,
-                                                   work_date,
-                                                   is_weekend,
-                                                   DATE_TRUNC('month', work_date) as work_month
-                                            FROM consecutive_days_temp
-                                            GROUP BY email, work_date, is_weekend, DATE_TRUNC('month', work_date))
-                       SELECT d.email,
-                              MAX(streak.streak_length)                               as max_continuous_days,
-                              COUNT(DISTINCT CASE WHEN is_weekend THEN work_date END) as weekend_days,
-                              COUNT(DISTINCT work_date)                               as total_days,
-                              COUNT(DISTINCT work_month)                              as total_months
-                       FROM daily_stats d
-                                LEFT JOIN (SELECT email,
-                                                  grp,
-                                                  COUNT(DISTINCT work_date) as streak_length
-                                           FROM consecutive_days
-                                           GROUP BY email, grp) streak ON d.email = streak.email
-                       GROUP BY d.email),
+    work_pattern_stats AS (WITH daily_stats AS (SELECT email
+                                                     , work_date
+                                                     , is_weekend
+                                                     , DATE_TRUNC('month'
+            , work_date) as work_month
+                                                FROM consecutive_days_temp
+                                                GROUP BY email
+                                                       , work_date
+                                                       , is_weekend
+                                                       , DATE_TRUNC('month'
+                                                    , work_date))
+                           SELECT d.email
+                                , MAX(streak.streak_length)                               as max_continuous_days
+                                , COUNT(DISTINCT CASE WHEN is_weekend THEN work_date END) as weekend_days
+                                , COUNT(DISTINCT work_date)                               as total_days
+                                , COUNT(DISTINCT work_month)                              as total_months
+                           FROM daily_stats d
+                                    LEFT JOIN (SELECT email
+                                                    , grp
+                                                    , COUNT(DISTINCT work_date) as streak_length
+                                               FROM consecutive_days
+                                               GROUP BY email
+                                                      , grp) streak ON d.email = streak.email
+                           GROUP BY d.email)
+        ,
 
 -- 用户排名计算
 -- builds_rank: 按构建次数排名
 -- success_rate_rank: 按成功率排名
-user_ranks AS (SELECT email_lower                          as email,
-                      RANK() OVER (ORDER BY COUNT(*) DESC) as builds_rank,
-                      RANK() OVER (
-                          ORDER BY COUNT(CASE WHEN result ILIKE '%SUCCESS%' THEN 1 END)::float /
-                                   NULLIF(COUNT(*), 0) DESC
-                          )                                as success_rate_rank
-               FROM base_stats
-               GROUP BY email_lower)
+    user_ranks AS (SELECT email_lower                          as email
+                        , RANK() OVER (ORDER BY COUNT(*) DESC) as builds_rank
+                        , RANK() OVER (
+            ORDER BY COUNT(CASE WHEN result ILIKE '%SUCCESS%' THEN 1 END)::float /
+                     NULLIF(COUNT(*)
+                         , 0) DESC
+            )                                                  as success_rate_rank
+                   FROM base_stats
+                   GROUP BY email_lower)
 
 -- 最终数据输出
 -- 包含所有用户的详细构建统计信息、活跃度分析、工作模式等
@@ -181,7 +217,11 @@ SELECT
     -- 基本信息
     u.email,                                                                                                        -- 用户邮箱
     u.total_builds,                                                                                                 -- 总构建次数
-    TO_CHAR(u.first_build_time, 'YYYY-MM-DD HH24:MI:SS')                             as first_build_time,           -- 首次构建时间
+    TO_CHAR(u.first_build_time_2024, 'YYYY-MM-DD HH24:MI:SS')                        as first_build_time_2024,      -- 首次构建时间
+    (SELECT TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS')
+     FROM ranked_builds rb
+     WHERE lower(rb.email) = lower(u.email)
+       AND rb.rn = 1)                                                                as first_build_time,           -- 首次构建详情
     TO_CHAR(u.last_build_time, 'YYYY-MM-DD HH24:MI:SS')                              as last_build_time,            -- 最后构建时间
 
     -- 成功率
@@ -202,7 +242,7 @@ SELECT
      WHERE b.email_lower = u.email)                                                  as total_branches,             -- 总分支数
 
     -- 最活跃仓库信息
-    (SELECT repository || ' '  || repo_builds || ' 次构建, ' ||
+    (SELECT repository || ' ' || repo_builds || ' 次构建, ' ||
             ROUND(CAST(repo_successes AS DECIMAL) / NULLIF(repo_builds, 0) * 100, 1) || '% 成功率, ' ||
             '首次: ' || TO_CHAR(first_repo_build, 'YYYY-MM-DD HH24:MI:SS') || ', ' ||
             '最后: ' || TO_CHAR(last_repo_build, 'YYYY-MM-DD HH24:MI:SS')
@@ -251,7 +291,7 @@ END || ' (' || wp.peak_day_builds ||
 
     -- 日均构建次数
     ROUND(CAST(u.total_builds AS DECIMAL) /
-          NULLIF(EXTRACT(DAYS FROM (u.last_build_time - u.first_build_time)), 0),
+          NULLIF(EXTRACT(DAYS FROM (u.last_build_time - u.first_build_time_2024)), 0),
           2)                                                                         as avg_daily_builds,           -- 日均构建次数
 
     -- 排名信息
