@@ -250,19 +250,35 @@ const MESSAGES_PER_REQUEST = 1000;
 async function importConversationsHistory(
   channel: Channel,
   initialCursor?: string,
+  maxRetries: number = 3
 ): Promise<any[]> {
   const accumulator: any[] = [];
   let cursor = initialCursor;
 
   while (true) {
-    const response = await botClient.conversations.history({
-      channel: channel.channel_id,
-      limit: MESSAGES_PER_REQUEST,
-      cursor,
-    });
+    let retries = 0;
+    let success = false;
+    let response;
 
-    if (!response.ok) {
-      throw new Error(response.error || 'Failed to fetch messages');
+    while (retries < maxRetries && !success) {
+      try {
+        response = await botClient.conversations.history({
+          channel: channel.channel_id,
+          limit: MESSAGES_PER_REQUEST,
+          cursor,
+        });
+        success = true;
+      } catch (error) {
+        retries++;
+        console.error(`Attempt ${retries} failed for channel ${channel.channel_id}:`, error);
+        if (retries === maxRetries) throw error;
+        // 指数退避
+        await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
+      }
+    }
+
+    if (!response?.ok) {
+      throw new Error(response?.error || 'Failed to fetch messages');
     }
 
     const validMessages = (response.messages || [])
@@ -303,57 +319,13 @@ async function processChannelBatch(channels: Channel[]): Promise<void> {
     limit(async () => {
       console.log(`Processing channel: ${channel.channel_id}`);
       try {
-        let cursor: string | undefined;
-        let messageBuffer: any[] = [];
+        const messages = await importConversationsHistory(channel);
         
-        while (true) {
-          const response = await botClient.conversations.history({
-            channel: channel.channel_id,
-            limit: MESSAGES_PER_REQUEST,
-            cursor,
-          });
-
-          if (!response.ok) {
-            throw new Error(response.error || 'Failed to fetch messages');
-          }
-
-          const validMessages = (response.messages || [])
-            .filter(isValidMessage)
-            .map(msg => ({
-              text: msg.text!,
-              user_id: channel.user_id,
-              created_at: convertToDate(msg.ts!),
-              ...BuildRecordService.extractInfo(msg.text!) || {
-                result: '',
-                duration: '',
-                repository: '',
-                branch: '',
-                sequence: '',
-              },
-              email: channel.email,
-            }));
-
-          messageBuffer.push(...validMessages);
-
-          // 当缓冲区达到批处理大小时，进行处理
-          if (messageBuffer.length >= MESSAGE_BATCH_SIZE) {
-            await buildRecordService.batchCreate(messageBuffer);
-            console.log(`Inserted ${messageBuffer.length} messages for channel ${channel.channel_id}`);
-            messageBuffer = []; // 清空缓冲区
-          }
-
-          if (!response.response_metadata?.next_cursor) {
-            break;
-          }
-
-          cursor = response.response_metadata.next_cursor;
-          await new Promise(resolve => setTimeout(resolve, 200));
-        }
-
-        // 处理剩余的消息
-        if (messageBuffer.length > 0) {
-          await buildRecordService.batchCreate(messageBuffer);
-          console.log(`Inserted final ${messageBuffer.length} messages for channel ${channel.channel_id}`);
+        // 分批处理消息
+        const messageBatches = chunk(messages, MESSAGE_BATCH_SIZE);
+        for (const batch of messageBatches) {
+          await buildRecordService.batchCreate(batch);
+          console.log(`Inserted ${batch.length} messages for channel ${channel.channel_id}`);
         }
       } catch (error) {
         console.error(`Error processing channel ${channel.channel_id}:`, error);
@@ -364,6 +336,16 @@ async function processChannelBatch(channels: Channel[]): Promise<void> {
   await Promise.all(channelPromises);
 }
 
+function logMemoryUsage() {
+  const used = process.memoryUsage();
+  console.log('Memory usage:');
+  // 明确指定 NodeJS.MemoryUsage 的键
+  const metrics: Array<keyof NodeJS.MemoryUsage> = ['heapTotal', 'heapUsed', 'external', 'rss'];
+  metrics.forEach(key => {
+    console.log(`${key}: ${Math.round(used[key] / 1024 / 1024 * 100) / 100} MB`);
+  });
+}
+
 export async function dataImport(timeoutMinutes: number = 30) {
   const timeout = new Promise((_, reject) => {
     setTimeout(() => reject(new Error('Data import timeout')), timeoutMinutes * 60 * 1000);
@@ -372,30 +354,50 @@ export async function dataImport(timeoutMinutes: number = 30) {
   try {
     await Promise.race([
       (async () => {
+        logMemoryUsage();
+        const startTime = Date.now();
         const channelService = await ChannelService.getInstance();
         const channels = await channelService.findAll();
 
-        console.log(`Starting import for ${channels.length} channels`);
+        console.log(`Starting import for ${channels.length} channels at ${new Date().toISOString()}`);
+        let processedChannels = 0;
+        let totalMessages = 0;
 
-        // Process channels in batches
         const channelBatches = chunk(channels, CHANNEL_BATCH_SIZE);
-
+        
         for (let i = 0; i < channelBatches.length; i++) {
+          logMemoryUsage();
+          const batchStartTime = Date.now();
           console.log(`Processing batch ${i + 1}/${channelBatches.length}`);
+          
           await processChannelBatch(channelBatches[i]);
+          processedChannels += channelBatches[i].length;
+          
+          const batchDuration = (Date.now() - batchStartTime) / 1000;
+          console.log(`Batch ${i + 1} completed in ${batchDuration}s. Progress: ${processedChannels}/${channels.length} channels`);
 
-          // Add delay between batches to prevent overwhelming the system
           if (i < channelBatches.length - 1) {
             await new Promise(resolve => setTimeout(resolve, 1000));
           }
         }
+
+        const totalDuration = (Date.now() - startTime) / 1000;
+        console.log(`Import completed in ${totalDuration}s. Processed ${processedChannels} channels and ${totalMessages} messages`);
       })(),
       timeout
     ]);
-    
-    console.log('Data import completed successfully');
-  } catch (error) {
-    console.error('Error in data import:', error);
-    throw error;
+  } catch (err: unknown) {
+    logMemoryUsage();
+    // 类型守卫确保错误处理的类型安全
+    if (err instanceof Error) {
+      if (err.message === 'Data import timeout') {
+        console.error(`Import timed out after ${timeoutMinutes} minutes`);
+      } else {
+        console.error('Error in data import:', err);
+      }
+    } else {
+      console.error('Unknown error in data import:', err);
+    }
+    throw err;
   }
 }
