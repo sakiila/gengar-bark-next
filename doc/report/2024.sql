@@ -27,7 +27,8 @@ WITH
     ELSE 0
 END                                          as duration_seconds
                    FROM build_record
-                   WHERE EXTRACT(YEAR FROM created_at + INTERVAL '8 hour') = 2024)
+                   WHERE EXTRACT(YEAR FROM created_at + INTERVAL '8 hour') = 2024
+                     AND email != '')
         ,
 
 -- 构建热力图数据: 按用户、星期和小时统计构建次数
