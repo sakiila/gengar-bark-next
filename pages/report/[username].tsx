@@ -260,12 +260,12 @@ const OverviewPage = ({ data }: { data: BuildReport }) => (
         <StatCard
           title="总体排名"
           value={`构建量第 ${data.buildsRank} 名`}
-          description={`Nam suscipit`}
+          description={`一共 67 名使用 Gengar Bark 研发`}
         />
         <StatCard
           title="构建成功率"
           value={`${data.successRate}%`}
-          description={`排名第 ${data.successRateRank} 名（共 67 名）`}
+          description={data.successRateRank <= 30 ? `排名第 ${data.successRateRank} 名（共 67 名）` : undefined}
         />
       </div>
     </div>
@@ -356,7 +356,8 @@ const MonthlyTrendsPage = ({ data }: { data: BuildReport }) => {
             <LineChart data={monthlyData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#ffffff33" />
               <XAxis dataKey="month" stroke="#fff" />
-              <YAxis stroke="#fff" />
+              <YAxis stroke="#e7dab7" />
+              <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" tickFormatter={(value) => `${value}%`} />
               <Tooltip
                 contentStyle={{ backgroundColor: '#1a1a1a', border: 'none' }}
                 labelStyle={{ color: '#fff' }}
@@ -369,9 +370,9 @@ const MonthlyTrendsPage = ({ data }: { data: BuildReport }) => {
               <Line
                 type="monotone"
                 dataKey="builds"
-                stroke="#8884d8"
+                stroke="#e7dab7"
                 strokeWidth={2}
-                dot={{ fill: '#8884d8' }}
+                dot={{ fill: '#e7dab7' }}
               />
               <Line
                 type="monotone"
@@ -379,6 +380,7 @@ const MonthlyTrendsPage = ({ data }: { data: BuildReport }) => {
                 stroke="#82ca9d"
                 strokeWidth={2}
                 dot={{ fill: '#82ca9d' }}
+                yAxisId="right"
               />
             </LineChart>
           </ResponsiveContainer>
@@ -596,11 +598,6 @@ const RepositoryStatsPage = ({ data }: { data: BuildReport }) => (
     <div className="max-w-4xl mx-auto">
       <h2 className="text-4xl font-bold text-white mb-12">仓库统计</h2>
       <div className="grid grid-cols-1 gap-6">
-        <StatCard
-          title="总体排名"
-          value={`构建量第 ${data.buildsRank} 名`}
-          description={`共 67 名`}
-        />
         <StatCard
           title="日均构建次数"
           value={`${data.avgDailyBuilds} 次`}
