@@ -10,6 +10,9 @@ const nextConfig = {
       dataset: process.env.AXIOM_DATASET,
     },
   },
+  images: {
+    domains: ['baobo.me'], // Add your image domains here
+  },
 };
 
 module.exports = withAxiom(nextConfig);

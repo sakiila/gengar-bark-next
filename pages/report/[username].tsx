@@ -993,7 +993,7 @@ export default function Report() {
         };
       }
     }
-  }, [canOpenLink, showScrollHint]);
+  }, [canOpenLink, showScrollHint, username]);
 
   // 添加加载状态组件
   if (!lowerCaseUsername) return <LoadingSpinner />;
@@ -1008,7 +1008,7 @@ export default function Report() {
 
   const pageTitle = `2024 MoeGo CI 年度报告 | ${data.email}`;
   const pageDescription = `在 2024 年，共完成 ${data.totalBuilds} 次构建，成功率 ${data.successRate}%。最活跃仓库：${data.mostActiveRepository}`;
-  const shareImage = '/ci-report-preview.png'; // 需要添加预览图片
+  const shareImage = '/images/cover.png';
 
   return (
     <>

@@ -320,7 +320,7 @@ async function processChannelBatch(channels: Channel[]): Promise<void> {
       console.log(`Processing channel: ${channel.channel_id}`);
       try {
         const messages = await importConversationsHistory(channel);
-        
+
         // 分批处理消息
         const messageBatches = chunk(messages, MESSAGE_BATCH_SIZE);
         for (const batch of messageBatches) {
@@ -364,15 +364,15 @@ export async function dataImport(timeoutMinutes: number = 30) {
         let totalMessages = 0;
 
         const channelBatches = chunk(channels, CHANNEL_BATCH_SIZE);
-        
+
         for (let i = 0; i < channelBatches.length; i++) {
           logMemoryUsage();
           const batchStartTime = Date.now();
           console.log(`Processing batch ${i + 1}/${channelBatches.length}`);
-          
+
           await processChannelBatch(channelBatches[i]);
           processedChannels += channelBatches[i].length;
-          
+
           const batchDuration = (Date.now() - batchStartTime) / 1000;
           console.log(`Batch ${i + 1} completed in ${batchDuration}s. Progress: ${processedChannels}/${channels.length} channels`);
 

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
 import type { NextPage } from 'next'
+import Image from 'next/image';
 
 const FeatureCard: React.FC<{
   title: string;
@@ -19,10 +20,12 @@ const FeatureCard: React.FC<{
     className={styles.featureCard}
   >
     <div className={styles.featureImage}>
-      <img
+      <Image
         src={imageUrl}
         alt={title}
         className={styles.featureImg}
+        width={500}
+        height={300}
       />
     </div>
     <div className={styles.featureContent}>
@@ -93,11 +96,9 @@ const TypingText: React.FC = () => {
             setIsPaused(true);
             return prev;
           } else {
-            // Deleting
             if (prev.length > 0) {
               return prev.slice(0, -1);
             }
-            // Move to next phrase
             setIsDeleting(false);
             setPhraseIndex((prev) => (prev + 1) % phrases.length);
             return '';
@@ -107,7 +108,7 @@ const TypingText: React.FC = () => {
     }
 
     return () => clearTimeout(timer);
-  }, [displayText, isDeleting, phraseIndex, isPaused]);
+  }, [displayText, isDeleting, phraseIndex, isPaused, phrases]);
 
   return (
     <span className={styles.typingText}>
