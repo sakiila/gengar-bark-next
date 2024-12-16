@@ -137,13 +137,28 @@ const Home: NextPage = () => {
 
   const opacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
 
+  const baseUrl =  'https://gengar.baobo.me';
+
   return (
     <div className={styles.container}>
       <Head>
         <title>Gengar Bark | AI-Powered Slack Assistant for Smart Team Communication</title>
-        <meta name="title" content="Gengar Bark - Your AI-Powered Slack Assistant" />
+        <meta name="description" content="Enhance team productivity with AI-powered chat, automatic summaries, and smart scheduling - all within Slack." />
+
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={baseUrl} />
         <meta property="og:title" content="Gengar Bark | Smart Team Communication" />
+        <meta property="og:description" content="Transform your Slack workspace with AI-powered chat assistance, automatic meeting summaries, and intelligent scheduling." />
+        <meta property="og:image" content={`${baseUrl}/images/preview2.png`} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Gengar Bark | Smart Team Communication" />
+        <meta name="twitter:description" content="Transform your Slack workspace with AI-powered chat assistance, automatic meeting summaries, and intelligent scheduling." />
+        <meta name="twitter:image" content={`${baseUrl}/images/preview2.png`} />
       </Head>
       <nav className={styles.nav}>
         <Link href="/" className={styles.logo}>Gengar Bark</Link>
