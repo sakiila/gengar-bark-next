@@ -872,7 +872,7 @@ export default function Report() {
     };
 
     fetchReport();
-  }, [lowerCaseUsername]);
+  }, [username, lowerCaseUsername]);
 
   // Add basic touch event handler to prevent horizontal scrolling
   useEffect(() => {
@@ -893,7 +893,7 @@ export default function Report() {
       const container = document.querySelector('.snap-y');
       if (container) {
         container.addEventListener('touchmove', handleTouchMove as EventListener, { passive: false });
-        
+
         return () => {
           container.removeEventListener('touchmove', handleTouchMove as EventListener);
         };

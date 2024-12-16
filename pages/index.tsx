@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import styles from '../styles/Home.module.css';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import Link from 'next/link';
 import Head from 'next/head';
 import type { NextPage } from 'next'
@@ -65,13 +65,13 @@ const TypingText: React.FC = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
 
-  const phrases = [
+  const phrases = useMemo(() => [
     "Transform Your Team Communication",
     "Enhance Your Workspace Productivity",
     "Streamline Team Collaboration Instantly",
     "Automate Your Daily Communications",
     "Power Up Your Team's Workflow",
-  ];
+  ], []);
 
   useEffect(() => {
     const currentPhrase = phrases[phraseIndex];
