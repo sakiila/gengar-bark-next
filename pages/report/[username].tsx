@@ -833,25 +833,6 @@ const Footer = () => (
   </motion.div>
 );
 
-// 修改 ScrollHint 组件样式，使其更醒目
-const ScrollHint = () => (
-  <motion.div
-    className="fixed bottom-24 left-1/2 -translate-x-1/2 text-white/90 text-center pointer-events-none z-50"
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.5 }}
-  >
-    <motion.div
-      animate={{ y: [0, -8, 0] }}
-      transition={{ duration: 1.5, repeat: Infinity }}
-      className="bg-black/30 backdrop-blur-lg px-6 py-3 rounded-full"
-    >
-      <p className="text-sm mb-2">继续下滑访问我的主页</p>
-      <span className="text-2xl">↓</span>
-    </motion.div>
-  </motion.div>
-);
-
 export default function Report() {
   const router = useRouter();
   const { username } = router.query as { username: string };
@@ -859,8 +840,6 @@ export default function Report() {
   const [data, setData] = useState<BuildReport | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showScrollHint, setShowScrollHint] = useState(false);
-  const [canOpenLink, setCanOpenLink] = useState(false);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
 
   useEffect(() => {
@@ -895,131 +874,39 @@ export default function Report() {
     fetchReport();
   }, [lowerCaseUsername]);
 
-  // 将现有的触摸事件处理和防止水平���动的逻辑合并到一个 useEffect 中
+  // Add basic touch event handler to prevent horizontal scrolling
   useEffect(() => {
-    let touchStartY = 0;
-    let touchStartX = 0;
-    let isAtBottomStart = false;
-    let scrollTimeout: NodeJS.Timeout;
-    let lastOpenTime = 0;
-    let attemptCount = 0;
-
-    const checkIfAtBottom = (element: HTMLElement) => {
-      return Math.abs(
-        element.scrollHeight - element.scrollTop - element.clientHeight,
-      ) < 50;
-    };
-
-    const openLink = () => {
-      const now = Date.now();
-      if (now - lastOpenTime > 500) {
-        window.open('https://baobo.me', '_blank');
-        lastOpenTime = now;
-        setShowScrollHint(false);
-        attemptCount = 0;
-      }
-    };
-
-    const handleTouchStart = (e: TouchEvent) => {
-      const scrollContainer = document.querySelector('.snap-y') as HTMLElement;
-      if (!scrollContainer) return;
-
-      touchStartY = e.touches[0].clientY;
-      touchStartX = e.touches[0].clientX;
-      isAtBottomStart = checkIfAtBottom(scrollContainer);
-
-      if (isAtBottomStart) {
-        setShowScrollHint(true);
-        setCanOpenLink(true);
-        attemptCount++;
-      }
-    };
-
     const handleTouchMove = (e: TouchEvent) => {
-      const touchY = e.touches[0].clientY;
-      const touchX = e.touches[0].clientX;
-      const deltaY = touchStartY - touchY;
-      const deltaX = touchStartX - touchX;
+      const touchStartX = e.touches[0].clientX;
+      const touchStartY = e.touches[0].clientY;
+      const deltaX = touchStartX - e.touches[0].clientX;
+      const deltaY = touchStartY - e.touches[0].clientY;
 
-      // 如果水平滑动距离大于垂直滑动距离，阻止默认行为
+      // If horizontal scroll is greater than vertical scroll, prevent default
       if (Math.abs(deltaX) > Math.abs(deltaY)) {
         e.preventDefault();
-        return;
-      }
-
-      if (isAtBottomStart && deltaY > 10) {
-        attemptCount++;
-        if (attemptCount > 1) {
-          openLink();
-        }
-        touchStartY = touchY;
       }
     };
 
-    const handleScroll = (e: Event) => {
-      const scrollContainer = e.target as HTMLElement;
-      const isAtBottom = checkIfAtBottom(scrollContainer);
-
-      clearTimeout(scrollTimeout);
-
-      if (isAtBottom) {
-        attemptCount++;
-        scrollTimeout = setTimeout(() => {
-          setShowScrollHint(true);
-          setCanOpenLink(true);
-          if (attemptCount > 2) {
-            openLink();
-          }
-        }, 50);
-      } else {
-        setShowScrollHint(false);
-        attemptCount = Math.max(0, attemptCount - 1);
-      }
-    };
-
-    const handleWheel = (e: WheelEvent) => {
-      const scrollContainer = document.querySelector('.snap-y') as HTMLElement;
-      if (!scrollContainer) return;
-
-      const isAtBottom = checkIfAtBottom(scrollContainer);
-
-      if (isAtBottom && e.deltaY > 0) {
-        e.preventDefault();
-        attemptCount++;
-        if (attemptCount > 1) {
-          openLink();
-        }
-      }
-    };
-
-    // 只在客户端添加事件监听
+    // Only add event listener on client
     if (typeof window !== 'undefined') {
       const container = document.querySelector('.snap-y');
       if (container) {
-        // 使用类型断言确保事件处理器类型正确
-        container.addEventListener('scroll', handleScroll as EventListener, { passive: true });
-        container.addEventListener('wheel', handleWheel as EventListener, { passive: false });
-        container.addEventListener('touchstart', handleTouchStart as EventListener, { passive: true });
         container.addEventListener('touchmove', handleTouchMove as EventListener, { passive: false });
-
+        
         return () => {
-          clearTimeout(scrollTimeout);
-          container.removeEventListener('scroll', handleScroll as EventListener);
-          container.removeEventListener('wheel', handleWheel as EventListener);
-          container.removeEventListener('touchstart', handleTouchStart as EventListener);
           container.removeEventListener('touchmove', handleTouchMove as EventListener);
         };
       }
     }
-  }, [canOpenLink, showScrollHint, username]);
+  }, []);
 
-  // 添加加载状态组件
+  // Rest of the component remains the same...
   if (!lowerCaseUsername) return <LoadingSpinner />;
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} />;
   if (!data) return <NoDataFound />;
 
-  // 如果未同意隐私协议，显示启动页面
   if (!privacyAccepted) {
     return <StartPage onAccept={() => setPrivacyAccepted(true)} />;
   }
@@ -1084,7 +971,6 @@ export default function Report() {
         <Footer />
       </div>
       <ShareSection data={data} />
-      {showScrollHint && <ScrollHint />}
     </>
   );
 }
