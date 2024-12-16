@@ -137,7 +137,7 @@ const GuidePage: React.FC = () => {
       </main>
 
       <footer className={styles.footer}>
-        <p> 2024 Gengar Bark. All rights reserved.</p>
+        <p>© 2024 Gengar Bark. All rights reserved.</p>
       </footer>
     </div>
   );
