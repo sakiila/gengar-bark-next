@@ -260,7 +260,7 @@ const OverviewPage = ({ data }: { data: BuildReport }) => (
         <StatCard
           title="总体排名"
           value={`构建量第 ${data.buildsRank} 名`}
-          description={`一共 67 名使用 Gengar Bark 研发`}
+          description={`共 67 名使用 Gengar Bark 研发`}
         />
         <StatCard
           title="构建成功率"
@@ -567,51 +567,72 @@ const WorkingPatternPage = ({ data }: { data: BuildReport }) => {
   );
 };
 
-const RepositoryStatsPage = ({ data }: { data: BuildReport }) => (
-  <motion.div
-    className="min-h-screen bg-gradient-to-br from-pink-500 to-orange-500 p-8 relative"
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    transition={{ duration: 0.5 }}
-  >
-    <motion.div
-      className="absolute bottom-40 right-40"
-      animate={{
-        x: [0, 15, 0],
-        y: [0, -10, 0],
-      }}
-      transition={{
-        duration: 4,
-        repeat: Infinity,
-        ease: 'easeInOut',
-      }}
-    >
-      <Image
-        src="/assets/saly8.png"
-        alt="Decorative element"
-        width={500}
-        height={500}
-        className="opacity-80"
-      />
-    </motion.div>
+const RepositoryStatsPage = ({ data }: { data: BuildReport }) => {
+  // 解析 mostActiveRepository 字符串
+  const [repoName, ...details] = data.mostActiveRepository.split(' ');
+  const detailsStr = details.join(' ');
 
-    <div className="max-w-4xl mx-auto">
-      <h2 className="text-4xl font-bold text-white mb-12">仓库统计</h2>
-      <div className="grid grid-cols-1 gap-6">
-        <StatCard
-          title="日均构建次数"
-          value={`${data.avgDailyBuilds} 次`}
-          description="Nam suscipit"
+  // 解析详细信息
+  const buildCount = detailsStr.match(/(\d+) 次构建/)?.[1] || '0';
+  const successRate = detailsStr.match(/(\d+\.?\d*)% 成功率/)?.[1] || '0';
+  const firstBuild = detailsStr.match(/首次: ([\d-: ]+)/)?.[1] || '';
+  const lastBuild = detailsStr.match(/最后: ([\d-: ]+)/)?.[1] || '';
+
+  return (
+    <motion.div
+      className="min-h-screen bg-gradient-to-br from-pink-500 to-orange-500 p-8 relative"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      <motion.div
+        className="absolute bottom-40 right-40"
+        animate={{
+          x: [0, 15, 0],
+          y: [0, -10, 0],
+        }}
+        transition={{
+          duration: 4,
+          repeat: Infinity,
+          ease: 'easeInOut',
+        }}
+      >
+        <Image
+          src="/assets/saly8.png"
+          alt="Decorative element"
+          width={500}
+          height={500}
+          className="opacity-80"
         />
-        <StatCard
-          title="最活跃仓库"
-          value={data.mostActiveRepository.split(' ')[0]}
-          description={data.mostActiveRepository.split(' ').slice(1).join(' ')}
-        />
+      </motion.div>
+
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-4xl font-bold text-white mb-12">仓库统计</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <StatCard
+            title="日均构建次数"
+            value={`${data.avgDailyBuilds}`}
+            description="次"
+          />
+          <StatCard
+            title="活跃时间跨度"
+            value={`${new Date(firstBuild).toLocaleDateString('zh-CN')} ~ ${new Date(lastBuild).toLocaleDateString('zh-CN')}`}
+            description={`${Math.round((new Date(lastBuild).getTime() - new Date(firstBuild).getTime()) / (1000 * 60 * 60 * 24))} 天`}
+          />
+          <StatCard
+            title="最活跃仓库"
+            value={repoName}
+            description={`${buildCount} 次构建`}
+          />
+          <StatCard
+            title="最活跃仓库构建成功率"
+            value={`${successRate}%`}
+          />
+        </div>
       </div>
-    </div>
-  </motion.div>
-);
+    </motion.div>
+  );
+};
 
 const ShareSection = ({ data }: { data: BuildReport }) => {
   const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
@@ -874,7 +895,7 @@ export default function Report() {
     fetchReport();
   }, [lowerCaseUsername]);
 
-  // 将现有的触摸事件处理和防止水平滚动的逻辑合并到一个 useEffect 中
+  // 将现有的触摸事件处理和防止水平���动的逻辑合并到一个 useEffect 中
   useEffect(() => {
     let touchStartY = 0;
     let touchStartX = 0;
