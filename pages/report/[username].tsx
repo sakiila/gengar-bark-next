@@ -27,6 +27,7 @@ import { useRouter } from 'next/router';
 import { ErrorMessage, LoadingSpinner, NoDataFound } from '@/components/ui';
 import Image from 'next/image';
 import Link from 'next/link';
+import { IoMusicalNotes, IoMusicalNotesOutline } from 'react-icons/io5';
 
 interface MonthlyData {
   month: string;
@@ -350,7 +351,7 @@ const PerformancePage = ({ data }: { data: BuildReport }) => {
     if (avgMinutes <= 5) {
       message = `✨ 卧槽，构建速度太快了吧！平均只需要 ${avgMinutes} 分钟，这效率简直起飞~ `;
     } else if (avgMinutes <= 10) {
-      message = `⚡️ 构建速度相当不错呢，平均 ${avgMinutes} 分钟就能搞定，摸鱼时间又多了！`;
+      message = `⚡️ 构建速度相当不错呢，平均 ${avgMinutes} 分钟就能搞定，摸鱼时间又多`;
     } else {
       message = `🚀 平均构建用时 ${avgMinutes} 分钟，摸鱼时间刚刚好，不过要是能再快点就更好啦～`;
     }
@@ -425,7 +426,7 @@ const MonthlyTrendsPage = ({ data }: { data: BuildReport }) => {
     const minBuildsMonth = monthlyData.reduce((min, curr) =>
       curr.builds < min.builds ? curr : min, monthlyData[0]);
 
-    let message = `📈 ${maxBuildsMonth.month} 简直就是你的开挂月！${maxBuildsMonth.builds} 次构建，这么拼是要起飞啊！\n`;
+    let message = `📈 ${maxBuildsMonth.month} 简直就是你的开挂月！${maxBuildsMonth.builds} 次构建，这么拼是要起啊！\n`;
 
     if (maxBuildsMonth.successRate > 90) {
       message += `🎯 而且高峰期还保持了 ${maxBuildsMonth.successRate}% 的成功率，稳得一批！\n`;
@@ -1019,7 +1020,10 @@ export default function Report() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
 
+  // 获取报告数据
   useEffect(() => {
     const fetchReport = async () => {
       if (!lowerCaseUsername) return;
@@ -1052,7 +1056,7 @@ export default function Report() {
     fetchReport();
   }, [username, lowerCaseUsername]);
 
-  // Add basic touch event handler to prevent horizontal scrolling
+  // 处理触摸事件
   useEffect(() => {
     const handleTouchMove = (e: TouchEvent) => {
       const touchStartX = e.touches[0].clientX;
@@ -1066,18 +1070,131 @@ export default function Report() {
       }
     };
 
-    // Only add event listener on client
     if (typeof window !== 'undefined') {
       const container = document.querySelector('.snap-y');
       if (container) {
         container.addEventListener('touchmove', handleTouchMove as EventListener, { passive: false });
-
         return () => {
           container.removeEventListener('touchmove', handleTouchMove as EventListener);
         };
       }
     }
   }, []);
+
+  // 优化音乐播放器的初始化代码
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const audio = new Audio('/assets/心要野-后海大鲨鱼.mp3');
+      audio.loop = true;
+      audio.volume = 0.3; // 调低默认音量到 30%，避免太突兀
+      audio.preload = 'auto'; // 预加载音频
+
+      // 添加错误处理
+      audio.addEventListener('error', (e) => {
+        console.error('音频加载失败:', e);
+        setIsPlaying(false);
+      });
+
+      // 加载完成事件
+      audio.addEventListener('loadeddata', () => {
+        audio.pause();
+        setIsPlaying(false);
+      });
+
+      setAudioElement(audio);
+
+      // 清理函数
+      return () => {
+        audio.pause();
+        audio.src = '';
+        audio.remove(); // 完全移除音频元素
+      };
+    }
+  }, []);
+
+  // 优化音乐控制处理函数
+  const handleMusicToggle = async () => {
+    if (!audioElement) return;
+
+    try {
+      if (!isPlaying) {
+        // 尝试播放
+        await audioElement.play();
+        setIsPlaying(true);
+      } else {
+        audioElement.pause();
+        setIsPlaying(false);
+      }
+    } catch (error) {
+      console.error('音频播放失败:', error);
+      setIsPlaying(false);
+    }
+  };
+
+  // 优化 MusicControl 组件
+  const MusicControl = () => (
+    <motion.button
+      className="fixed top-8 left-8 z-50 bg-white/10 backdrop-blur-lg p-4 rounded-full
+        hover:bg-white/20 transition-all duration-200 shadow-lg group"
+      onClick={handleMusicToggle}
+      whileHover={{ scale: 1.1 }}
+      whileTap={{ scale: 0.95 }}
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.3 }}
+      aria-label={isPlaying ? '暂停背景音乐' : '播放背景音乐'}
+    >
+      <div className="relative">
+        {/* 音乐图标 */}
+        <motion.div
+          animate={isPlaying ? {
+            scale: [1, 1.2, 1],
+            rotate: [0, 5, -5, 0],
+          } : { scale: 1, rotate: 0 }}
+          transition={{
+            duration: 2,
+            repeat: isPlaying ? Infinity : 0,
+            ease: "easeInOut",
+          }}
+        >
+          <IoMusicalNotes className="w-6 h-6 text-white" />
+        </motion.div>
+
+        {/* 禁用状态的斜线 */}
+        <motion.div
+          className="absolute inset-0 overflow-hidden"
+          initial={false}
+          animate={isPlaying ? { opacity: 0 } : { opacity: 1 }}
+          transition={{ duration: 0.2 }}
+        >
+          <div className="absolute top-1/2 left-1/2 w-8 h-0.5 bg-white/90 -translate-x-1/2 -translate-y-1/2 rotate-45 transform origin-center" />
+        </motion.div>
+
+        {/* 播放状态的光晕效果 */}
+        {isPlaying && (
+          <motion.div
+            className="absolute -inset-2 rounded-full bg-white/10"
+            animate={{
+              scale: [1, 1.5, 1],
+              opacity: [0.2, 0, 0.2],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+        )}
+      </div>
+
+      {/* 悬浮提示 */}
+      <div className="absolute left-full ml-4 px-3 py-1.5 bg-black/50 backdrop-blur-sm
+        rounded-lg text-white text-sm whitespace-nowrap opacity-0 group-hover:opacity-100
+        transition-opacity duration-200 pointer-events-none">
+        {isPlaying ? '点击暂停' : '点击播放'}
+      </div>
+    </motion.button>
+  );
 
   // Rest of the component remains the same...
   if (!lowerCaseUsername) return <LoadingSpinner />;
@@ -1124,6 +1241,7 @@ export default function Report() {
         <meta http-equiv="Pragma" content="no-cache" />
         <meta http-equiv="Expires" content="0" />
       </Head>
+      <MusicControl />
       <div className="snap-y snap-mandatory h-screen overflow-y-scroll overflow-x-hidden touch-pan-y">
         <div className="snap-start">
           <CoverPage email={data.email} />
