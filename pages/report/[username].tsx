@@ -505,7 +505,7 @@ const WorkingPatternPage = ({ data }: { data: BuildReport }) => {
               <YAxis
                 type="number"
                 dataKey="day"
-                name="星期"
+                name="日期"
                 domain={[0, 6]}
                 tickFormatter={(day) => days[day]}
                 stroke="#fff"
@@ -669,6 +669,8 @@ const FeedbackPage = () => {
     if (!feedback.trim() || !lowerCaseUsername || isSubmitting) return;
 
     setIsSubmitting(true);
+    const submittedFeedback = feedback.trim();
+
     try {
       const response = await fetch('/api/feedback', {
         method: 'POST',
@@ -676,8 +678,8 @@ const FeedbackPage = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          lowerCaseUsername,
-          feedback: feedback.trim(),
+          username: lowerCaseUsername,
+          feedback: submittedFeedback,
         }),
       });
 
@@ -688,17 +690,16 @@ const FeedbackPage = () => {
       }
 
       setSubmitStatus('success');
-      setFeedback('');
 
-      // 3秒后重置状态
       setTimeout(() => {
         setSubmitStatus('idle');
-      }, 3000);
+        setFeedback('');
+      }, 10000);
+
     } catch (error) {
       console.error('提交反馈失败:', error);
       setSubmitStatus('error');
 
-      // 3秒后重置状态
       setTimeout(() => {
         setSubmitStatus('idle');
       }, 3000);
@@ -786,7 +787,9 @@ const FeedbackPage = () => {
                 rounded-xl p-4 text-center text-green-300"
             >
               <p className="font-medium">感谢您的反馈！</p>
-              <p className="text-sm opacity-80">我们会认真考虑您的建议</p>
+              <p className="text-sm opacity-80">
+                {feedback.replace(/[\s.,\/#!$%\^&\*;:{}=\-_`~()]/g, '').length > 10 ? '恭喜你发现小彩蛋！请去找 Bob 领取小礼品，数量有限，先到先得！' : '我们会认真考虑您的建议！'}
+              </p>
             </motion.div>
           )}
           {submitStatus === 'error' && (
@@ -827,7 +830,6 @@ const Footer = () => (
             https://baobo.me
           </a>
         </p>
-        {/*<p>♥️恭喜你发现了这个小彩蛋，快去找 Bob 要一个小礼品吧！♥️</p>*/}
       </div>
     </div>
   </motion.div>
