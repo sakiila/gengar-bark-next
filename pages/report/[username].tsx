@@ -224,23 +224,24 @@ const StatCard = ({ title, value, description }: { title: string; value: string 
 
 const SummaryCard = ({ children }: { children: React.ReactNode }) => (
   <motion.div
-    className="mt-12 max-w-2xl mx-auto px-8 relative"
+    className="mt-20 max-w-2xl mx-auto px-8 relative"
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     transition={{ duration: 0.5 }}
   >
     {/* 装饰性背景元素 */}
-    <div className="absolute -left-4 top-0 w-1 h-full bg-gradient-to-b from-white/30 to-transparent rounded-full" />
-    
-    {/* 引号装饰 */}
-    <div className="absolute -top-6 -left-2 text-4xl text-white/20 font-mashan">『</div>
-    <div className="absolute -bottom-8 -right-2 text-4xl text-white/20 font-mashan">』</div>
-    
-    {/* 主要内容 */}
+    <div className="absolute -left-4 top-0 w-1 h-full bg-gradient-to-b from-white/40 via-white/20 to-transparent rounded-full" />
+
+    {/* 引号装饰 - 调整位置和样式 */}
+    <div className="absolute -top-8 -left-2 text-5xl text-white/20 font-mashan transform -rotate-6">『</div>
+    <div className="absolute -bottom-10 -right-2 text-5xl text-white/20 font-mashan transform rotate-6">』</div>
+
+    {/* 主要内容容器 */}
     <div className="relative">
-      <p 
+      {/* 文本内容 */}
+      <p
         className="text-xl leading-relaxed tracking-wider whitespace-pre-line
-          font-wenkai text-white/90 px-6"
+          font-wenkai text-white/90 px-8 py-6"
         style={{
           textShadow: '0 2px 4px rgba(0,0,0,0.1)',
           letterSpacing: '0.05em',
@@ -249,16 +250,25 @@ const SummaryCard = ({ children }: { children: React.ReactNode }) => (
       >
         {children}
       </p>
-      
-      {/* 装饰性光晕效果 */}
-      <div className="absolute -inset-4 bg-white/5 rounded-2xl -z-10 backdrop-blur-sm" />
-      <div className="absolute -inset-4 bg-gradient-to-r from-white/10 to-transparent 
+
+      {/* 背景装饰效果 */}
+      <div className="absolute -inset-4 bg-white/10 rounded-2xl -z-10 backdrop-blur-sm" />
+      <div className="absolute -inset-4 bg-gradient-to-r from-white/15 to-transparent
         rounded-2xl -z-20 opacity-50 blur-xl" />
+
+      {/* 发光边框效果 */}
+      <div className="absolute -inset-[1px] bg-gradient-to-r from-white/30 via-transparent to-white/30
+        rounded-2xl opacity-50 -z-5" />
     </div>
-    
+
     {/* 装饰性点缀 */}
-    <div className="absolute -top-2 -right-2 w-2 h-2 rounded-full bg-white/40" />
-    <div className="absolute -bottom-2 -left-2 w-2 h-2 rounded-full bg-white/40" />
+    <div className="absolute -top-2 -right-2 w-2 h-2 rounded-full bg-white/50 shadow-glow" />
+    <div className="absolute -bottom-2 -left-2 w-2 h-2 rounded-full bg-white/50 shadow-glow" />
+
+    {/* 添加小装饰元素 */}
+    <div className="absolute top-1/2 -right-8 w-1 h-1 rounded-full bg-white/60" />
+    <div className="absolute top-1/4 -left-8 w-1 h-1 rounded-full bg-white/60" />
+    <div className="absolute bottom-1/4 -right-6 w-1 h-1 rounded-full bg-white/60" />
   </motion.div>
 );
 
@@ -335,7 +345,7 @@ const PerformancePage = ({ data }: { data: BuildReport }) => {
   const getSummary = () => {
     const avgMinutes = Math.round(data.avgDurationSeconds / 60);
     const maxMinutes = Math.round(data.maxDurationSeconds / 60);
-    
+
     let message = '';
     if (avgMinutes <= 5) {
       message = `✨ 卧槽，构建速度太快了吧！平均只需要 ${avgMinutes} 分钟，这效率简直起飞~ `;
@@ -416,13 +426,13 @@ const MonthlyTrendsPage = ({ data }: { data: BuildReport }) => {
       curr.builds < min.builds ? curr : min, monthlyData[0]);
 
     let message = `📈 ${maxBuildsMonth.month} 简直就是你的开挂月！${maxBuildsMonth.builds} 次构建，这么拼是要起飞啊！\n`;
-    
+
     if (maxBuildsMonth.successRate > 90) {
       message += `🎯 而且高峰期还保持了 ${maxBuildsMonth.successRate}% 的成功率，稳得一批！\n`;
     }
 
     message += `📊 相比之下 ${minBuildsMonth.month} 佛系了一点，${minBuildsMonth.builds} 次构建，是不是出去度假了呢？\n`;
-    
+
     if (minBuildsMonth.successRate < maxBuildsMonth.successRate) {
       message += `💭 不过低谷期也要保持热情哦，代码质量都是对自己负责呢！`;
     } else {
