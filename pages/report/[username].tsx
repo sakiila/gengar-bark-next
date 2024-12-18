@@ -349,9 +349,9 @@ const PerformancePage = ({ data }: { data: BuildReport }) => {
 
     let message = '';
     if (avgMinutes <= 5) {
-      message = `✨ 卧槽，构建速度太快了吧！平均只需要 ${avgMinutes} 分钟，这效率简直起飞~ `;
+      message = `✨ 卧槽，构建速度太快了吧！平均只需要 ${avgMinutes} 分钟，这效率简直起飞～`;
     } else if (avgMinutes <= 10) {
-      message = `⚡️ 构建速度相当不错呢，平均 ${avgMinutes} 分钟就能搞定，摸鱼时间又多`;
+      message = `⚡️ 构建速度相当不错呢，平均 ${avgMinutes} 分钟就能搞定，摸鱼时间又多了哟～`;
     } else {
       message = `🚀 平均构建用时 ${avgMinutes} 分钟，摸鱼时间刚刚好，不过要是能再快点就更好啦～`;
     }
@@ -1213,7 +1213,7 @@ export default function Report() {
   // 优化 MusicControl 组件
   const MusicControl = () => (
     <motion.button
-      className="fixed top-8 left-8 z-50 bg-white/10 backdrop-blur-lg p-4 rounded-full
+      className="fixed top-8 right-8 z-50 bg-white/10 backdrop-blur-lg p-4 rounded-full
         hover:bg-white/20 transition-all duration-200 shadow-lg group"
       onClick={handleMusicToggle}
       whileHover={{ scale: 1.1 }}
@@ -1267,7 +1267,7 @@ export default function Report() {
       </div>
 
       {/* 悬浮提示 */}
-      <div className="absolute left-full ml-4 px-3 py-1.5 bg-black/50 backdrop-blur-sm
+      <div className="absolute right-full ml-4 px-3 py-1.5 bg-black/50 backdrop-blur-sm
         rounded-lg text-white text-sm whitespace-nowrap opacity-0 group-hover:opacity-100
         transition-opacity duration-200 pointer-events-none">
         {isPlaying ? '点击暂停' : '点击播放'}
