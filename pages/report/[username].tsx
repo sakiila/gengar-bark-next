@@ -1292,28 +1292,10 @@ export default function Report() {
     return <LoadingSpinner />;
   }
 
-  // Rest of the component remains the same...
-  if (!lowerCaseUsername || loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 to-blue-500">
-        <LoadingSpinner />
-      </div>
-    );
-  }
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-500 to-pink-500">
-        <ErrorMessage message={error} />
-      </div>
-    );
-  }
-  if (!data) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-500 to-red-500">
-        <NoDataFound />
-      </div>
-    );
-  }
+  if (!lowerCaseUsername) return <LoadingSpinner />;
+  if (loading) return <LoadingSpinner />;
+  if (error) return <ErrorMessage message={error} />;
+  if (!data) return <NoDataFound />;
 
   if (!privacyAccepted) {
     return <StartPage onAccept={() => setPrivacyAccepted(true)} />;
