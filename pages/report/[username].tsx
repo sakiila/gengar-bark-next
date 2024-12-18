@@ -702,9 +702,15 @@ const FeedbackPage = () => {
 
       setTimeout(() => {
         setSubmitStatus('idle');
-      }, 3000);
+      }, 10000);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleTextareaFocus = () => {
+    if (submitStatus === 'success') {
+      setSubmitStatus('idle');
     }
   };
 
@@ -759,6 +765,7 @@ const FeedbackPage = () => {
                 id="feedback"
                 value={feedback}
                 onChange={(e) => setFeedback(e.target.value)}
+                onFocus={handleTextareaFocus}
                 placeholder="请输入您的想法..."
                 className="relative w-full h-40 px-4 py-3 rounded-xl bg-transparent
                   text-white placeholder-white/50
