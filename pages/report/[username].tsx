@@ -281,7 +281,7 @@ const OverviewPage = ({ data }: { data: BuildReport }) => {
       💫 继续保持这份热情，你就是最闪亮的那颗星！`;
     } else if (data.buildsRank <= 30) {
       return `🌟 很不错哦！排名第 ${data.buildsRank}，稳居中上游选手～\n
-      ✨ ${data.totalBuilds} 次构建证明了你的勤奋，${data.successRate}% 的成功率也相当可观！\n
+      ✨ ${data.totalBuilds} 次���建证明了你的勤奋，${data.successRate}% 的成功率也相当可观！\n
       💪 继续冲啊，下次年度报告争取进前十！`;
     } else {
       return `🌈 嘿！虽然目前排在第 ${data.buildsRank} 名，但每个人都是自己的主角！\n
@@ -357,7 +357,7 @@ const PerformancePage = ({ data }: { data: BuildReport }) => {
     }
 
     if (maxMinutes >= 30) {
-      message += `\n💭 不过最长构建居然花了 ${maxMinutes} 分钟...是不是代码太多了啊，建议优化一下哦！`;
+      message += `\n💭 不过最长构建居然花了 ${maxMinutes} 分钟...是不是代码太多了��，建议优化一下哦！`;
     }
 
     if (data.totalRepositories >= 10) {
@@ -727,7 +727,7 @@ const RepositoryStatsPage = ({ data }: { data: BuildReport }) => {
     } else if (parseFloat(successRate) > 80) {
       message += ` ${successRate}% 的成功率还不错，继续加油！`;
     } else {
-      message += ` 建议关注一下 ${successRate}% 的成功率，也许可以找找提升的空间。`;
+      message += ` 建议关注一下 ${successRate}% 的成功率，也许可以找找提升的��间。`;
     }
 
     if (data.weekendWorkingPercentage > 30) {
@@ -741,7 +741,7 @@ const RepositoryStatsPage = ({ data }: { data: BuildReport }) => {
   const [repoName, ...details] = data.mostActiveRepository.split(' ');
   const detailsStr = details.join(' ');
 
-  // 解析详细信息
+  // 解析详信息
   const buildCount = detailsStr.match(/(\d+) 次构建/)?.[1] || '0';
   const successRate = detailsStr.match(/(\d+\.?\d*)% 成功率/)?.[1] || '0';
   const firstBuild = detailsStr.match(/首次: ([\d-: ]+)/)?.[1] || '';
@@ -1012,6 +1012,47 @@ const Footer = () => (
   </motion.div>
 );
 
+// 在文件顶部添加错误边界组件
+const ErrorBoundary = ({ children }: { children: React.ReactNode }) => {
+  const [hasError, setHasError] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    const handleError = (error: Error) => {
+      console.error('Caught error:', error);
+      setError(error);
+      setHasError(true);
+    };
+
+    window.addEventListener('error', (e) => handleError(e.error));
+    window.addEventListener('unhandledrejection', (e) => handleError(e.reason));
+
+    return () => {
+      window.removeEventListener('error', (e) => handleError(e.error));
+      window.removeEventListener('unhandledrejection', (e) => handleError(e.reason));
+    };
+  }, []);
+
+  if (hasError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-500 to-pink-500">
+        <div className="bg-white/10 backdrop-blur-lg rounded-xl p-8 max-w-lg mx-auto text-white">
+          <h2 className="text-2xl font-bold mb-4">页面出错了</h2>
+          <p className="mb-4 opacity-80">{error?.message || '发生未知错误'}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors"
+          >
+            刷新页面
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return <>{children}</>;
+};
+
 export default function Report() {
   const router = useRouter();
   const { username } = router.query as { username: string };
@@ -1026,14 +1067,23 @@ export default function Report() {
   // 获取报告数据
   useEffect(() => {
     const fetchReport = async () => {
-      if (!lowerCaseUsername) return;
+      if (!lowerCaseUsername) {
+        console.log('No username provided');
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
 
       try {
         const email = `${lowerCaseUsername}@moego.pet`;
-        console.log('Fetching report for:', lowerCaseUsername);
+        console.log('Fetching report for:', email);
 
         const response = await fetch(`/api/report/2024/${encodeURIComponent(email)}`);
+        console.log('Response status:', response.status);
+
         const data = await response.json();
+        console.log('Response data:', data);
 
         if (response.status === 404) {
           setError(`未找到用户 ${username} 的报告`);
@@ -1046,7 +1096,7 @@ export default function Report() {
 
         setData(data);
       } catch (err) {
-        console.error('Error details:', err);
+        console.error('Error fetching report:', err);
         setError(err instanceof Error ? err.message : '发生未知错误');
       } finally {
         setLoading(false);
@@ -1081,52 +1131,81 @@ export default function Report() {
     }
   }, []);
 
-  // 优化音乐播放器的初始化代码
+  // 优化音频初始化和错误处理
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const audio = new Audio('/assets/心要野-后海大鲨鱼.mp3');
-      audio.loop = true;
-      audio.volume = 0.3; // 调低默认音量到 30%，避免太突兀
-      audio.preload = 'auto'; // 预加载音频
+      try {
+        const audio = new Audio();
+        
+        // 添加错误处理
+        const handleError = (e: ErrorEvent) => {
+          console.error('音频加载失败:', e);
+          setIsPlaying(false);
+          setAudioElement(null);
+        };
 
-      // 添加错误处理
-      audio.addEventListener('error', (e) => {
-        console.error('音频加载失败:', e);
-        setIsPlaying(false);
-      });
+        // 添加加载处理
+        const handleCanPlayThrough = () => {
+          console.log('音频加载完成，可以播放');
+        };
 
-      // 加载完成事件
-      audio.addEventListener('loadeddata', () => {
-        audio.pause();
-        setIsPlaying(false);
-      });
+        audio.addEventListener('error', handleError);
+        audio.addEventListener('canplaythrough', handleCanPlayThrough);
 
-      setAudioElement(audio);
+        // 设置音频属性
+        audio.loop = true;
+        audio.volume = 0.3;
+        audio.preload = 'auto';
+        
+        // 最后设置音频源
+        audio.src = '/assets/心要野-后海大鲨鱼.mp3';
 
-      // 清理函数
-      return () => {
-        audio.pause();
-        audio.src = '';
-        audio.remove(); // 完全移除音频元素
-      };
+        setAudioElement(audio);
+
+        // 清理函数
+        return () => {
+          audio.removeEventListener('error', handleError);
+          audio.removeEventListener('canplaythrough', handleCanPlayThrough);
+          audio.pause();
+          audio.src = '';
+          audio.remove();
+        };
+      } catch (error) {
+        console.error('音频初始化失败:', error);
+      }
     }
   }, []);
 
   // 优化音乐控制处理函数
   const handleMusicToggle = async () => {
-    if (!audioElement) return;
+    if (!audioElement) {
+      console.log('音频元素未初始化');
+      return;
+    }
 
     try {
       if (!isPlaying) {
-        // 尝试播放
-        await audioElement.play();
-        setIsPlaying(true);
+        // 重新加载音频
+        audioElement.currentTime = 0;
+        const playPromise = audioElement.play();
+        
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              console.log('开始播放音频');
+              setIsPlaying(true);
+            })
+            .catch(error => {
+              console.error('播放失败:', error);
+              setIsPlaying(false);
+            });
+        }
       } else {
         audioElement.pause();
         setIsPlaying(false);
       }
     } catch (error) {
-      console.error('音频播放失败:', error);
+      console.error('音频控制失败:', error);
       setIsPlaying(false);
     }
   };
@@ -1196,11 +1275,45 @@ export default function Report() {
     </motion.button>
   );
 
+  // 添加初始化日志
+  useEffect(() => {
+    console.log('Report component mounted');
+    console.log('Username:', username);
+    console.log('Query:', router.query);
+  }, [username, router.query]);
+
+  // 确保在客户端渲染前显示加载状态
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return <LoadingSpinner />;
+  }
+
   // Rest of the component remains the same...
-  if (!lowerCaseUsername) return <LoadingSpinner />;
-  if (loading) return <LoadingSpinner />;
-  if (error) return <ErrorMessage message={error} />;
-  if (!data) return <NoDataFound />;
+  if (!lowerCaseUsername || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-600 to-blue-500">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-500 to-pink-500">
+        <ErrorMessage message={error} />
+      </div>
+    );
+  }
+  if (!data) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-yellow-500 to-red-500">
+        <NoDataFound />
+      </div>
+    );
+  }
 
   if (!privacyAccepted) {
     return <StartPage onAccept={() => setPrivacyAccepted(true)} />;
@@ -1211,7 +1324,7 @@ export default function Report() {
   const shareImage = '/images/cover.png';
 
   return (
-    <>
+    <ErrorBoundary>
       <Head>
         <title>{pageTitle}</title>
         <meta name="description" content={pageDescription} />
@@ -1267,6 +1380,6 @@ export default function Report() {
         <Footer />
       </div>
       <ShareSection data={data} />
-    </>
+    </ErrorBoundary>
   );
 }
