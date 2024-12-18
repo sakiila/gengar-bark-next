@@ -281,7 +281,7 @@ const OverviewPage = ({ data }: { data: BuildReport }) => {
       💫 继续保持这份热情，你就是最闪亮的那颗星！`;
     } else if (data.buildsRank <= 30) {
       return `🌟 很不错哦！排名第 ${data.buildsRank}，稳居中上游选手～\n
-      ✨ ${data.totalBuilds} 次���建证明了你的勤奋，${data.successRate}% 的成功率也相当可观！\n
+      ✨ ${data.totalBuilds} 次构建证明了你的勤奋，${data.successRate}% 的成功率也相当可观！\n
       💪 继续冲啊，下次年度报告争取进前十！`;
     } else {
       return `🌈 嘿！虽然目前排在第 ${data.buildsRank} 名，但每个人都是自己的主角！\n
@@ -357,7 +357,7 @@ const PerformancePage = ({ data }: { data: BuildReport }) => {
     }
 
     if (maxMinutes >= 30) {
-      message += `\n💭 不过最长构建居然花了 ${maxMinutes} 分钟...是不是代码太多了��，建议优化一下哦！`;
+      message += `\n💭 不过最长构建居然花了 ${maxMinutes} 分钟...是不是代码太多了啊，建议优化一下哦！`;
     }
 
     if (data.totalRepositories >= 10) {
@@ -727,7 +727,7 @@ const RepositoryStatsPage = ({ data }: { data: BuildReport }) => {
     } else if (parseFloat(successRate) > 80) {
       message += ` ${successRate}% 的成功率还不错，继续加油！`;
     } else {
-      message += ` 建议关注一下 ${successRate}% 的成功率，也许可以找找提升的��间。`;
+      message += ` 建议关注一下 ${successRate}% 的成功率，也许可以找找提升的空间。`;
     }
 
     if (data.weekendWorkingPercentage > 30) {
@@ -1136,7 +1136,7 @@ export default function Report() {
     if (typeof window !== 'undefined') {
       try {
         const audio = new Audio();
-        
+
         // 添加错误处理
         const handleError = (e: ErrorEvent) => {
           console.error('音频加载失败:', e);
@@ -1156,7 +1156,7 @@ export default function Report() {
         audio.loop = true;
         audio.volume = 0.3;
         audio.preload = 'auto';
-        
+
         // 最后设置音频源
         audio.src = '/assets/心要野-后海大鲨鱼.mp3';
 
@@ -1188,7 +1188,7 @@ export default function Report() {
         // 重新加载音频
         audioElement.currentTime = 0;
         const playPromise = audioElement.play();
-        
+
         if (playPromise !== undefined) {
           playPromise
             .then(() => {
