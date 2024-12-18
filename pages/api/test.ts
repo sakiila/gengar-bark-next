@@ -2,15 +2,73 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import AppointmentService from '@/lib/moego/AppointmentService';
 import { BusinessAccountResponse, Customer, Service } from '@/lib/moego/types';
 import { timeUtils } from '@/lib/utils/time-utils';
-import { dataImport } from '@/lib/slack/gengar-bolt';
+import { dataImport, postBlockMessage } from '@/lib/slack/gengar-bolt';
+import { ChannelService } from '@/lib/database/services/channel.service';
+
+function getBlocks(username: string) {
+  return [
+    {
+      'type': 'section',
+      'text': {
+        'type': 'mrkdwn',
+        'text': '嗨，亲爱的 MoeGo 小伙伴。',
+      },
+    },
+    {
+      'type': 'section',
+      'text': {
+        'type': 'mrkdwn',
+        'text': '这一年，我们共同经历了无数激动人心的时刻。从每一个灵感的闪现，到每一次挑战的跨越，你们的热情与坚持让这个旅程充满了无限可能。我们见证了 MoeGo 的成长、创意的碰撞和成果的累累，每一个成就都凝聚着你们的智慧与努力。',
+      },
+    },
+    {
+      'type': 'section',
+      'text': {
+        'type': 'mrkdwn',
+        'text': '新的篇章即将开启。我们将继续携手并进，探索更多未知的领域，实现更大胆的想法。在即将到来的 2025 年，让我们满怀激情与信心，一起书写更加辉煌的故事！',
+      },
+    },
+    {
+      'type': 'section',
+      'text': {
+        'type': 'mrkdwn',
+        'text': '在平庸之海中漂泊，不要畏惧成为钻石或尘埃！',
+      },
+    },
+    {
+      'type': 'actions',
+      'elements': [
+        {
+          'type': 'button',
+          'text': {
+            'type': 'plain_text',
+            'text': '点击开启 2024 年度回忆',
+            'emoji': true,
+          },
+          'url': `https://pearl.baobo.me/report/${username}`,
+        },
+      ],
+    },
+  ];
+}
 
 export default async function personHandler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
 
+  const channelService = await ChannelService.getInstance();
+  const channels = await channelService.findAll();
+
+  for (let i = 0; i < channels.length; i++) {
+    if (channels[i].email == 'bob@moego.pet') {
+      const username = channels[i].email.split('@')[0].toLowerCase();
+      console.log('username:', username);
+      await postBlockMessage(channels[i].user_id, getBlocks(username));
+    }
+  }
+
   // await conversationsListForIm();
-  await dataImport();
 
   // const email = req.body.email;
   // const slackName = req.body.slackName;
@@ -63,7 +121,7 @@ export default async function personHandler(
   //   slackName,
   // );
 
-  return res.status(200).json({ message: "Success" });
+  return res.status(200).json({ message: 'Success' });
 }
 
 async function create(
@@ -80,7 +138,7 @@ async function create(
     appointment: {
       customerId: customerId,
       source: 22018,
-      colorCode: "#bf81fe",
+      colorCode: '#bf81fe',
       allPetsStartAtSameTime: false,
     },
     petDetails: [
@@ -120,8 +178,8 @@ async function create(
     ],
     preAuth: {
       enable: false,
-      paymentMethodId: "",
-      cardBrandLast4: "",
+      paymentMethodId: '',
+      cardBrandLast4: '',
     },
     notes: [
       {
@@ -136,13 +194,13 @@ async function create(
     const result = await appointmentService.createAppointment(param);
 
     if (result.success) {
-      console.log("创建预约成功:", result.data);
+      console.log('创建预约成功:', result.data);
       return result.data;
     } else {
-      console.error("创建预约失败:", result.error);
+      console.error('创建预约失败:', result.error);
     }
   } catch (error) {
-    console.error("创建预约过程出错:", error);
+    console.error('创建预约过程出错:', error);
   }
   return undefined;
 }
@@ -155,13 +213,13 @@ async function fetchCustomer(
     const result = await appointmentService.fetchCustomers(keyword);
 
     if (result.success) {
-      console.log("fetch customer success:", result.data);
+      console.log('fetch customer success:', result.data);
       return result.data;
     } else {
-      console.error("fetch customer fail:", result.error);
+      console.error('fetch customer fail:', result.error);
     }
   } catch (error) {
-    console.error("fetch customer error:", error);
+    console.error('fetch customer error:', error);
   }
   return undefined;
 }
@@ -178,13 +236,13 @@ async function fetchService(
     );
 
     if (result.success) {
-      console.log("创建预约成功:", result.data);
+      console.log('创建预约成功:', result.data);
       return result.data;
     } else {
-      console.error("创建预约失败:", result.error);
+      console.error('创建预约失败:', result.error);
     }
   } catch (error) {
-    console.error("创建预约过程出错:", error);
+    console.error('创建预约过程出错:', error);
   }
   return undefined;
 }
@@ -196,13 +254,13 @@ async function fetchAccount(
     const result = await appointmentService.fetchAccountInfo();
 
     if (result.success) {
-      console.log("创建预约成功:", result.data);
+      console.log('创建预约成功:', result.data);
       return result.data;
     } else {
-      console.error("创建预约失败:", result.error);
+      console.error('创建预约失败:', result.error);
     }
   } catch (error) {
-    console.error("创建预约过程出错:", error);
+    console.error('创建预约过程出错:', error);
   }
   return undefined;
 }

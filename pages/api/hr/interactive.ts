@@ -15,6 +15,8 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
+  res.status(200).send('');
+
   const payload = JSON.parse(req.body.payload);
   console.log('payload = ', JSON.stringify(payload));
 
@@ -254,7 +256,6 @@ export default async function handler(
     }
   }
 
-  res.status(200).send('');
 }
 
 async function getUserInfo(
