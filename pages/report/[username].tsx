@@ -222,105 +222,215 @@ const StatCard = ({ title, value, description }: { title: string; value: string 
   </motion.div>
 );
 
-const OverviewPage = ({ data }: { data: BuildReport }) => (
-  <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 p-8 relative">
-    <motion.div
-      className="absolute bottom-40 left-40"
-      animate={{
-        x: [0, 20, 0],
-        rotate: [0, 10, 0],
-      }}
-      transition={{
-        duration: 5,
-        repeat: Infinity,
-        ease: 'easeInOut',
-      }}
-    >
-      <Image
-        src="/assets/saly2.png"
-        alt="Decorative element"
-        width={500}
-        height={500}
-        className="opacity-80"
-      />
-    </motion.div>
-
-    <div className="max-w-4xl mx-auto">
-      <h2 className="text-4xl font-bold text-white mb-12">构建概览</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <StatCard
-          title="总构建通知次数"
-          value={data.totalBuilds}
-          description="统计时间为 2024 年 1 月 1 日 至 12 月 15 日"
-        />
-        <StatCard
-          title="首次使用构建通知"
-          value={new Date(data.firstBuildTime).toLocaleDateString('ja-JP')}
-        />
-        <StatCard
-          title="总体排名"
-          value={`构建量第 ${data.buildsRank} 名`}
-          description={`共 67 名使用 Gengar Bark 研发`}
-        />
-        <StatCard
-          title="构建成功率"
-          value={`${data.successRate}%`}
-          description={data.successRateRank <= 30 ? `排名第 ${data.successRateRank} 名（共 67 名）` : undefined}
-        />
-      </div>
+const SummaryCard = ({ children }: { children: React.ReactNode }) => (
+  <motion.div
+    className="mt-12 max-w-2xl mx-auto px-8 relative"
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5 }}
+  >
+    {/* 装饰性背景元素 */}
+    <div className="absolute -left-4 top-0 w-1 h-full bg-gradient-to-b from-white/30 to-transparent rounded-full" />
+    
+    {/* 引号装饰 */}
+    <div className="absolute -top-6 -left-2 text-4xl text-white/20 font-mashan">『</div>
+    <div className="absolute -bottom-8 -right-2 text-4xl text-white/20 font-mashan">』</div>
+    
+    {/* 主要内容 */}
+    <div className="relative">
+      <p 
+        className="text-xl leading-relaxed tracking-wider whitespace-pre-line
+          font-wenkai text-white/90 px-6"
+        style={{
+          textShadow: '0 2px 4px rgba(0,0,0,0.1)',
+          letterSpacing: '0.05em',
+          lineHeight: 2,
+        }}
+      >
+        {children}
+      </p>
+      
+      {/* 装饰性光晕效果 */}
+      <div className="absolute -inset-4 bg-white/5 rounded-2xl -z-10 backdrop-blur-sm" />
+      <div className="absolute -inset-4 bg-gradient-to-r from-white/10 to-transparent 
+        rounded-2xl -z-20 opacity-50 blur-xl" />
     </div>
-  </div>
+    
+    {/* 装饰性点缀 */}
+    <div className="absolute -top-2 -right-2 w-2 h-2 rounded-full bg-white/40" />
+    <div className="absolute -bottom-2 -left-2 w-2 h-2 rounded-full bg-white/40" />
+  </motion.div>
 );
 
-const PerformancePage = ({ data }: { data: BuildReport }) => (
-  <div className="min-h-screen bg-gradient-to-br from-purple-600 to-blue-500 p-8 relative">
-    <motion.div
-      className="absolute bottom-40 right-40"
-      animate={{
-        y: [0, -15, 0],
-        rotate: [0, 5, 0],
-      }}
-      transition={{
-        duration: 4,
-        repeat: Infinity,
-        ease: 'easeInOut',
-      }}
-    >
-      <Image
-        src="/assets/saly3.png"
-        alt="Decorative element"
-        width={500}
-        height={500}
-        className="opacity-80"
-      />
-    </motion.div>
+const OverviewPage = ({ data }: { data: BuildReport }) => {
+  const getSummary = () => {
+    if (data.buildsRank <= 10) {
+      return `✨ 我去！你是开发机器人吗？在 67 名开发者中排名第 ${data.buildsRank}，这也太强了吧！\n
+      🏆 ${data.totalBuilds} 次构建，${data.successRate}% 的成功率，简直就是 CI 届的顶流！\n
+      💫 继续保持这份热情，你就是最闪亮的那颗星！`;
+    } else if (data.buildsRank <= 30) {
+      return `🌟 很不错哦！排名第 ${data.buildsRank}，稳居中上游选手～\n
+      ✨ ${data.totalBuilds} 次构建证明了你的勤奋，${data.successRate}% 的成功率也相当可观！\n
+      💪 继续冲啊，下次年度报告争取进前十！`;
+    } else {
+      return `🌈 嘿！虽然目前排在第 ${data.buildsRank} 名，但每个人都是自己的主角！\n
+      ✨ ${data.totalBuilds} 次构建和 ${data.successRate}% 的成功率都是你努力的见证～\n
+      🎯 慢慢来，比较快，期待明年的你能创造更多惊喜！`;
+    }
+  };
 
-    <div className="max-w-4xl mx-auto">
-      <h2 className="text-4xl font-bold text-white mb-12">构建表现</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <StatCard
-          title="平均构建时长"
-          value={`${Math.round(data.avgDurationSeconds / 60)} 分钟`}
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-500 to-purple-600 p-8 relative">
+      <motion.div
+        className="absolute bottom-40 left-40"
+        animate={{
+          x: [0, 20, 0],
+          rotate: [0, 10, 0],
+        }}
+        transition={{
+          duration: 5,
+          repeat: Infinity,
+          ease: 'easeInOut',
+        }}
+      >
+        <Image
+          src="/assets/saly2.png"
+          alt="Decorative element"
+          width={500}
+          height={500}
+          className="opacity-80"
         />
-        <StatCard
-          title="最长构建时长"
-          value={`${Math.round(data.maxDurationSeconds / 60)} 分钟`}
-        />
-        <StatCard
-          title="使用到的仓库数量"
-          value={data.totalRepositories}
-        />
-        <StatCard
-          title="使用到的分支数量"
-          value={data.totalBranches}
-        />
+      </motion.div>
+
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-4xl font-bold text-white mb-12">构建概览</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <StatCard
+            title="总构建通知次数"
+            value={data.totalBuilds}
+            description="统计时间为 2024 年 1 月 1 日 至 12 月 15 日"
+          />
+          <StatCard
+            title="首次使用构建通知"
+            value={new Date(data.firstBuildTime).toLocaleDateString('ja-JP')}
+          />
+          <StatCard
+            title="总体排名"
+            value={`构建量第 ${data.buildsRank} 名`}
+            description={`共 67 名使用 Gengar Bark 研发`}
+          />
+          <StatCard
+            title="构建成功率"
+            value={`${data.successRate}%`}
+            description={data.successRateRank <= 30 ? `排名第 ${data.successRateRank} 名（共 67 名）` : undefined}
+          />
+        </div>
+        <SummaryCard>{getSummary()}</SummaryCard>
       </div>
     </div>
-  </div>
-);
+  );
+};
+
+const PerformancePage = ({ data }: { data: BuildReport }) => {
+  const getSummary = () => {
+    const avgMinutes = Math.round(data.avgDurationSeconds / 60);
+    const maxMinutes = Math.round(data.maxDurationSeconds / 60);
+    
+    let message = '';
+    if (avgMinutes <= 5) {
+      message = `✨ 卧槽，构建速度太快了吧！平均只需要 ${avgMinutes} 分钟，这效率简直起飞~ `;
+    } else if (avgMinutes <= 10) {
+      message = `⚡️ 构建速度相当不错呢，平均 ${avgMinutes} 分钟就能搞定，摸鱼时间又多了！`;
+    } else {
+      message = `🚀 平均构建用时 ${avgMinutes} 分钟，摸鱼时间刚刚好，不过要是能再快点就更好啦～`;
+    }
+
+    if (maxMinutes >= 30) {
+      message += `\n💭 不过最长构建居然花了 ${maxMinutes} 分钟...是不是代码太多了啊，建议优化一下哦！`;
+    }
+
+    if (data.totalRepositories >= 10) {
+      message += `\n🎯 哇塞！管理了 ${data.totalRepositories} 个仓库，${data.totalBranches} 个分支，你就是传说中的多线程开发者吧！`;
+    } else {
+      message += `\n🎯 专注于 ${data.totalRepositories} 个仓库的开发，${data.totalBranches} 个分支井井有条，继续保持哦！`;
+    }
+
+    return message;
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-600 to-blue-500 p-8 relative">
+      <motion.div
+        className="absolute bottom-40 right-40"
+        animate={{
+          y: [0, -15, 0],
+          rotate: [0, 5, 0],
+        }}
+        transition={{
+          duration: 4,
+          repeat: Infinity,
+          ease: 'easeInOut',
+        }}
+      >
+        <Image
+          src="/assets/saly3.png"
+          alt="Decorative element"
+          width={500}
+          height={500}
+          className="opacity-80"
+        />
+      </motion.div>
+
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-4xl font-bold text-white mb-12">构建表现</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <StatCard
+            title="平均构建时长"
+            value={`${Math.round(data.avgDurationSeconds / 60)} 分钟`}
+          />
+          <StatCard
+            title="最长构建时长"
+            value={`${Math.round(data.maxDurationSeconds / 60)} 分钟`}
+          />
+          <StatCard
+            title="使用到的仓库数量"
+            value={data.totalRepositories}
+          />
+          <StatCard
+            title="使用到的分支数量"
+            value={data.totalBranches}
+          />
+        </div>
+        <SummaryCard>{getSummary()}</SummaryCard>
+      </div>
+    </div>
+  );
+};
 
 const MonthlyTrendsPage = ({ data }: { data: BuildReport }) => {
-  const monthlyData = data.monthlyData || [];
+  const getSummary = () => {
+    const monthlyData = data.monthlyData || [];
+    const maxBuildsMonth = monthlyData.reduce((max, curr) =>
+      curr.builds > max.builds ? curr : max, monthlyData[0]);
+    const minBuildsMonth = monthlyData.reduce((min, curr) =>
+      curr.builds < min.builds ? curr : min, monthlyData[0]);
+
+    let message = `📈 ${maxBuildsMonth.month} 简直就是你的开挂月！${maxBuildsMonth.builds} 次构建，这么拼是要起飞啊！\n`;
+    
+    if (maxBuildsMonth.successRate > 90) {
+      message += `🎯 而且高峰期还保持了 ${maxBuildsMonth.successRate}% 的成功率，稳得一批！\n`;
+    }
+
+    message += `📊 相比之下 ${minBuildsMonth.month} 佛系了一点，${minBuildsMonth.builds} 次构建，是不是出去度假了呢？\n`;
+    
+    if (minBuildsMonth.successRate < maxBuildsMonth.successRate) {
+      message += `💭 不过低谷期也要保持热情哦，代码质量都是对自己负责呢！`;
+    } else {
+      message += `✨ 即使构建少的时候也保持了很高的成功率，这波稳！`;
+    }
+
+    return message;
+  };
 
   return (
     <motion.div
@@ -353,7 +463,7 @@ const MonthlyTrendsPage = ({ data }: { data: BuildReport }) => {
         <h2 className="text-4xl font-bold text-white mb-12">月度构建趋势</h2>
         <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 h-[400px]">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={monthlyData}>
+            <LineChart data={data.monthlyData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#ffffff33" />
               <XAxis dataKey="month" stroke="#fff" />
               <YAxis stroke="#e7dab7" />
@@ -385,12 +495,38 @@ const MonthlyTrendsPage = ({ data }: { data: BuildReport }) => {
             </LineChart>
           </ResponsiveContainer>
         </div>
+        <SummaryCard>{getSummary()}</SummaryCard>
       </div>
     </motion.div>
   );
 };
 
 const WorkingPatternPage = ({ data }: { data: BuildReport }) => {
+  const getSummary = () => {
+    const hour = parseInt(data.mostActiveTime.split(':')[0]);
+    let message = '';
+
+    if (hour >= 22 || hour <= 5) {
+      message = `🌙 深夜代码人！${data.mostActiveTime} 是你最活跃的时间，熬夜伤身，但我懂你～\n
+      🌟 连续 ${data.longestWorkingStreak} 天的工作streak，这份执着真是让人佩服！`;
+    } else if (hour >= 6 && hour <= 9) {
+      message = `🌅 早起打工魂！${data.mostActiveTime} 就开始冲，这么自律真的绝了！\n
+      ✨ ${data.longestWorkingStreak} 天的工作streak，卷王本王就是你吧！`;
+    } else if (hour >= 18 && hour <= 21) {
+      message = `🌆 夜晚才是你的主场！${data.mostActiveTime} 的专注力简直MAX！\n
+      💫 ${data.longestWorkingStreak} 天连续工作，这波节奏很稳啊！`;
+    } else {
+      message = `☀️ 朝九晚五工作狂！${data.mostActiveTime} 的你保持着最佳状态～\n
+      🎯 ${data.longestWorkingStreak} 天的工作streak，这份规律值得表扬！`;
+    }
+
+    if (data.weekendWorkingPercentage > 30) {
+      message += `\n💝 周末也有 ${data.weekendWorkingPercentage}% 的时间在线，记得劳逸结合，多陪陪家人哦！`;
+    }
+
+    return message;
+  };
+
   const days = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
   const maxValue = Math.max(...data.workTimeHeatmap.map(item => item.value));
 
@@ -562,12 +698,34 @@ const WorkingPatternPage = ({ data }: { data: BuildReport }) => {
             </ScatterChart>
           </ResponsiveContainer>
         </div>
+        <SummaryCard>{getSummary()}</SummaryCard>
       </div>
     </motion.div>
   );
 };
 
 const RepositoryStatsPage = ({ data }: { data: BuildReport }) => {
+  const getSummary = () => {
+    const buildCount = data.mostActiveRepository.match(/(\d+) 次构建/)?.[1] || '0';
+    const successRate = data.mostActiveRepository.match(/(\d+\.?\d*)% 成功率/)?.[1] || '0';
+
+    let message = `📚 在 ${data.totalRepositories} 个仓库中，你对 ${data.mostActiveRepository.split(' ')[0]} 情有独钟，贡献了 ${buildCount} 次构建。`;
+
+    if (parseFloat(successRate) > 90) {
+      message += ` 而且 ${successRate}% 的成功率真是太棒了！`;
+    } else if (parseFloat(successRate) > 80) {
+      message += ` ${successRate}% 的成功率还不错，继续加油！`;
+    } else {
+      message += ` 建议关注一下 ${successRate}% 的成功率，也许可以找找提升的空间。`;
+    }
+
+    if (data.weekendWorkingPercentage > 30) {
+      message += `\n💝 周末也在努力工作，记得劳逸结合哦！`;
+    }
+
+    return message;
+  };
+
   // 解析 mostActiveRepository 字符串
   const [repoName, ...details] = data.mostActiveRepository.split(' ');
   const detailsStr = details.join(' ');
@@ -629,6 +787,7 @@ const RepositoryStatsPage = ({ data }: { data: BuildReport }) => {
             value={`${successRate}%`}
           />
         </div>
+        <SummaryCard>{getSummary()}</SummaryCard>
       </div>
     </motion.div>
   );

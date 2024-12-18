@@ -3,7 +3,7 @@ import Document, { Html, Head, Main, NextScript } from 'next/document'
 class MyDocument extends Document {
   render() {
     return (
-      <Html lang="en">
+      <Html lang="zh-CN">
         <Head>
           {/* Character Set */}
           <meta charSet="utf-8" />
@@ -56,6 +56,30 @@ class MyDocument extends Document {
           <meta name="mobile-web-app-capable" content="yes" />
           <meta name="apple-mobile-web-app-capable" content="yes" />
           <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+          {/* Google Fonts - Noto Sans SC */}
+          <link
+            href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap"
+            rel="stylesheet"
+          />
+          
+          {/* 霞鹜文楷 */}
+          <link
+            href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.1.0/style.css"
+            rel="stylesheet"
+          />
+          
+          {/* 马善政楷体 */}
+          <link
+            href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap"
+            rel="stylesheet"
+          />
+
+          {/* 得意黑 - 更现代的中文字体 */}
+          <link
+            href="https://cdn.jsdelivr.net/npm/smiley-sans@1.1.0/css/smiley-sans.css"
+            rel="stylesheet"
+          />
 
           <style>{`
             html, body {
