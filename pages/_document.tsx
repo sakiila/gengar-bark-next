@@ -16,7 +16,6 @@ class MyDocument extends Document {
           {/* Fonts */}
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-          <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
           {/* Favicons */}
           <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
@@ -57,27 +56,15 @@ class MyDocument extends Document {
           <meta name="apple-mobile-web-app-capable" content="yes" />
           <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
-          {/* Google Fonts - Noto Sans SC */}
-          <link
-            href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap"
-            rel="stylesheet"
-          />
-          
           {/* 霞鹜文楷 */}
           <link
             href="https://cdn.jsdelivr.net/npm/lxgw-wenkai-webfont@1.1.0/style.css"
             rel="stylesheet"
           />
-          
+
           {/* 马善政楷体 */}
           <link
             href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap"
-            rel="stylesheet"
-          />
-
-          {/* 得意黑 - 更现代的中文字体 */}
-          <link
-            href="https://cdn.jsdelivr.net/npm/smiley-sans@1.1.0/css/smiley-sans.css"
             rel="stylesheet"
           />
 
