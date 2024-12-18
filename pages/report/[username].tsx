@@ -842,7 +842,7 @@ const FeedbackPage = () => {
     const submittedFeedback = feedback.trim();
 
     try {
-      const response = await fetch('/api/feedback', {
+      const response = await fetch('/api/report/2024/feedback', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
