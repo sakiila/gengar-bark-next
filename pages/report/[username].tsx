@@ -589,23 +589,6 @@ const WorkingPatternPage = ({ data }: { data: BuildReport }) => {
       transition={{ duration: 0.5 }}
     >
 
-      <motion.div
-        className="absolute bottom-0 left-1/2 -translate-x-1/2"
-        transition={{
-          duration: 3,
-          repeat: Infinity,
-          ease: 'easeInOut',
-        }}
-      >
-        <Image
-          src="/assets/saly13.png"
-          alt="Decorative element"
-          width={800}
-          height={800}
-          className="opacity-90 cursor-pointer"
-        />
-      </motion.div>
-
       <div className="max-w-4xl mx-auto">
         <h2 className="text-4xl font-bold text-white mb-12">工作模式分析</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
