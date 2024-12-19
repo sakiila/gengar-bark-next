@@ -906,7 +906,7 @@ const FeedbackPage = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <label htmlFor="feedback" className="block text-white/90 text-sm font-medium">
-              您的反馈（十字以上有效评论将会送出限定 Gengar Bark 周边小礼品！）
+              您的反馈（十字以上有效评论将会送出限定 Gengar Bark 周边小礼品！数量有限，先到先得！）
             </label>
             <div className="relative group">
               <div
