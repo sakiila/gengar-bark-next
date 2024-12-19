@@ -142,13 +142,16 @@ const Home: NextPage = () => {
   return (
     <div className={styles.container}>
       <Head>
-        <title>Gengar Bark | AI-Powered Slack Assistant for Smart Team Communication</title>
+        <title>Gengar Bark | Your AI-Powered Slack Assistant</title>
+
+        {/* Primary Meta Tags */}
+        <meta name="title" content="Gengar Bark | Your AI-Powered Slack Assistant" />
         <meta name="description" content="Enhance team productivity with AI-powered chat, automatic summaries, and smart scheduling - all within Slack." />
 
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content={baseUrl} />
-        <meta property="og:title" content="Gengar Bark | Smart Team Communication" />
+        <meta property="og:title" content="Gengar Bark | Your AI-Powered Slack Assistant" />
         <meta property="og:description" content="Transform your Slack workspace with AI-powered chat assistance, automatic meeting summaries, and intelligent scheduling." />
         <meta property="og:image" content="/images/preview2.png" />
         <meta property="og:image:width" content="1200" />
@@ -156,12 +159,14 @@ const Home: NextPage = () => {
 
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Gengar Bark | Smart Team Communication" />
+        <meta name="twitter:title" content="Gengar Bark | Your AI-Powered Slack Assistant" />
         <meta name="twitter:description" content="Transform your Slack workspace with AI-powered chat assistance, automatic meeting summaries, and intelligent scheduling." />
         <meta name="twitter:image" content="/images/preview2.png" />
       </Head>
       <nav className={styles.nav}>
-        <Link href="/" className={styles.logo}>Gengar Bark</Link>
+        <Link href="/" className={styles.logo}>
+          Gengar Bark
+        </Link>
         <div className={styles.navLinks}>
           <Link href="/guide" className={styles.guideLink}>
             User Guide
