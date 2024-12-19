@@ -426,7 +426,7 @@ const MonthlyTrendsPage = ({ data }: { data: BuildReport }) => {
     const minBuildsMonth = monthlyData.reduce((min, curr) =>
       curr.builds < min.builds ? curr : min, monthlyData[0]);
 
-    let message = `📈 ${maxBuildsMonth.month} 简直就是你的开挂月！${maxBuildsMonth.builds} 次构建，这么拼是要起啊！\n`;
+    let message = `📈 ${maxBuildsMonth.month} 简直就是你的开挂月！${maxBuildsMonth.builds} 次构建，这么拼是要起飞啊！\n`;
 
     if (maxBuildsMonth.successRate > 90) {
       message += `🎯 而且高峰期还保持了 ${maxBuildsMonth.successRate}% 的成功率，稳得一批！\n`;
@@ -519,19 +519,19 @@ const WorkingPatternPage = ({ data }: { data: BuildReport }) => {
 
     if (hour >= 22 || hour <= 5) {
       message = `🌙 深夜代码人！${data.mostActiveTime} 是你最活跃的时间，熬夜伤身，但我懂你～\n
-      🌟 连续 ${data.longestWorkingStreak} 天的工作streak，这份执着真是让人佩服！`;
+      🌟 连续 ${data.longestWorkingStreak} 天的工作 streak，这份执着真是让人佩服！`;
     } else if (hour >= 6 && hour <= 9) {
       message = `🌅 早起打工魂！${data.mostActiveTime} 就开始冲，这么自律真的绝了！\n
-      ✨ ${data.longestWorkingStreak} 天的工作streak，卷王本王就是你吧！`;
+      ✨ ${data.longestWorkingStreak} 天的工作 streak，卷王本王就是你吧！`;
     } else if (hour >= 18 && hour <= 21) {
-      message = `🌆 夜晚才是你的主场！${data.mostActiveTime} 的专注力简直MAX！\n
+      message = `🌆 夜晚才是你的主场！${data.mostActiveTime} 的专注力简直 MAX！\n
       💫 ${data.longestWorkingStreak} 天连续工作，这波节奏很稳啊！`;
     } else {
       message = `☀️ 朝九晚五工作狂！${data.mostActiveTime} 的你保持着最佳状态～\n
-      🎯 ${data.longestWorkingStreak} 天的工作streak，这份规律值得表扬！`;
+      🎯 ${data.longestWorkingStreak} 天的工作 streak，这份规律值得表扬！`;
     }
 
-    if (data.weekendWorkingPercentage > 30) {
+    if (data.weekendWorkingPercentage > 15) {
       message += `\n💝 周末也有 ${data.weekendWorkingPercentage}% 的时间在线，记得劳逸结合，多陪陪家人哦！`;
     }
 
@@ -711,10 +711,6 @@ const RepositoryStatsPage = ({ data }: { data: BuildReport }) => {
       message += ` ${successRate}% 的成功率还不错，继续加油！`;
     } else {
       message += ` 建议关注一下 ${successRate}% 的成功率，也许可以找找提升的空间。`;
-    }
-
-    if (data.weekendWorkingPercentage > 30) {
-      message += `\n💝 周末也在努力工作，记得劳逸结合哦！`;
     }
 
     return message;
