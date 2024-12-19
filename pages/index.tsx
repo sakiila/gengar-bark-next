@@ -137,7 +137,7 @@ const Home: NextPage = () => {
 
   const opacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
 
-  const baseUrl =  'https://gengar.baobo.me';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://gengar.baobo.me';
 
   return (
     <div className={styles.container}>
@@ -150,7 +150,7 @@ const Home: NextPage = () => {
         <meta property="og:url" content={baseUrl} />
         <meta property="og:title" content="Gengar Bark | Smart Team Communication" />
         <meta property="og:description" content="Transform your Slack workspace with AI-powered chat assistance, automatic meeting summaries, and intelligent scheduling." />
-        <meta property="og:image" content={`${baseUrl}/images/preview2.png`} />
+        <meta property="og:image" content="/images/preview2.png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
 
@@ -158,7 +158,7 @@ const Home: NextPage = () => {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Gengar Bark | Smart Team Communication" />
         <meta name="twitter:description" content="Transform your Slack workspace with AI-powered chat assistance, automatic meeting summaries, and intelligent scheduling." />
-        <meta name="twitter:image" content={`${baseUrl}/images/preview2.png`} />
+        <meta name="twitter:image" content="/images/preview2.png" />
       </Head>
       <nav className={styles.nav}>
         <Link href="/" className={styles.logo}>Gengar Bark</Link>

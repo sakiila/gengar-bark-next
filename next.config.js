@@ -11,7 +11,7 @@ const nextConfig = {
     },
   },
   images: {
-    domains: ['baobo.me'], // Add your image domains here
+    domains: ['baobo.me', 'gengar.baobo.me'], // Add your image domains here
   },
 };
 
