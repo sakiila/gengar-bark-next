@@ -4,6 +4,7 @@ import { BusinessAccountResponse, Customer, Service } from '@/lib/moego/types';
 import { timeUtils } from '@/lib/utils/time-utils';
 import { dataImport, postBlockMessage } from '@/lib/slack/gengar-bolt';
 import { ChannelService } from '@/lib/database/services/channel.service';
+import { postgres } from '@/lib/database/supabase';
 
 function getBlocks(username: string) {
   return [
@@ -32,7 +33,7 @@ function getBlocks(username: string) {
       'type': 'section',
       'text': {
         'type': 'mrkdwn',
-        'text': '在平庸之海中漂泊，不要畏惧成为钻石或尘埃！',
+        'text': '“在平庸之海中漂泊，不要畏惧成为钻石或尘埃！”',
       },
     },
     {
@@ -57,14 +58,29 @@ export default async function personHandler(
   res: NextApiResponse,
 ) {
 
+  const { data, error } = await postgres
+  .from('report_2024')
+  .select('email');
+  if (error || !data) {
+    console.error('Database error:', error);
+    return res.status(500).json({ message: 'Failed to fetch email' });
+  }
+
   const channelService = await ChannelService.getInstance();
   const channels = await channelService.findAll();
 
-  for (let i = 0; i < channels.length; i++) {
-    if (channels[i].email == 'bob@moego.pet') {
-      const username = channels[i].email.split('@')[0].toLowerCase();
+  const emails = data;
+  for (let i = 0; i < emails.length; i++) {
+    if (emails[i].email == 'bob@moego.pet') {
+      const username = emails[i].email.split('@')[0].toLowerCase();
       console.log('username:', username);
-      await postBlockMessage(channels[i].user_id, getBlocks(username));
+      const user_id = channels.find((channel) => channel.email === emails[i].email)?.user_id;
+      if (!user_id) {
+        console.error('Failed to find user_id for:', emails[i].email);
+        continue;
+      }
+      console.log('user_id:', user_id);
+      await postBlockMessage(user_id, getBlocks(username));
     }
   }
 

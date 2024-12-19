@@ -923,7 +923,7 @@ const FeedbackPage = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
             <label htmlFor="feedback" className="block text-white/90 text-sm font-medium">
-              您的反馈（字数不限）
+              您的反馈（十字以上有效评论将会送出限定 Gengar Bark 周边小礼品！）
             </label>
             <div className="relative group">
               <div
@@ -965,7 +965,7 @@ const FeedbackPage = () => {
             >
               <p className="font-medium">感谢您的反馈！</p>
               <p className="text-sm opacity-80">
-                {feedback.replace(/[\s.,\/#!$%\^&\*;:{}=\-_`~()]/g, '').length > 10 ? '恭喜你发现小彩蛋！请去找 Bob 领取小礼品，数量有限，先到先得！' : '我们会认真考虑您的建议！'}
+                {feedback.replace(/[\s.,\/#!$%\^&\*;:{}=\-_`~()]/g, '').length > 10 ? '感谢您的反馈！请去找 Bob 领取小礼品，数量有限，先到先得！' : '我们会认真考虑您的建议！'}
               </p>
             </motion.div>
           )}
