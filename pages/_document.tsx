@@ -10,7 +10,7 @@ class MyDocument extends Document {
 
           {/* SEO Meta Tags */}
           <meta name="robots" content="index, follow" />
-          <meta name="keywords" content="AI, Slack, Team Communication, Analytics, Performance Report, Team Insights" />
+          <meta name="keywords" content="AI, Slack, Team Communication, Analytics, Team Insights" />
           <meta name="author" content="Gengar Bark" />
 
           {/* Fonts */}
@@ -24,32 +24,39 @@ class MyDocument extends Document {
           <link rel="manifest" href="/site.webmanifest" />
 
           {/* Primary Meta Tags */}
-          <meta name="description" content="Get detailed insights into your Slack workspace activity with AI-powered analytics and performance reports." />
+          <meta name="title" content="Gengar Bark - Your AI-Powered Slack Assistant" />
+          <meta name="description" content="Enhance team productivity with AI-powered chat, automatic summaries, and smart scheduling - all within Slack." />
 
           {/* Open Graph / Facebook */}
           <meta property="og:type" content="website" />
           <meta property="og:url" content="https://pearl.baobo.me/" />
-          <meta property="og:description" content="Discover your Slack workspace performance with comprehensive analytics and AI-generated insights." />
+          <meta property="og:title" content="Gengar Bark | Smart Team Communication" />
+          <meta property="og:description" content="Transform your Slack workspace with AI-powered chat assistance, automatic meeting summaries, and intelligent scheduling." />
           <meta property="og:image" content="https://pearl.baobo.me/images/preview2.png" />
           <meta property="og:image:width" content="1200" />
           <meta property="og:image:height" content="630" />
-          <meta property="og:site_name" content="Gengar Bark Analytics" />
+          <meta property="og:site_name" content="Gengar Bark" />
 
           {/* Enhanced Twitter Card Meta Tags */}
           <meta name="twitter:card" content="summary_large_image" />
           <meta name="twitter:site" content="@GengarbarkAI" />
           <meta name="twitter:creator" content="@GengarbarkAI" />
           <meta name="twitter:url" content="https://pearl.baobo.me/" />
-          <meta name="twitter:description" content="Discover your Slack workspace performance with comprehensive analytics and AI-generated insights." />
+          <meta name="twitter:title" content="Gengar Bark | Smart Team Communication" />
+          <meta name="twitter:description" content="Transform your Slack workspace with AI-powered chat assistance, automatic meeting summaries, and intelligent scheduling." />
           <meta name="twitter:image" content="https://pearl.baobo.me/images/preview2.png" />
-          <meta name="twitter:label1" content="Platform" />
-          <meta name="twitter:data1" content="Slack Analytics" />
+          <meta name="twitter:label1" content="Available On" />
+          <meta name="twitter:data1" content="Slack" />
           <meta name="twitter:label2" content="Type" />
-          <meta name="twitter:data2" content="Performance Report" />
+          <meta name="twitter:data2" content="AI Assistant" />
+          <meta name="twitter:label3" content="Features" />
+          <meta name="twitter:data3" content="Chat, Summaries, Scheduling" />
+          <meta name="twitter:label4" content="Integration" />
+          <meta name="twitter:data4" content="One-Click Install" />
 
           {/* Additional Meta Data */}
-          <meta name="application-name" content="Gengar Bark Analytics" />
-          <meta name="apple-mobile-web-app-title" content="Gengar Bark Analytics" />
+          <meta name="application-name" content="Gengar Bark" />
+          <meta name="apple-mobile-web-app-title" content="Gengar Bark" />
           <meta name="format-detection" content="telephone=no" />
           <meta name="theme-color" content="#524262" />
           <meta name="mobile-web-app-capable" content="yes" />
