@@ -531,8 +531,8 @@ const WorkingPatternPage = ({ data }: { data: BuildReport }) => {
       🎯 ${data.longestWorkingStreak} 天的工作 streak，这份规律值得表扬！`;
     }
 
-    if (data.weekendWorkingPercentage > 15) {
-      message += `\n💝 周末也有 ${data.weekendWorkingPercentage}% 的时间在线，记得劳逸结合，多陪陪家人哦！`;
+    if (data.weekendWorkingPercentage > 10) {
+      message += `💝 周末也有 ${data.weekendWorkingPercentage}% 的时间在线，记得劳逸结合，多陪陪家人哦！`;
     }
 
     return message;
