@@ -1,9 +1,11 @@
 import { App, LogLevel } from '@slack/bolt';
-import { bot_hr_token } from '@/lib/slack/slack';
+import { bot_hr_token, textToMarkdown } from '@/lib/slack/slack';
+import { NextApiResponse } from 'next';
 
 // Initialize the Slack Bolt app with more configuration options
 const app = new App({
   token: process.env.SLACK_BOT_HR_TOKEN,
+  signingSecret: process.env.SLACK_HR_SIGNING_SECRET,
   logLevel: LogLevel.DEBUG,
 });
 
@@ -33,10 +35,10 @@ export async function scheduleMessage(channel: string, blocks: any[], postAt: nu
   try {
     return await botClient.chat.scheduleMessage({
       channel,
-      text: "HR People Management Message",
+      text: 'HR People Management Message',
       blocks,
       post_at: postAt,
-      unfurl_links: false
+      unfurl_links: false,
     });
   } catch (error) {
     console.error('Error scheduling message:', error);
@@ -45,14 +47,14 @@ export async function scheduleMessage(channel: string, blocks: any[], postAt: nu
 }
 
 export async function publishView(userId: string, view: any) {
-  const url = "https://slack.com/api/views.publish";
+  const url = 'https://slack.com/api/views.publish';
 
   try {
     const response = await fetch(url, {
-      method: "POST",
+      method: 'POST',
       headers: {
         Authorization: `Bearer ${bot_hr_token}`,
-        "Content-type": "application/json; charset=UTF-8",
+        'Content-type': 'application/json; charset=UTF-8',
       },
       body: JSON.stringify({
         user_id: userId,
@@ -69,6 +71,47 @@ export async function publishView(userId: string, view: any) {
 
     return data;
   } catch (error) {
-    console.error("Error publishing view:", error);
+    console.error('Error publishing view:', error);
+  }
+}
+
+export async function setStatus(channelId: string, ts: string) {
+  try {
+    return await botClient.assistant.threads.setStatus({
+      channel_id: channelId,
+      thread_ts: ts,
+      status: 'is working on your request...',
+    });
+  } catch (error) {
+    console.error('Error setting status:', error);
+    throw error;
+  }
+}
+
+export async function getThreadReply(channelId: string, ts: string) {
+  try {
+    return await botClient.conversations.replies({
+      channel: channelId,
+      ts: ts,
+    });
+  } catch (error) {
+    console.error('Error getting thread reply:', error);
+    throw error;
+  }
+}
+
+export async function threadReply(channelId: string,
+                                  ts: string,
+                                  text: string) {
+  try {
+    return await botClient.chat.postMessage({
+      channel: channelId,
+      thread_ts: ts,
+      text,
+      blocks: textToMarkdown(text),
+    });
+  } catch (error) {
+    console.error('Error replying to thread:', error);
+    throw error;
   }
 }
