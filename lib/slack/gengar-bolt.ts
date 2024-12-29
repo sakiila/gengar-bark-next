@@ -168,6 +168,9 @@ export async function setSuggestedPrompts(channel_id: string, thread_ts: string)
   }
 }
 
+/**
+ * get all conversations list channel for who used gengar bark
+ */
 export async function conversationsListForIm() {
   try {
     const { ok, channels, error } = await botClient.conversations.list({ limit: 1000, types: 'im' });
