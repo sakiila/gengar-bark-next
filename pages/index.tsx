@@ -137,7 +137,7 @@ const Home: NextPage = () => {
 
   const opacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://gengar.baobo.me';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://pearl.baobo.me';
 
   return (
     <div className={styles.container}>

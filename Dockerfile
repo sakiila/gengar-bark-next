@@ -41,8 +41,5 @@ EXPOSE 3000
 ENV PORT 3000
 ENV HOSTNAME "0.0.0.0"
 
-# 启用 .env 文件支持
-ENV DOTENV_PATH="/app/.env"
-
 # 启动服务
 CMD ["node", "server.js"]
