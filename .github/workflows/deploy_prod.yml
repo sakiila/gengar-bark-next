@@ -52,4 +52,5 @@ jobs:
             docker run -d --name gengar-bark \
               -p 3001:3000 \
               --env-file /etc/gengar-bark/.env \
+              -v /etc/gengar-bark/.env:/app/.env:ro \
               ${{ secrets.DOCKERHUB_USERNAME }}/gengar-bark:latest

@@ -6,12 +6,11 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
-# 复制源代码和环境变量文件
+# 复制源代码
 COPY . .
-COPY .env.example .env
 
-# 创建 public/images 目录并确保适当的权限
-RUN mkdir -p public/images
+# 确保在构建时使用正确的环境变量文件
+COPY .env.example .env
 
 # 构建应用
 RUN npm run build
@@ -23,16 +22,15 @@ WORKDIR /app
 ENV NODE_ENV production
 ENV NEXT_TELEMETRY_DISABLED 1
 
-# 复制 standalone 输出和必要文件
+# 复制构建产物和必要文件
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/.env ./.env
 
-# 创建 public/images 目录（如果不存在）
-RUN mkdir -p public/images
+# 创建存储运行时环境变量的目录
+RUN mkdir -p /app/config
 
-# 设置适当的权限
+# 设置权限
 RUN chown -R node:node /app
 
 # 切换到非 root 用户
@@ -43,5 +41,9 @@ EXPOSE 3000
 ENV PORT 3000
 ENV HOSTNAME "0.0.0.0"
 
-# 启动服务
-CMD ["node", "server.js"]
+# 添加环境变量加载脚本
+COPY --chown=node:node docker-entrypoint.sh ./
+RUN chmod +x docker-entrypoint.sh
+
+# 使用启动脚本
+ENTRYPOINT ["./docker-entrypoint.sh"]

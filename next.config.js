@@ -2,16 +2,19 @@ const { withAxiom } = require("next-axiom");
 
 const nextConfig = {
   reactStrictMode: true,
-  output: "standalone", // 确保启用 standalone 输出
-  // Add Axiom specific configuration
+  output: "standalone",
   logging: {
     axiom: {
-      // Your dataset name from .env
       dataset: process.env.AXIOM_DATASET,
     },
   },
   images: {
-    domains: ['baobo.me', 'gengar.baobo.me'], // Add your image domains here
+    domains: ['baobo.me', 'gengar.baobo.me'],
+  },
+  // 添加环境变量配置
+  env: {
+    NEXT_PUBLIC_BASE_URL: process.env.NEXT_PUBLIC_BASE_URL,
+    NODE_ENV: process.env.NODE_ENV,
   },
 };
 
