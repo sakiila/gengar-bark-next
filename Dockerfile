@@ -6,8 +6,9 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
-# 复制源代码
+# 复制源代码和环境变量文件
 COPY . .
+COPY .env.example .env
 
 # 创建 public/images 目录并确保适当的权限
 RUN mkdir -p public/images
@@ -26,6 +27,7 @@ ENV NEXT_TELEMETRY_DISABLED 1
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/.env ./.env
 
 # 创建 public/images 目录（如果不存在）
 RUN mkdir -p public/images
