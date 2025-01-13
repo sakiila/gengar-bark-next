@@ -16,10 +16,11 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Create env file
+        shell: bash
+        env:
+          ENV_CONTENT: ${{ secrets.ENV_PROD }}
         run: |
-          touch .env
-          echo "${{ secrets.ENV_PROD }}" > .env
-          cat .env
+          echo "$ENV_CONTENT" > .env
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
