@@ -26,7 +26,6 @@ ENV NEXT_TELEMETRY_DISABLED 1
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/.env ./.env
 
 # 创建 public/images 目录（如果不存在）
 RUN mkdir -p public/images
@@ -42,5 +41,8 @@ EXPOSE 3000
 ENV PORT 3000
 ENV HOSTNAME "0.0.0.0"
 
-# 更新启动命令以使用 standalone server
+# 启用 .env 文件支持
+ENV DOTENV_PATH="/app/.env"
+
+# 启动服务
 CMD ["node", "server.js"]
