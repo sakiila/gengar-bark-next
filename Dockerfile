@@ -30,7 +30,7 @@ RUN --mount=type=cache,target=/tmp/npm-cache \
     npm run build
 
 # 生产阶段
-FROM node:18-alpine AS runner
+FROM node:18-alpine AS production
 WORKDIR /app
 
 # 安装必要的运行时依赖并清理缓存
