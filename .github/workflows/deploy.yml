@@ -119,55 +119,67 @@ jobs:
             mkdir -p /app/gengar-bark
             cd /app/gengar-bark
             
-            # 生成 docker-compose 配置
-            cat > docker-compose.yml <<EOF
-            version: '3.8'
-            services:
-              app:
-                image: ${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.VERSION }}
-                container_name: gengar-bark
-                ports:
-                  - "3001:3000"
-                restart: unless-stopped
-                healthcheck:
-                  test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
-                  interval: 30s
-                  timeout: 10s
-                  retries: 3
-                  start_period: 40s
-                deploy:
-                  resources:
-                    limits:
-                      memory: 1G
-                    reservations:
-                      memory: 512M
-                logging:
-                  driver: "json-file"
-                  options:
-                    max-size: "50m"
-                    max-file: "3"
-                labels:
-                  deployment.version: ${{ steps.tag.outputs.VERSION }}
-                  deployment.timestamp: "$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
-            EOF
+            # 清理旧容器
+            echo "Stopping and removing old container if exists..."
+            if docker ps -a | grep -q "gengar-bark"; then
+              docker stop gengar-bark || true
+              docker rm -f gengar-bark || true
+            fi
             
-            # 拉取新镜像并部署
-            docker compose pull
-            docker compose up -d
+            # 拉取新镜像
+            echo "Pulling new image..."
+            docker pull ${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.VERSION }}
+            
+            # 启动新容器
+            echo "Starting new container..."
+            docker run -d \
+              --name gengar-bark \
+              --restart unless-stopped \
+              -p 3001:3000 \
+              --memory="1g" \
+              --memory-reservation="512m" \
+              --health-cmd="curl -f http://localhost:3000/health || exit 1" \
+              --health-interval=30s \
+              --health-timeout=10s \
+              --health-retries=3 \
+              --health-start-period=40s \
+              --log-driver json-file \
+              --log-opt max-size=50m \
+              --log-opt max-file=3 \
+              --label "deployment.version=${{ steps.tag.outputs.VERSION }}" \
+              --label "deployment.timestamp=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
+              ${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.VERSION }}
             
             # 等待服务健康检查通过
-            timeout 60s bash -c 'until docker compose ps | grep -q "(healthy)"; do sleep 2; done'
+            echo "Waiting for health check..."
+            max_retries=30
+            count=0
+            while [ $count -lt $max_retries ]; do
+              if docker inspect gengar-bark --format='{{.State.Health.Status}}' | grep -q "healthy"; then
+                echo "Service is healthy!"
+                break
+              fi
+              count=$((count + 1))
+              echo "Waiting for service to be healthy... ($count/$max_retries)"
+              sleep 2
+            done
             
-            # 清理旧镜像和缓存
-            docker system prune -af --filter "until=24h"
-            
+            if [ $count -eq $max_retries ]; then
+              echo "Health check failed after $max_retries attempts"
+              docker logs --tail 100 gengar-bark
+              exit 1
+            fi
             
             # 验证部署
             if ! curl -f http://localhost:3001/health; then
-              echo "Health check failed"
-              docker compose logs --tail 100
+              echo "Final health check failed"
+              docker logs --tail 100 gengar-bark
               exit 1
             fi
+            
+            # 清理旧镜像和缓存
+            echo "Cleaning up old images..."
+            docker system prune -af --filter "until=24h" || true
 
       - name: Verify Deployment
         if: success()
