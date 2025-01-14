@@ -88,12 +88,8 @@ jobs:
           tags: |
             ${{ env.IMAGE_NAME }}:latest
             ${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.VERSION }}
-          cache-from: |
-            type=local,src=/tmp/.buildx-cache
-            type=registry,ref=${{ env.IMAGE_NAME }}:buildcache
-          cache-to: |
-            type=local,dest=/tmp/.buildx-cache-new,mode=max
-            type=registry,ref=${{ env.IMAGE_NAME }}:buildcache,mode=max
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          cache-from: type=local,src=/tmp/.buildx-cache
           build-args: |
             NODE_ENV=production
             BUILDKIT_INLINE_CACHE=1
@@ -164,3 +160,30 @@ jobs:
             
             # 清理旧镜像和缓存
             docker system prune -af --filter "until=24h"
+            
+            
+            # 验证部署
+            if ! curl -f http://localhost:3001/health; then
+              echo "Health check failed"
+              docker compose logs --tail 100
+              exit 1
+            fi
+
+      - name: Verify Deployment
+        if: success()
+        run: |
+          echo "✅ Deployment successful"
+          echo "Version: ${{ steps.tag.outputs.VERSION }}"
+          echo "Deployed at: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          echo "❌ Deployment failed"
+          echo "Please check the logs for more details"
+
+      - name: Clean up
+        if: always()
+        run: |
+          docker builder prune -f
+          docker image prune -f
