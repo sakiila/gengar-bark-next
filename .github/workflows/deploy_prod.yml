@@ -3,59 +3,222 @@ name: Deploy to Production
 on:
   push:
     branches: ['main']
+    paths-ignore:
+      - '**.md'
+      - '.gitignore'
+      - 'LICENSE'
+
+env:
+  IMAGE_NAME: docker-registry.baobo.me/gengar-bark
 
 jobs:
-  push_to_registries:
-    name: Push Docker image to private registry
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run security audit
+        run: npm audit
+
+      - name: Run tests
+        run: npm test
+
+      - name: Run linting
+        run: npm run lint
+
+  security-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+
+  deploy:
+    needs: [test, security-scan]
     runs-on: ubuntu-latest
     permissions:
-      packages: write
       contents: read
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Generate version tag
+        id: tag
+        run: |
+          SHA_SHORT=$(git rev-parse --short HEAD)
+          TS=$(date +%Y%m%d%H%M)
+          echo "VERSION=${TS}-${SHA_SHORT}" >> $GITHUB_OUTPUT
 
       - name: Create env file
-        shell: bash
-        env:
-          ENV_CONTENT: ${{ secrets.ENV_PROD }}
         run: |
-          echo "$ENV_CONTENT" > .env
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+          echo "${{ secrets.ENV_PROD }}" > .env
+          if [ ! -s .env ]; then
+            echo "Error: Empty .env file"
+            exit 1
+          fi
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
+        with:
+          platforms: linux/amd64
+          buildkitd-flags: --debug
 
-      - name: Login to Private Registry
+      - name: Login to Registry
         uses: docker/login-action@v2
         with:
           registry: docker-registry.baobo.me
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
 
-      - name: Build and push images
+      - name: Build and push
         uses: docker/build-push-action@v4
         with:
           context: .
-          platforms: linux/amd64,linux/arm64
-          file: ./Dockerfile
           push: true
-          tags: docker-registry.baobo.me/gengar-bark:latest
+          tags: |
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.VERSION }}
+          cache-from: type=registry,ref=${{ env.IMAGE_NAME }}:buildcache
+          cache-to: type=registry,ref=${{ env.IMAGE_NAME }}:buildcache,mode=max
+          build-args: |
+            NODE_ENV=production
+          target: production
+          provenance: true
+          sbom: true
 
-      - name: Deploy to server
+      - name: Deploy
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.HOST_USERNAME }}
           key: ${{ secrets.HOST_SSHKEY }}
-          command_timeout: 20m
           script: |
-            docker stop gengar-bark || true
-            docker rm gengar-bark || true
-            docker rmi docker-registry.baobo.me/gengar-bark:latest || true
-            docker pull docker-registry.baobo.me/gengar-bark:latest
-            docker run -d --name gengar-bark \
-              -p 3001:3000 \
-              docker-registry.baobo.me/gengar-bark:latest
+            set -e
+            
+            # 创建备份目录
+            BACKUP_DIR="/app/gengar-bark/backup"
+            mkdir -p $BACKUP_DIR
+            
+            # 备份当前配置
+            if [ -f /app/gengar-bark/docker-compose.yml ]; then
+              cp /app/gengar-bark/docker-compose.yml $BACKUP_DIR/docker-compose.yml.$(date +%Y%m%d%H%M)
+            fi
+            
+            # 创建应用目录
+            mkdir -p /app/gengar-bark
+            cd /app/gengar-bark
+            
+            # 生成 docker-compose 配置
+            cat > docker-compose.yml <<EOF
+            version: '3.8'
+            services:
+              app:
+                image: ${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.VERSION }}
+                container_name: gengar-bark
+                ports:
+                  - "127.0.0.1:3001:3000"
+                restart: unless-stopped
+                healthcheck:
+                  test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+                  interval: 30s
+                  timeout: 5s
+                  retries: 3
+                  start_period: 20s
+                deploy:
+                  resources:
+                    limits:
+                      cpus: '1'
+                      memory: 1G
+                    reservations:
+                      cpus: '0.25'
+                      memory: 512M
+                logging:
+                  driver: "json-file"
+                  options:
+                    max-size: "10m"
+                    max-file: "3"
+                labels:
+                  deployment.version: ${{ steps.tag.outputs.VERSION }}
+                security_opt:
+                  - no-new-privileges:true
+            EOF
+            
+            # 拉取新镜像
+            docker compose pull
+            
+            # 优雅停止当前容器
+            if docker compose ps | grep -q "Up"; then
+              docker compose stop -t 30
+            fi
+            
+            # 启动新版本
+            docker compose up -d
+            
+            # 等待服务健康检查通过
+            echo "Waiting for service to be healthy..."
+            timeout 60s bash -c 'until docker compose ps | grep -q "(healthy)"; do sleep 2; done'
+            
+            # 验证部署
+            RETRY_COUNT=0
+            MAX_RETRIES=3
+            
+            while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+              if curl -f http://localhost:3001/health; then
+                echo "Health check passed"
+                break
+              fi
+            
+              RETRY_COUNT=$((RETRY_COUNT+1))
+            
+              if [ $RETRY_COUNT -eq $MAX_RETRIES ]; then
+                echo "Health check failed after $MAX_RETRIES attempts"
+                docker compose logs
+                # 回滚到上一个版本
+                if [ -f $BACKUP_DIR/docker-compose.yml.* ]; then
+                  LAST_BACKUP=$(ls -t $BACKUP_DIR/docker-compose.yml.* | head -1)
+                  echo "Rolling back to previous version..."
+                  cp $LAST_BACKUP docker-compose.yml
+                  docker compose up -d
+                  exit 1
+                fi
+              fi
+            
+              sleep 5
+            done
+            
+            # 清理旧镜像和备份
+            docker image prune -f
+            find $BACKUP_DIR -name "docker-compose.yml.*" -mtime +7 -delete
+
+      - name: Verify Deployment
+        if: success()
+        run: |
+          echo "✅ Deployment successful"
+          echo "Version: ${{ steps.tag.outputs.VERSION }}"
+          echo "Timestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+
+      - name: Notify on Failure
+        if: failure()
+        run: |
+          echo "❌ Deployment failed"
+          echo "Version: ${{ steps.tag.outputs.VERSION }}"
+          echo "Timestamp: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
