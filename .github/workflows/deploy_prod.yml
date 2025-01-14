@@ -6,7 +6,7 @@ on:
 
 jobs:
   push_to_registries:
-    name: Push Docker image to multiple registries
+    name: Push Docker image to private registry
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -28,12 +28,12 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Login to Docker Hub
+      - name: Login to Private Registry
         uses: docker/login-action@v2
         with:
-          registry: https://docker-registry.baobo.me/
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: docker-registry.baobo.me
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
 
       - name: Build and push images
         uses: docker/build-push-action@v4
@@ -42,7 +42,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/gengar-bark:latest
+          tags: docker-registry.baobo.me/gengar-bark:latest
 
       - name: Deploy to server
         uses: appleboy/ssh-action@master
@@ -54,8 +54,8 @@ jobs:
           script: |
             docker stop gengar-bark || true
             docker rm gengar-bark || true
-            docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/gengar-bark:latest || true
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/gengar-bark:latest
+            docker rmi docker-registry.baobo.me/gengar-bark:latest || true
+            docker pull docker-registry.baobo.me/gengar-bark:latest
             docker run -d --name gengar-bark \
               -p 3001:3000 \
-              ${{ secrets.DOCKERHUB_USERNAME }}/gengar-bark:latest
+              docker-registry.baobo.me/gengar-bark:latest
