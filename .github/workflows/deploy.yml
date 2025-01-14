@@ -138,7 +138,7 @@ jobs:
               -p 3001:3000 \
               --memory="1g" \
               --memory-reservation="512m" \
-              --health-cmd="curl -f http://localhost:3000/health || exit 1" \
+              --health-cmd="curl -f http://localhost:3000/api/health || exit 1" \
               --health-interval=30s \
               --health-timeout=10s \
               --health-retries=3 \
@@ -171,7 +171,7 @@ jobs:
             fi
             
             # 验证部署
-            if ! curl -f http://localhost:3001/health; then
+            if ! curl -f http://localhost:3001/api/health; then
               echo "Final health check failed"
               docker logs --tail 100 gengar-bark
               exit 1

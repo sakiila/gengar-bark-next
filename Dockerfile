@@ -80,7 +80,7 @@ USER nextjs
 
 # 优化健康检查配置
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-    CMD curl -f http://localhost:3000/health || exit 1
+    CMD curl -f http://localhost:3000/api/health || exit 1
 
 # 暴露端口
 EXPOSE 3000
