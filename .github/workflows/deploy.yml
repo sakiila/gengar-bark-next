@@ -106,12 +106,13 @@ jobs:
           tags: |
             ${{ env.IMAGE_NAME }}:latest
             ${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.VERSION }}
-          cache-from: |
-            type=local,src=/tmp/.buildx-cache
-            type=registry,ref=${{ env.IMAGE_NAME }}:buildcache
           cache-to: |
             type=local,dest=/tmp/.buildx-cache-new,mode=max
-            type=registry,ref=${{ env.IMAGE_NAME }}:buildcache,mode=max
+            type=registry,ref=${{ env.IMAGE_NAME }}:buildcache,mode=max,compression=true,compression-level=5
+          # 添加缓存过滤
+          cache-from: |
+            type=local,src=/tmp/.buildx-cache
+            type=registry,ref=${{ env.IMAGE_NAME }}:buildcache,filter=.*:none
           build-args: |
             NODE_ENV=production
             BUILDKIT_INLINE_CACHE=1
