@@ -1,18 +1,6 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import crypto from "crypto";
-import { regexOperations, truncateString } from "@/lib/hacknews/helpers";
-import {
-  clearDataForTeam,
-  getAccessToken,
-  getCache,
-  getChannel,
-  getKeywords,
-  getTeamConfigAndStats,
-  setCache,
-  trackBotUsage,
-  trackUnfurls,
-} from "../upstash/upstash";
-import { getParent, getPost } from "@/lib/hacknews/hn";
+import { NextApiRequest, NextApiResponse } from 'next';
+import crypto from 'crypto';
+import { getCache, setCache } from '../upstash/upstash';
 
 export const bot_token = process.env.SLACK_BOT_TOKEN as string;
 export const bot_hr_token = process.env.SLACK_BOT_HR_TOKEN as string;

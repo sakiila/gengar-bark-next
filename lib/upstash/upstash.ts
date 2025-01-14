@@ -1,7 +1,6 @@
 import { Kafka } from '@upstash/kafka';
 import { Redis } from '@upstash/redis';
 import { Client, Receiver } from '@upstash/qstash';
-import { getLatestPost } from '@/lib/hacknews/hn';
 
 const kafka = new Kafka({
   url: process.env.UPSTASH_KAFKA_REST_URL || '',
@@ -141,17 +140,6 @@ export async function getChannel(teamId: string) {
 export async function setChannel(teamId: string, channel: string) {
   /* Set the channel ID to send notifications in for a Slack team in redis */
   return await redis.set(`${teamId}_channel`, channel);
-}
-
-export async function getLastCheckedId(): Promise<number> {
-  /* Get the last checked post ID from redis */
-  const lastCheckedId = (await redis.get('lastCheckedId')) as number;
-  if (!lastCheckedId) {
-    // if lastCheckedId is not set (first time running), return the latest post ID on HN instead
-    const latestPostId = await getLatestPost();
-    return latestPostId;
-  }
-  return lastCheckedId;
 }
 
 export async function setLastCheckedId(id: number) {
