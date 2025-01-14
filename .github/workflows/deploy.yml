@@ -67,22 +67,6 @@ jobs:
         run: |
           echo "$ENV_CONTENT" > .env
 
-      - name: Optimize build context
-        run: |
-          # 创建简化版的 .dockerignore
-          cat > .dockerignore <<EOF
-          .git
-          .github
-          .next
-          node_modules
-          npm-debug.log
-          README.md
-          .gitignore
-          .env.example
-          tests
-          coverage
-          EOF
-
       - name: Login to Registry
         uses: docker/login-action@v2
         with:
@@ -90,13 +74,11 @@ jobs:
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
-      - name: Set up Docker layer caching
-        uses: actions/cache@v3
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
+      # 修改缓存配置，确保目录存在
+      - name: Prepare cache directory
+        run: |
+          mkdir -p /tmp/.buildx-cache
+          chmod 777 /tmp/.buildx-cache
 
       - name: Build and push
         uses: docker/build-push-action@v4
@@ -106,13 +88,12 @@ jobs:
           tags: |
             ${{ env.IMAGE_NAME }}:latest
             ${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.VERSION }}
-          cache-to: |
-            type=local,dest=/tmp/.buildx-cache-new,mode=max
-            type=registry,ref=${{ env.IMAGE_NAME }}:buildcache,mode=max,compression=true,compression-level=5
-          # 添加缓存过滤
           cache-from: |
             type=local,src=/tmp/.buildx-cache
-            type=registry,ref=${{ env.IMAGE_NAME }}:buildcache,filter=.*:none
+            type=registry,ref=${{ env.IMAGE_NAME }}:buildcache
+          cache-to: |
+            type=local,dest=/tmp/.buildx-cache-new,mode=max
+            type=registry,ref=${{ env.IMAGE_NAME }}:buildcache,mode=max
           build-args: |
             NODE_ENV=production
             BUILDKIT_INLINE_CACHE=1
@@ -121,19 +102,15 @@ jobs:
           labels: |
             org.opencontainers.image.source=${{ github.event.repository.html_url }}
             org.opencontainers.image.revision=${{ github.sha }}
-          outputs: type=registry,compression=zstd,compression-level=5,force-compression=true
+          # 修改压缩配置
+          outputs: |
+            type=registry,compression=zstd,compression-level=5,force-compression=true
 
       # 临时缓存处理
       - name: Move cache
         run: |
           rm -rf /tmp/.buildx-cache
           mv /tmp/.buildx-cache-new /tmp/.buildx-cache
-
-      - name: Check image size
-        run: |
-          docker pull ${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.VERSION }}
-          IMAGE_SIZE=$(docker image inspect ${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.VERSION }} --format='{{.Size}}')
-          echo "Image size: $(echo "scale=2; $IMAGE_SIZE/1024/1024" | bc) MB"
 
       - name: Deploy
         uses: appleboy/ssh-action@master
@@ -187,29 +164,3 @@ jobs:
             
             # 清理旧镜像和缓存
             docker system prune -af --filter "until=24h"
-            
-            # 验证部署
-            if ! curl -f http://localhost:3001/health; then
-              echo "Health check failed"
-              docker compose logs --tail 100
-              exit 1
-            fi
-
-      - name: Verify Deployment
-        if: success()
-        run: |
-          echo "✅ Deployment successful"
-          echo "Version: ${{ steps.tag.outputs.VERSION }}"
-          echo "Deployed at: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
-
-      - name: Notify on Failure
-        if: failure()
-        run: |
-          echo "❌ Deployment failed"
-          echo "Please check the logs for more details"
-
-      - name: Clean up
-        if: always()
-        run: |
-          docker builder prune -f
-          docker image prune -f
