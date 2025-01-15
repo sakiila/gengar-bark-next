@@ -9,7 +9,16 @@ const nextConfig = {
     },
   },
   images: {
-    domains: ['baobo.me', 'gengar.baobo.me'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'baobo.me',
+      },
+      {
+        protocol: 'https',
+        hostname: 'gengar.baobo.me',
+      },
+    ],
   },
 };
 
