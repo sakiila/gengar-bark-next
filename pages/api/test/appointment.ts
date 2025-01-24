@@ -1,0 +1,27 @@
+import { NextApiRequest, NextApiResponse } from 'next';
+import { queryByAppointmentId } from '@/lib/database/services/one-page';
+import { sendAppointmentToSlack } from '@/lib/database/services/appointment-slack';
+
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    try {
+        // 从查询参数中获取 appointmentId，默认使用 61809655
+        const appointmentId = parseInt(req.query.id as string) || 61809655;
+
+        // const result = await queryByAppointmentId(appointmentId);
+
+        await sendAppointmentToSlack(appointmentId, 'C067ENL1TLN');
+
+        res.status(200).json({
+            success: true,
+            // data: result,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('API Error:', error);
+        res.status(500).json({
+            success: false,
+            error: error instanceof Error ? error.message : '未知错误',
+            timestamp: new Date().toISOString()
+        });
+    }
+}
