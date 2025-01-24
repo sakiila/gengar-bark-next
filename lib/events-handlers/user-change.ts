@@ -37,7 +37,7 @@ export default async function userChange(
         email: email,
         real_name_normalized: realName,
         updated_at: new Date().toISOString(),
-        tz: user.tz ?? dbUser?.[0].tz ?? "Asia/Chongqing",
+        tz: user.tz || (dbUser?.[0]?.tz || "Asia/Chongqing"),
         is_bot: isBot,
         team_id: teamId,
       },
