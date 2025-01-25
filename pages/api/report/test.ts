@@ -92,7 +92,7 @@ export default async function handler(
 
   // await dataImport();
 
-  await sendMessage();
+  // await sendMessage();
 
   return res.status(200).json({ message: 'Success' });
 }
