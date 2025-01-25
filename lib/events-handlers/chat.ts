@@ -30,17 +30,17 @@ export async function send_gpt_response_in_channel(
   // 只移除消息最前面的 Slack 用户 ID（例如 <@U0666R94C83>）
   text = text.replace(/^<@[A-Z0-9]+>\s*/, '');
 
-  const id = extractId(text);
-  if (id.type === IdType.APPOINTMENT) {
-    await sendAppointmentToSlack(parseInt(id.value), channel, ts);
-    return res.status(200).send('');
-  }
-
   // check if the text has been sent in the last 2 minutes
   const hasSentText = await existsCacheThanSet(text);
   if (hasSentText) {
     logger.info('Already sent same text in 2 minutes:', { text });
     return res.status(200).send('Already sent same text in 2 minutes.');
+  }
+
+  const id = extractId(text);
+  if (id.type === IdType.APPOINTMENT) {
+    await sendAppointmentToSlack(parseInt(id.value), channel, ts);
+    return res.status(200).send('');
   }
 
   // if (text.trim().startsWith('build')) {

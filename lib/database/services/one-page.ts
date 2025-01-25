@@ -232,11 +232,11 @@ export async function queryByAppointmentId(appointmentId: number): Promise<Appoi
       ),
     ]);
 
-    console.log('查询结果:', {
-      appointment: appointmentResult[0],
-      petDetails: petDetailResult,
-      order: orderResult[0],
-    });
+    // console.log('查询结果:', {
+    //   appointment: appointmentResult[0],
+    //   petDetails: petDetailResult,
+    //   order: orderResult[0],
+    // });
 
     return {
       appointment: appointmentResult[0],
