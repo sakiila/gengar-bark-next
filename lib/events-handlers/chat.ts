@@ -1,15 +1,17 @@
-import { NextApiRequest, NextApiResponse } from "next";
+import { NextApiRequest, NextApiResponse } from 'next';
 import {
   getThreadReply,
   setStatus,
   setSuggestedPrompts,
   threadReply,
-} from "@/lib/slack/slack";
-import { generatePromptFromThread, getGPT4 } from "@/lib/ai/openai";
-import { existsCacheThanSet } from "@/lib/upstash/upstash";
-import { execute_moego } from "@/lib/moego/moego";
-import { execute_build } from "@/lib/jenkins/build";
+} from '@/lib/slack/slack';
+import { generatePromptFromThread, getGPT4 } from '@/lib/ai/openai';
+import { existsCacheThanSet } from '@/lib/upstash/upstash';
+import { execute_moego } from '@/lib/moego/moego';
+import { execute_build } from '@/lib/jenkins/build';
 import { logger } from '@/lib/utils/logger';
+import { extractId, IdType } from '@/lib/utils/id-utils';
+import { sendAppointmentToSlack } from '@/lib/database/services/appointment-slack';
 
 /**
  * Send GPT response to the channel
@@ -25,25 +27,25 @@ export async function send_gpt_response_in_channel(
   const ts = req.body.event.thread_ts ?? req.body.event.ts; // message timestamp
   const text: string = req.body.event.text;
 
-  const notResponse = text.includes("pearl.baobo.me");
-  if (notResponse) {
-    logger.info("Not response to pearl.baobo.me:");
-    return res.status(200).send("");
+  const id = extractId(text);
+  if (id.type === IdType.APPOINTMENT) {
+    await sendAppointmentToSlack(parseInt(id.value), channel, ts);
+    return res.status(200).send('');
   }
 
   const hasSentText = await existsCacheThanSet(text);
   if (hasSentText) {
-    logger.info("Already sent same text in 2 minutes:", { text });
-    return res.status(200).send("Already sent same text in 2 minutes.");
+    logger.info('Already sent same text in 2 minutes:', { text });
+    return res.status(200).send('Already sent same text in 2 minutes.');
   }
 
-  if (text.trim().startsWith("<@U0666R94C83> build")) {
-    await execute_build(req, res);
-    return;
-  }
+  // if (text.trim().startsWith('<@U0666R94C83> build')) {
+  //   await execute_build(req, res);
+  //   return;
+  // }
 
   const regex = /预约|appointment|appt/i;
-  if (text.trim().toLowerCase().startsWith("<@u0666r94c83> create") && regex.test(text)) {
+  if (text.trim().toLowerCase().startsWith('<@u0666r94c83> create') && regex.test(text)) {
     await execute_moego(req, res);
     return;
   }
@@ -61,7 +63,7 @@ export async function send_gpt_response_in_channel(
       `${gptResponse.choices[0].message.content}`,
     );
   } catch (error) {
-    logger.error("send_gpt_response_in_channel", error instanceof Error ? error : new Error('Unknown error'));
+    logger.error('send_gpt_response_in_channel', error instanceof Error ? error : new Error('Unknown error'));
   }
 }
 
@@ -81,9 +83,9 @@ export async function set_suggested_prompts(
     //   response_type: 'in_channel',
     //   text: `${gptResponse.choices[0].message.content}`,
     // });
-    return res.status(200).send("");
+    return res.status(200).send('');
   } catch (error) {
-    logger.error("send_gpt_response_in_channel", error instanceof Error ? error : new Error('Unknown error'));
+    logger.error('send_gpt_response_in_channel', error instanceof Error ? error : new Error('Unknown error'));
   }
 }
 
@@ -100,9 +102,9 @@ export async function set_status(req: NextApiRequest, res: NextApiResponse) {
     //   response_type: 'in_channel',
     //   text: `${gptResponse.choices[0].message.content}`,
     // });
-    return res.status(200).send("");
+    return res.status(200).send('');
   } catch (error) {
-    logger.error("send_gpt_response_in_channel", error instanceof Error ? error : new Error('Unknown error'));
+    logger.error('send_gpt_response_in_channel', error instanceof Error ? error : new Error('Unknown error'));
   }
 }
 
@@ -112,7 +114,7 @@ export async function response_container(
 ) {
   const channelId = req.body.event.channel;
   const threadTs = req.body.event.thread_ts ?? req.body.event.ts;
-  const text: string  = req.body.event.text;
+  const text: string = req.body.event.text;
 
   // console.log("channelId:", channelId);
   // console.log("threadTs:", threadTs);
@@ -121,11 +123,11 @@ export async function response_container(
   try {
     await setStatus(res, channelId, threadTs);
   } catch (error) {
-    logger.error("send_gpt_response_in_channel", error instanceof Error ? error : new Error('Unknown error'));
+    logger.error('send_gpt_response_in_channel', error instanceof Error ? error : new Error('Unknown error'));
   }
 
   const regex = /预约|appointment|appt/i;
-  if (text.trim().toLowerCase().startsWith("create") && regex.test(text)) {
+  if (text.trim().toLowerCase().startsWith('create') && regex.test(text)) {
     await execute_moego(req, res);
     return;
   }
@@ -145,6 +147,6 @@ export async function response_container(
       `${gptResponse.choices[0].message.content}`,
     );
   } catch (error) {
-    logger.error("send_gpt_response_in_channel", error instanceof Error ? error : new Error('Unknown error'));
+    logger.error('send_gpt_response_in_channel', error instanceof Error ? error : new Error('Unknown error'));
   }
 }

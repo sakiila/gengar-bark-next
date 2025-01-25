@@ -34,19 +34,27 @@ async function sendMessage(params: any) {
 /**
  * Send a simple text message
  * @param channel - Channel or user ID
+ * @param thread_ts - Thread timestamp to reply in thread. If not provided, sends as a new message
  * @param text - Message text
  */
-export async function postMessage(channel: string, text: string) {
-  return sendMessage({ channel, text });
+export async function postMessage(channel: string, thread_ts: string, text: string) {
+  if (!thread_ts || thread_ts.length === 0) {
+    return sendMessage({ channel, text });
+  }
+  return sendMessage({ channel, thread_ts, text });
 }
 
 /**
  * Send a message with blocks
  * @param channel - Channel or user ID
+ * @param thread_ts - Thread timestamp to reply in thread. If not provided, sends as a new message
  * @param blocks - Message blocks
  */
-export async function postBlockMessage(channel: string, blocks: any[]) {
-  return sendMessage({ channel, blocks });
+export async function postBlockMessage(channel: string, thread_ts: string, blocks: any[]) {
+  if (!thread_ts || thread_ts.length === 0) {
+    return sendMessage({ channel, blocks });
+  }
+  return sendMessage({ channel, thread_ts, blocks });
 }
 
 /**
@@ -253,7 +261,7 @@ const MESSAGES_PER_REQUEST = 1000;
 async function importConversationsHistory(
   channel: Channel,
   initialCursor?: string,
-  maxRetries: number = 3
+  maxRetries: number = 3,
 ): Promise<any[]> {
   const accumulator: any[] = [];
   let cursor = initialCursor;
@@ -285,20 +293,20 @@ async function importConversationsHistory(
     }
 
     const validMessages = (response.messages || [])
-      .filter(isValidMessage)
-      .map(msg => ({
-        text: msg.text!,
-        user_id: channel.user_id,
-        created_at: convertToDate(msg.ts!),
-        ...BuildRecordService.extractInfo(msg.text!) || {
-          result: '',
-          duration: '',
-          repository: '',
-          branch: '',
-          sequence: '',
-        },
-        email: channel.email,
-      }));
+    .filter(isValidMessage)
+    .map(msg => ({
+      text: msg.text!,
+      user_id: channel.user_id,
+      created_at: convertToDate(msg.ts!),
+      ...BuildRecordService.extractInfo(msg.text!) || {
+        result: '',
+        duration: '',
+        repository: '',
+        branch: '',
+        sequence: '',
+      },
+      email: channel.email,
+    }));
 
     accumulator.push(...validMessages);
 
@@ -333,7 +341,7 @@ async function processChannelBatch(channels: Channel[]): Promise<void> {
       } catch (error) {
         console.error(`Error processing channel ${channel.channel_id}:`, error);
       }
-    })
+    }),
   );
 
   await Promise.all(channelPromises);
@@ -387,7 +395,7 @@ export async function dataImport(timeoutMinutes: number = 30) {
         const totalDuration = (Date.now() - startTime) / 1000;
         console.log(`Import completed in ${totalDuration}s. Processed ${processedChannels} channels and ${totalMessages} messages`);
       })(),
-      timeout
+      timeout,
     ]);
   } catch (err: unknown) {
     logMemoryUsage();

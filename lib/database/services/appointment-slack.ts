@@ -434,8 +434,9 @@ function formatAppointmentBlocks(appointmentData: any): any[] {
  * Send appointment information to Slack channel
  * @param appointmentId - Appointment ID
  * @param channelId - Slack channel ID
+ * @param thread_ts - Thread timestamp to reply in thread
  */
-export async function sendAppointmentToSlack(appointmentId: number, channelId: string) {
+export async function sendAppointmentToSlack(appointmentId: number, channelId: string, thread_ts?: string) {
   try {
     // Query appointment data
     const appointmentData = await queryByAppointmentId(appointmentId);
@@ -444,7 +445,7 @@ export async function sendAppointmentToSlack(appointmentId: number, channelId: s
     const blocks = formatAppointmentBlocks(appointmentData);
 
     // Send to Slack
-    await postBlockMessage(channelId, blocks);
+    await postBlockMessage(channelId, thread_ts || '', blocks);
 
     return true;
   } catch (error) {

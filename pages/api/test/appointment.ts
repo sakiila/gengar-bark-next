@@ -1,5 +1,4 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { queryByAppointmentId } from '@/lib/database/services/one-page';
 import { sendAppointmentToSlack } from '@/lib/database/services/appointment-slack';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -9,7 +8,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // const result = await queryByAppointmentId(appointmentId);
 
-        await sendAppointmentToSlack(appointmentId, 'C067ENL1TLN');
+        await sendAppointmentToSlack(appointmentId, '', 'C067ENL1TLN');
 
         res.status(200).json({
             success: true,
