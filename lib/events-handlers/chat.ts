@@ -25,7 +25,10 @@ export async function send_gpt_response_in_channel(
 ) {
   const channel = req.body.event.channel; // channel the message was sent in
   const ts = req.body.event.thread_ts ?? req.body.event.ts; // message timestamp
-  const text: string = req.body.event.text;
+  let text: string = req.body.event.text;
+
+  // 只移除消息最前面的 Slack 用户 ID（例如 <@U0666R94C83>）
+  text = text.replace(/^<@[A-Z0-9]+>\s*/, '');
 
   const id = extractId(text);
   if (id.type === IdType.APPOINTMENT) {
@@ -33,19 +36,21 @@ export async function send_gpt_response_in_channel(
     return res.status(200).send('');
   }
 
+  // check if the text has been sent in the last 2 minutes
   const hasSentText = await existsCacheThanSet(text);
   if (hasSentText) {
     logger.info('Already sent same text in 2 minutes:', { text });
     return res.status(200).send('Already sent same text in 2 minutes.');
   }
 
-  // if (text.trim().startsWith('<@U0666R94C83> build')) {
+  // if (text.trim().startsWith('build')) {
   //   await execute_build(req, res);
   //   return;
   // }
 
+  // create appointment
   const regex = /预约|appointment|appt/i;
-  if (text.trim().toLowerCase().startsWith('<@u0666r94c83> create') && regex.test(text)) {
+  if (text.trim().toLowerCase().startsWith('create') && regex.test(text)) {
     await execute_moego(req, res);
     return;
   }
