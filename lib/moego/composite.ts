@@ -1,6 +1,6 @@
 import { BusinessAccountResponse, Customer, Service } from "@/lib/moego/types";
 import { timeUtils } from "@/lib/utils/time-utils";
-import AppointmentService from "./AppointmentService";
+import AppointmentService from "@/lib/moego/appointment.service";
 
 export default async function compositeCreateAppointment(
   slackName: string,
