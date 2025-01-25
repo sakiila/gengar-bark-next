@@ -8,6 +8,11 @@ on:
       - '.gitignore'
       - 'LICENSE'
 
+# 添加 concurrency 配置
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   IMAGE_NAME: docker-registry.baobo.me/gengar-bark
   NODE_VERSION: '18'
