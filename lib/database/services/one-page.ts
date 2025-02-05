@@ -248,3 +248,68 @@ export async function queryByAppointmentId(appointmentId: number): Promise<Appoi
     throw error;
   }
 }
+
+// 查询 Appointment、PetDetail 和 Order
+export async function queryByOrderId(orderId: number): Promise<AppointmentWithDetails> {
+  try {
+    const appointmentDB = await initAppointmentConnection();
+    const orderDB = await initOrderConnection();
+
+    // 查询订单信息
+    const orderResult = await orderDB.query<Order[]>(
+      `select *
+       from "order"
+       where id = $1`,
+      [orderId],
+    );
+
+    if (orderResult.length === 0) {
+      throw new Error('未找到该订单');
+    }
+
+    if (orderResult[0].source_type !== 'appointment') {
+      return {
+        appointment: {} as Appointment,
+        petDetails: [],
+        order: orderResult[0],
+      };
+    }
+
+    const appointmentId = orderResult[0].source_id;
+
+    // 并行执行所有查询
+    const [appointmentResult, petDetailResult] = await Promise.all([
+      // 查询预约信息
+      appointmentDB.query<Appointment[]>(
+        `select *
+         from moe_grooming.moe_grooming_appointment
+         where id = $1`,
+        [appointmentId],
+      ),
+
+      // 查询宠物详情
+      appointmentDB.query<PetDetail[]>(
+        `select *
+         from moe_grooming.moe_grooming_pet_detail
+         where status = 1
+           and grooming_id = $1`,
+        [appointmentId],
+      ),
+    ]);
+
+    // console.log('查询结果:', {
+    //   appointment: appointmentResult[0],
+    //   petDetails: petDetailResult,
+    //   order: orderResult[0],
+    // });
+
+    return {
+      appointment: appointmentResult[0],
+      petDetails: petDetailResult,
+      order: orderResult[0],
+    };
+  } catch (error) {
+    console.error('查询失败:', error);
+    throw error;
+  }
+}

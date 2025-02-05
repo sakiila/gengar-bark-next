@@ -1,4 +1,4 @@
-import { queryByAppointmentId } from './one-page';
+import { queryByAppointmentId, queryByOrderId } from './one-page';
 import { postBlockMessage } from '@/lib/slack/gengar-bolt';
 
 /**
@@ -203,15 +203,161 @@ function getDateType(type: number): string {
   return typeMap[type] || 'unknown';
 }
 
-/**
- * Format appointment data to Slack Block Kit format
- */
-function formatAppointmentBlocks(appointmentData: any, userId: string): any[] {
-  const { appointment, petDetails, order } = appointmentData;
+function addAdditionalInfo(blocks: any[], userId: string) {
+  blocks.push(
+    { type: 'divider' },
+    {
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: `Query by <@${userId}> on ${formatTimestamp(new Date().getTime())}(UTC)`,
+        emoji: false,
+      },
+    });
+}
 
-  const blocks = [];
+function addOrderInfo(blocks: any[], order: any) {
+  blocks.push({
+    type: 'header',
+    text: {
+      type: 'plain_text',
+      text: `Order #${order.id}`,
+      emoji: false,
+    },
+  });
 
-  // Header
+  blocks.push({
+    type: 'section',
+    text: {
+      type: 'mrkdwn',
+      text: '*Order Information*',
+    },
+  });
+
+  const orderFields = [
+    `*id:* ${order.id}`,
+    `*business_id:* ${order.business_id}`,
+    `*status:* ${order.status}`,
+    `*payment_status:* ${order.payment_status}`,
+    `*fulfillment_status:* ${order.fulfillment_status}`,
+    `*guid:* ${order.guid}`,
+    `*source_type:* ${order.source_type}`,
+    `*source_id:* ${order.source_id}`,
+    `*line_item_types:* ${order.line_item_types}`,
+    `*version:* ${order.version}`,
+    `*customer_id:* ${order.customer_id}`,
+    `*tips_amount:* $${order.tips_amount}`,
+    `*tax_amount:* $${order.tax_amount}`,
+    `*discount_amount:* $${order.discount_amount}`,
+    `*extra_fee_amount:* $${order.extra_fee_amount}`,
+    `*sub_total_amount:* $${order.sub_total_amount}`,
+    `*tips_based_amount:* $${order.tips_based_amount}`,
+    `*total_amount:* $${order.total_amount}`,
+    `*paid_amount:* $${order.paid_amount}`,
+    `*remain_amount:* $${order.remain_amount}`,
+    `*refunded_amount:* $${order.refunded_amount}`,
+    `*title:* ${order.title}`,
+    `*description:* ${order.description}`,
+    `*create_by:* ${order.create_by}`,
+    `*update_by:* ${order.update_by}`,
+    `*create_time:* ${formatTimestamp(order.create_time)}`,
+    `*update_time:* ${formatTimestamp(order.update_time)}`,
+    `*complete_time:* ${formatTimestamp(order.complete_time)}`,
+    `*order_type:* ${order.order_type}`,
+    `*order_ref_id:* ${order.order_ref_id}`,
+    `*extra_charge_reason:* ${order.extra_charge_reason}`,
+    `*order_version:* ${order.order_version}`,
+    `*tax_round_mod:* ${order.tax_round_mod}`,
+    `*company_id:* ${order.company_id}`,
+    `*currency_code:* ${order.currency_code}`,
+  ];
+
+  // Split fields into chunks of 10
+  for (let i = 0; i < orderFields.length; i += 10) {
+    blocks.push({
+      type: 'section',
+      fields: orderFields.slice(i, i + 10).map(field => ({
+        type: 'mrkdwn',
+        text: field,
+      })),
+    });
+  }
+}
+
+function addPetDetailInfo(blocks: any[], petDetails: any[]) {
+
+  blocks.push({
+    type: 'header',
+    text: {
+      type: 'plain_text',
+      text: '*Pet Service Details*',
+      emoji: false,
+    },
+  });
+
+  petDetails.forEach((detail: any, index: number) => {
+    const petFields = [
+      `*id:* ${detail.id}`,
+      `*grooming_id:* ${detail.grooming_id}`,
+      `*pet_id:* ${detail.pet_id}`,
+      `*staff_id:* ${detail.staff_id}`,
+      `*service_id:* ${detail.service_id}`,
+      `*service_type:* ${detail.service_type} (${getServiceType(detail.service_type)})`,
+      `*service_time:* ${detail.service_time}`,
+      `*service_price:* $${detail.service_price}`,
+      `*start_time:* ${formatTimestamp(detail.start_time)}`,
+      `*end_time:* ${formatTimestamp(detail.end_time)}`,
+      `*status:* ${detail.status} (${getPetDetailStatus(detail.status)})`,
+      `*update_time:* ${formatTimestamp(detail.update_time)}`,
+      `*scope_type_price:* ${detail.scope_type_price} (${getScopeType(detail.scope_type_price)})`,
+      `*scope_type_time:* ${detail.scope_type_time} (${getScopeType(detail.scope_type_time)})`,
+      `*star_staff_id:* ${detail.star_staff_id}`,
+      `*package_service_id:* ${detail.package_service_id}`,
+      `*service_name:* ${detail.service_name}`,
+      `*service_description:* ${detail.service_description || 'N/A'}`,
+      `*tax_id:* ${detail.tax_id}`,
+      `*tax_rate:* ${detail.tax_rate}%`,
+      `*enable_operation:* ${detail.enable_operation} (${detail.enable_operation === 1 ? 'Yes' : 'No'})`,
+      `*work_mode:* ${detail.work_mode} (${detail.work_mode === 0 ? 'parallel' : 'sequence'})`,
+      `*service_color_code:* ${detail.service_color_code}`,
+      `*start_date:* ${detail.start_date}`,
+      `*end_date:* ${detail.end_date}`,
+      `*service_item_type:* ${detail.service_item_type} (${getServiceItemType(detail.service_item_type)})`,
+      `*lodging_id:* ${detail.lodging_id}`,
+      `*price_unit:* ${detail.price_unit} (${getPriceUnit(detail.price_unit)})`,
+      `*specific_dates:* ${detail.specific_dates}`,
+      `*associated_service_id:* ${detail.associated_service_id}`,
+      `*price_override_type:* ${detail.price_override_type} (${getOverrideType(detail.price_override_type)})`,
+      `*duration_override_type:* ${detail.duration_override_type} (${getOverrideType(detail.duration_override_type)})`,
+      `*created_at:* ${formatTimestamp(detail.created_at)}`,
+      `*updated_at:* ${formatTimestamp(detail.updated_at)}`,
+      `*quantity_per_day:* ${detail.quantity_per_day}`,
+      `*date_type:* ${detail.date_type} (${getDateType(detail.date_type)})`,
+    ];
+
+    blocks.push({
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: `*Pet Service #${index + 1}*`,
+      },
+    });
+
+    // Split fields into chunks of 10
+    for (let i = 0; i < petFields.length; i += 10) {
+      blocks.push({
+        type: 'section',
+        fields: petFields.slice(i, i + 10).map(field => ({
+          type: 'mrkdwn',
+          text: field,
+        })),
+      });
+    }
+  });
+
+}
+
+function addAppointmentInfo(blocks: any[], appointment: any) {
   blocks.push({
     type: 'header',
     text: {
@@ -294,153 +440,35 @@ function formatAppointmentBlocks(appointmentData: any, userId: string): any[] {
       })),
     });
   }
+}
 
-  // Divider
-  blocks.push({ type: 'divider' });
+/**
+ * Format appointment data to Slack Block Kit format
+ */
+function formatAppointmentBlocks(appointmentData: any, userId: string): any[] {
+  const { appointment, petDetails, order } = appointmentData;
+
+  const blocks: any[] = [];
+
+  // Appointment Information
+  if (appointment) {
+    addAppointmentInfo(blocks, appointment);
+    blocks.push({ type: 'divider' });
+  }
 
   // Pet Service Details
   if (petDetails && petDetails.length > 0) {
-    blocks.push({
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: '*Pet Service Details*',
-      },
-    });
-
-    petDetails.forEach((detail: any, index: number) => {
-      const petFields = [
-        `*id:* ${detail.id}`,
-        `*grooming_id:* ${detail.grooming_id}`,
-        `*pet_id:* ${detail.pet_id}`,
-        `*staff_id:* ${detail.staff_id}`,
-        `*service_id:* ${detail.service_id}`,
-        `*service_type:* ${detail.service_type} (${getServiceType(detail.service_type)})`,
-        `*service_time:* ${detail.service_time}`,
-        `*service_price:* $${detail.service_price}`,
-        `*start_time:* ${formatTimestamp(detail.start_time)}`,
-        `*end_time:* ${formatTimestamp(detail.end_time)}`,
-        `*status:* ${detail.status} (${getPetDetailStatus(detail.status)})`,
-        `*update_time:* ${formatTimestamp(detail.update_time)}`,
-        `*scope_type_price:* ${detail.scope_type_price} (${getScopeType(detail.scope_type_price)})`,
-        `*scope_type_time:* ${detail.scope_type_time} (${getScopeType(detail.scope_type_time)})`,
-        `*star_staff_id:* ${detail.star_staff_id}`,
-        `*package_service_id:* ${detail.package_service_id}`,
-        `*service_name:* ${detail.service_name}`,
-        `*service_description:* ${detail.service_description || 'N/A'}`,
-        `*tax_id:* ${detail.tax_id}`,
-        `*tax_rate:* ${detail.tax_rate}%`,
-        `*enable_operation:* ${detail.enable_operation} (${detail.enable_operation === 1 ? 'Yes' : 'No'})`,
-        `*work_mode:* ${detail.work_mode} (${detail.work_mode === 0 ? 'parallel' : 'sequence'})`,
-        `*service_color_code:* ${detail.service_color_code}`,
-        `*start_date:* ${detail.start_date}`,
-        `*end_date:* ${detail.end_date}`,
-        `*service_item_type:* ${detail.service_item_type} (${getServiceItemType(detail.service_item_type)})`,
-        `*lodging_id:* ${detail.lodging_id}`,
-        `*price_unit:* ${detail.price_unit} (${getPriceUnit(detail.price_unit)})`,
-        `*specific_dates:* ${detail.specific_dates}`,
-        `*associated_service_id:* ${detail.associated_service_id}`,
-        `*price_override_type:* ${detail.price_override_type} (${getOverrideType(detail.price_override_type)})`,
-        `*duration_override_type:* ${detail.duration_override_type} (${getOverrideType(detail.duration_override_type)})`,
-        `*created_at:* ${formatTimestamp(detail.created_at)}`,
-        `*updated_at:* ${formatTimestamp(detail.updated_at)}`,
-        `*quantity_per_day:* ${detail.quantity_per_day}`,
-        `*date_type:* ${detail.date_type} (${getDateType(detail.date_type)})`,
-      ];
-
-      blocks.push({
-        type: 'section',
-        text: {
-          type: 'mrkdwn',
-          text: `*Pet Service #${index + 1}*`,
-        },
-      });
-
-      // Split fields into chunks of 10
-      for (let i = 0; i < petFields.length; i += 10) {
-        blocks.push({
-          type: 'section',
-          fields: petFields.slice(i, i + 10).map(field => ({
-            type: 'mrkdwn',
-            text: field,
-          })),
-        });
-      }
-    });
-
+    addPetDetailInfo(blocks, petDetails);
     blocks.push({ type: 'divider' });
   }
 
   // Order Information
   if (order) {
-    blocks.push({
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: '*Order Information*',
-      },
-    });
-
-    const orderFields = [
-      `*id:* ${order.id}`,
-      `*business_id:* ${order.business_id}`,
-      `*status:* ${order.status}`,
-      `*payment_status:* ${order.payment_status}`,
-      `*fulfillment_status:* ${order.fulfillment_status}`,
-      `*guid:* ${order.guid}`,
-      `*source_type:* ${order.source_type}`,
-      `*source_id:* ${order.source_id}`,
-      `*line_item_types:* ${order.line_item_types}`,
-      `*version:* ${order.version}`,
-      `*customer_id:* ${order.customer_id}`,
-      `*tips_amount:* $${order.tips_amount}`,
-      `*tax_amount:* $${order.tax_amount}`,
-      `*discount_amount:* $${order.discount_amount}`,
-      `*extra_fee_amount:* $${order.extra_fee_amount}`,
-      `*sub_total_amount:* $${order.sub_total_amount}`,
-      `*tips_based_amount:* $${order.tips_based_amount}`,
-      `*total_amount:* $${order.total_amount}`,
-      `*paid_amount:* $${order.paid_amount}`,
-      `*remain_amount:* $${order.remain_amount}`,
-      `*refunded_amount:* $${order.refunded_amount}`,
-      `*title:* ${order.title}`,
-      `*description:* ${order.description}`,
-      `*create_by:* ${order.create_by}`,
-      `*update_by:* ${order.update_by}`,
-      `*create_time:* ${formatTimestamp(order.create_time)}`,
-      `*update_time:* ${formatTimestamp(order.update_time)}`,
-      `*complete_time:* ${formatTimestamp(order.complete_time)}`,
-      `*order_type:* ${order.order_type}`,
-      `*order_ref_id:* ${order.order_ref_id}`,
-      `*extra_charge_reason:* ${order.extra_charge_reason}`,
-      `*order_version:* ${order.order_version}`,
-      `*tax_round_mod:* ${order.tax_round_mod}`,
-      `*company_id:* ${order.company_id}`,
-      `*currency_code:* ${order.currency_code}`,
-    ];
-
-    // Split fields into chunks of 10
-    for (let i = 0; i < orderFields.length; i += 10) {
-      blocks.push({
-        type: 'section',
-        fields: orderFields.slice(i, i + 10).map(field => ({
-          type: 'mrkdwn',
-          text: field,
-        })),
-      });
-    }
+    addOrderInfo(blocks, order);
+    blocks.push({ type: 'divider' });
   }
 
-  blocks.push(
-    { type: 'divider' },
-    {
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: `Query by <@${userId}> on ${formatTimestamp(new Date().getTime())}(UTC)`,
-        emoji: false,
-      },
-    });
+  addAdditionalInfo(blocks, userId);
 
   return blocks;
 }
@@ -456,6 +484,31 @@ export async function sendAppointmentToSlack(appointmentId: number, userId: stri
   try {
     // Query appointment data
     const appointmentData = await queryByAppointmentId(appointmentId);
+
+    // Format blocks
+    const blocks = formatAppointmentBlocks(appointmentData, userId);
+
+    // Send to Slack
+    await postBlockMessage(channelId, thread_ts || '', blocks);
+
+    return true;
+  } catch (error) {
+    console.error('Failed to send appointment to Slack:', error);
+    throw error;
+  }
+}
+
+/**
+ * Send appointment information to Slack channel
+ * @param orderId - Order ID
+ * @param userId - User ID
+ * @param channelId - Slack channel ID
+ * @param thread_ts - Thread timestamp to reply in thread
+ */
+export async function sendOrderToSlack(orderId: number, userId: string, channelId: string, thread_ts?: string) {
+  try {
+    // Query appointment data
+    const appointmentData = await queryByOrderId(orderId);
 
     // Format blocks
     const blocks = formatAppointmentBlocks(appointmentData, userId);

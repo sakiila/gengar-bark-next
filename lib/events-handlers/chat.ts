@@ -42,6 +42,9 @@ export async function send_gpt_response_in_channel(
   if (id.type === IdType.APPOINTMENT) {
     await sendAppointmentToSlack(parseInt(id.value), userId,channel, ts);
     return res.status(200).send('');
+  } else if (id.type === IdType.ORDER) {
+    await sendOrderToSlack(parseInt(id.value), userId, channel, ts);
+    return res.status(200).send('');
   }
 
   // if (text.trim().startsWith('build')) {
