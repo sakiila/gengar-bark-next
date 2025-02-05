@@ -11,7 +11,7 @@ import { execute_moego } from '@/lib/moego/moego';
 import { execute_build } from '@/lib/jenkins/build';
 import { logger } from '@/lib/utils/logger';
 import { extractId, IdType } from '@/lib/utils/id-utils';
-import { sendAppointmentToSlack } from '@/lib/database/services/appointment-slack';
+import { sendAppointmentToSlack, sendOrderToSlack } from '@/lib/database/services/appointment-slack';
 
 /**
  * Send GPT response to the channel
@@ -40,7 +40,7 @@ export async function send_gpt_response_in_channel(
 
   const id = extractId(text);
   if (id.type === IdType.APPOINTMENT) {
-    await sendAppointmentToSlack(parseInt(id.value), userId,channel, ts);
+    await sendAppointmentToSlack(parseInt(id.value), userId, channel, ts);
     return res.status(200).send('');
   } else if (id.type === IdType.ORDER) {
     await sendOrderToSlack(parseInt(id.value), userId, channel, ts);

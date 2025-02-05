@@ -216,7 +216,8 @@ function addAdditionalInfo(blocks: any[], userId: string) {
     });
 }
 
-function addOrderInfo(blocks: any[], order: any) {
+function addOrderInfo(order: any): any[] {
+  const blocks: any[] = [];
   blocks.push({
     type: 'header',
     text: {
@@ -282,10 +283,12 @@ function addOrderInfo(blocks: any[], order: any) {
       })),
     });
   }
+  
+  return blocks;
 }
 
-function addPetDetailInfo(blocks: any[], petDetails: any[]) {
-
+function addPetDetailInfo(petDetails: any[]): any[] {
+  const blocks: any[] = [];
   blocks.push({
     type: 'header',
     text: {
@@ -355,9 +358,11 @@ function addPetDetailInfo(blocks: any[], petDetails: any[]) {
     }
   });
 
+  return blocks;
 }
 
-function addAppointmentInfo(blocks: any[], appointment: any) {
+function addAppointmentInfo(appointment: any): any[] {
+  const blocks: any[] = [];
   blocks.push({
     type: 'header',
     text: {
@@ -440,6 +445,8 @@ function addAppointmentInfo(blocks: any[], appointment: any) {
       })),
     });
   }
+
+  return blocks;
 }
 
 /**
@@ -447,24 +454,23 @@ function addAppointmentInfo(blocks: any[], appointment: any) {
  */
 function formatAppointmentBlocks(appointmentData: any, userId: string): any[] {
   const { appointment, petDetails, order } = appointmentData;
-
   const blocks: any[] = [];
 
   // Appointment Information
   if (appointment) {
-    addAppointmentInfo(blocks, appointment);
+    blocks.push(...addAppointmentInfo(appointment));
     blocks.push({ type: 'divider' });
   }
 
   // Pet Service Details
   if (petDetails && petDetails.length > 0) {
-    addPetDetailInfo(blocks, petDetails);
+    blocks.push(...addPetDetailInfo(petDetails));
     blocks.push({ type: 'divider' });
   }
 
   // Order Information
   if (order) {
-    addOrderInfo(blocks, order);
+    blocks.push(...addOrderInfo(order));
     blocks.push({ type: 'divider' });
   }
 
