@@ -210,8 +210,7 @@ function addAdditionalInfo(blocks: any[], userId: string) {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: `Query by <@${userId}> on ${formatTimestamp(new Date().getTime())}(UTC)`,
-        emoji: false,
+        text: `Query by <@${userId}> on ${formatTimestamp(new Date().getTime())}(UTC)`
       },
     });
 }
@@ -222,8 +221,7 @@ function addOrderInfo(order: any): any[] {
     type: 'header',
     text: {
       type: 'plain_text',
-      text: `Order #${order.id}`,
-      emoji: false,
+      text: `Order #${order.id}`
     },
   });
 
@@ -293,8 +291,7 @@ function addPetDetailInfo(petDetails: any[]): any[] {
     type: 'header',
     text: {
       type: 'plain_text',
-      text: '*Pet Service Details*',
-      emoji: false,
+      text: 'Pet Service Details'
     },
   });
 
@@ -367,8 +364,7 @@ function addAppointmentInfo(appointment: any): any[] {
     type: 'header',
     text: {
       type: 'plain_text',
-      text: `Appointment #${appointment.id}`,
-      emoji: false,
+      text: `Appointment #${appointment.id}`
     },
   });
 
