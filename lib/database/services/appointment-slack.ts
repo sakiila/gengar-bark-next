@@ -22,6 +22,10 @@ function formatTimestamp(timestamp: number | string | Date | undefined | null): 
   try {
     let date: Date;
 
+    if (typeof timestamp === 'string') {
+      timestamp = parseInt(timestamp);
+    }
+
     if (typeof timestamp === 'number') {
       // Check if timestamp is minutes in a day (0-1439)
       if (timestamp < 1440) {
