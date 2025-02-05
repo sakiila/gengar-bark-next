@@ -1,5 +1,6 @@
 import { queryByAppointmentId, queryByOrderId } from './one-page';
 import { postBlockMessage } from '@/lib/slack/gengar-bolt';
+import { formatDateToCustomString } from '@/lib/utils/time-utils';
 
 /**
  * Format minutes to time string (HH:mm)
@@ -27,7 +28,7 @@ function formatTimestamp(timestamp: number | string | Date | undefined | null): 
       if (timestamp.includes('T') && timestamp.includes('Z')) {
         date = new Date(timestamp);
         if (!isNaN(date.getTime())) {
-          return date.toISOString();
+          return formatDateToCustomString(date);
         }
       }
       timestamp = parseInt(timestamp);
@@ -56,12 +57,13 @@ function formatTimestamp(timestamp: number | string | Date | undefined | null): 
       return 'Invalid Date';
     }
 
-    return date.toISOString();
+    return formatDateToCustomString(date);
   } catch (error) {
     console.error('Error formatting timestamp:', timestamp, error);
     return 'Invalid Date';
   }
 }
+
 
 function getServiceTypes(serviceTypeInclude: number) {
   const services = [];
@@ -216,7 +218,7 @@ function addAdditionalInfo(blocks: any[], userId: string) {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: `Query by <@${userId}> on ${formatTimestamp(new Date().getTime())}(UTC)`
+        text: `Query by <@${userId}> on ${formatTimestamp(new Date())}(UTC)`,
       },
     });
 }
@@ -227,7 +229,7 @@ function addOrderInfo(order: any): any[] {
     type: 'header',
     text: {
       type: 'plain_text',
-      text: `Order #${order.id}`
+      text: `Order #${order.id}`,
     },
   });
 
@@ -297,7 +299,7 @@ function addPetDetailInfo(petDetails: any[]): any[] {
     type: 'header',
     text: {
       type: 'plain_text',
-      text: 'Pet Service Details'
+      text: 'Pet Service Details',
     },
   });
 
@@ -370,7 +372,7 @@ function addAppointmentInfo(appointment: any): any[] {
     type: 'header',
     text: {
       type: 'plain_text',
-      text: `Appointment #${appointment.id}`
+      text: `Appointment #${appointment.id}`,
     },
   });
 

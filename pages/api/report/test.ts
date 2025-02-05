@@ -78,7 +78,7 @@ async function sendMessage() {
         continue;
       }
       console.log('user_id:', user_id);
-      await postBlockMessage(user_id, null, getBlocks(username));
+      await postBlockMessage(user_id, '', getBlocks(username));
     }
   }
 }
