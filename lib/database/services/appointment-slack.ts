@@ -205,7 +205,6 @@ function getDateType(type: number): string {
 
 function addAdditionalInfo(blocks: any[], userId: string) {
   blocks.push(
-    { type: 'divider' },
     {
       type: 'section',
       text: {
@@ -281,7 +280,7 @@ function addOrderInfo(order: any): any[] {
       })),
     });
   }
-  
+
   return blocks;
 }
 
