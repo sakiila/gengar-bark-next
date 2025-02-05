@@ -1,6 +1,8 @@
 import { queryByAppointmentId, queryByOrderId } from './one-page';
 import { postBlockMessage } from '@/lib/slack/gengar-bolt';
 import { formatDateToCustomString } from '@/lib/utils/time-utils';
+import { getGPT4mini } from '@/lib/ai/openai';
+import { ChatCompletionMessageParam } from 'openai/resources';
 
 /**
  * Format minutes to time string (HH:mm)
@@ -483,6 +485,41 @@ function formatAppointmentBlocks(appointmentData: any, userId: string): any[] {
   return blocks;
 }
 
+async function getAiMessage(appointmentData: any) {
+  const messages: ChatCompletionMessageParam[] = [
+    {
+      role: 'system',
+      content: '你是一个专业的宠物预约数据分析助手。请分析以下预约和订单数据，找出任何潜在的问题或异常情况。关注以下几点：1.时间安排是否合理 2.服务类型是否匹配 3.状态流转是否正常 4.支付状态是否正常。如果没有问题，请返回“暂无问题”。不超过200字。',
+    },
+    {
+      role: 'user',
+      content: JSON.stringify(appointmentData, null, 2),
+    },
+  ];
+
+  const gptResponse = await getGPT4mini(messages);
+  const analysis = gptResponse.choices[0].message.content;
+
+  // 添加 GPT 分析结果
+  return [{
+    type: 'divider',
+  },
+    {
+      type: 'header',
+      text: {
+        type: 'plain_text',
+        text: `*AI Analysis*`,
+      },
+    },
+    {
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: analysis,
+      },
+    }];
+}
+
 /**
  * Send appointment information to Slack channel
  * @param appointmentId - Appointment ID
@@ -500,6 +537,12 @@ export async function sendAppointmentToSlack(appointmentId: number, userId: stri
 
     // Send to Slack
     await postBlockMessage(channelId, thread_ts || '', blocks);
+
+    // 分析数据
+    const gptBlocks = await getAiMessage(appointmentData);
+
+    // Send to Slack
+    await postBlockMessage(channelId, thread_ts || '', gptBlocks);
 
     return true;
   } catch (error) {
