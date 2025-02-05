@@ -501,9 +501,7 @@ async function getAiMessage(appointmentData: any) {
   const analysis = gptResponse.choices[0].message.content;
 
   // 添加 GPT 分析结果
-  return [{
-    type: 'divider',
-  },
+  return [
     {
       type: 'header',
       text: {
@@ -515,17 +513,10 @@ async function getAiMessage(appointmentData: any) {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: analysis,
+        text: `${analysis}（AI-generated, for reference only）`,
       },
     },
-    {
-      type: 'section',
-      text: {
-        type: 'mrkdwn',
-        text: 'AI-generated, for reference only.',
-      },
-    },
-    ];
+  ];
 }
 
 /**

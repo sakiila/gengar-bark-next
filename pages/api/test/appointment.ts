@@ -8,7 +8,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // const result = await queryByAppointmentId(appointmentId);
 
-        await sendAppointmentToSlack(appointmentId, 'U03FPQWGTN2', 'C067ENL1TLN', '');
+        await sendAppointmentToSlack(appointmentId, 'U03FPQWGTN2', 'C067ENL1TLN', '1738765257.776969');
 
         res.status(200).json({
             success: true,
