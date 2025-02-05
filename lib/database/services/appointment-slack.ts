@@ -57,13 +57,13 @@ function formatTimestamp(timestamp: number | string | Date | undefined | null): 
 }
 
 function getServiceTypes(serviceTypeInclude: number) {
-    const services = [];
-    if (serviceTypeInclude & 1) services.push('grooming');
-    if (serviceTypeInclude & 2) services.push('boarding');
-    if (serviceTypeInclude & 4) services.push('daycare');
-    if (serviceTypeInclude & 8) services.push('evaluation');
-    if (serviceTypeInclude & 16) services.push('dog walking');
-    return services.join(', ');
+  const services = [];
+  if (serviceTypeInclude & 1) services.push('grooming');
+  if (serviceTypeInclude & 2) services.push('boarding');
+  if (serviceTypeInclude & 4) services.push('daycare');
+  if (serviceTypeInclude & 8) services.push('evaluation');
+  if (serviceTypeInclude & 16) services.push('dog walking');
+  return services.join(', ');
 }
 
 function getBookOnlineStatus(status: number): string {
@@ -72,7 +72,7 @@ function getBookOnlineStatus(status: number): string {
     1: 'unconfirmed',
     2: 'confirm',
     3: 'waitinglist',
-    4: 'cancle'
+    4: 'cancle',
   };
   return statusMap[status] || 'unknown';
 }
@@ -82,7 +82,7 @@ function getSource(source: number): string {
     22168: 'book-online',
     22018: 'web',
     17216: 'android',
-    17802: 'ios'
+    17802: 'ios',
   };
   return sourceMap[source] || 'unknown';
 }
@@ -91,7 +91,7 @@ function getCancelByType(type: number): string {
   const typeMap: { [key: number]: string } = {
     0: 'by business',
     1: 'by customer reply msg',
-    2: 'by delete pet'
+    2: 'by delete pet',
   };
   return typeMap[type] || 'unknown';
 }
@@ -99,7 +99,7 @@ function getCancelByType(type: number): string {
 function getConfirmByType(type: number): string {
   const typeMap: { [key: number]: string } = {
     0: 'by business',
-    1: 'by customer reply msg'
+    1: 'by customer reply msg',
   };
   return typeMap[type] || 'unknown';
 }
@@ -108,7 +108,7 @@ function getWaitListStatus(status: number): string {
   const statusMap: { [key: number]: string } = {
     0: 'has appt no waitlist',
     1: 'no appt has waitlist',
-    2: 'has appt has waitlist'
+    2: 'has appt has waitlist',
   };
   return statusMap[status] || 'unknown';
 }
@@ -117,7 +117,7 @@ function getPickupNotificationStatus(status: number): string {
   const statusMap: { [key: number]: string } = {
     0: 'not sent',
     1: 'sent',
-    2: 'failed'
+    2: 'failed',
   };
   return statusMap[status] || 'unknown';
 }
@@ -133,7 +133,7 @@ function getStatusDescription(status: number): string {
     3: 'finished',
     4: 'cancelled',
     5: 'ready',
-    6: 'checkin'
+    6: 'checkin',
   };
   return statusMap[status] || 'unknown';
 }
@@ -142,7 +142,7 @@ function getServiceType(type: number): string {
   const typeMap: { [key: number]: string } = {
     0: 'unknown',
     1: 'main service',
-    2: 'add-on service'
+    2: 'add-on service',
   };
   return typeMap[type] || 'unknown';
 }
@@ -151,7 +151,7 @@ function getPetDetailStatus(status: number): string {
   const statusMap: { [key: number]: string } = {
     1: 'normal',
     2: 'deleted',
-    3: 'deleted due to modification'
+    3: 'deleted due to modification',
   };
   return statusMap[status] || 'unknown';
 }
@@ -159,7 +159,7 @@ function getPetDetailStatus(status: number): string {
 function getScopeType(type: number): string {
   const typeMap: { [key: number]: string } = {
     1: 'this appt',
-    2: 'this and future'
+    2: 'this and future',
   };
   return typeMap[type] || 'unknown';
 }
@@ -168,7 +168,7 @@ function getServiceItemType(type: number): string {
   const typeMap: { [key: number]: string } = {
     1: 'grooming',
     2: 'boarding',
-    3: 'daycare'
+    3: 'daycare',
   };
   return typeMap[type] || 'unknown';
 }
@@ -178,7 +178,7 @@ function getPriceUnit(unit: number): string {
     1: 'per session',
     2: 'per night',
     3: 'per hour',
-    4: 'per day'
+    4: 'per day',
   };
   return unitMap[unit] || 'unknown';
 }
@@ -188,7 +188,7 @@ function getOverrideType(type: number): string {
     0: 'no override',
     1: 'override by location (business)',
     2: 'override by pet (client)',
-    3: 'override by staff'
+    3: 'override by staff',
   };
   return typeMap[type] || 'unknown';
 }
@@ -198,7 +198,7 @@ function getDateType(type: number): string {
     1: 'every day except checkout day',
     2: 'specific date',
     3: 'date point',
-    4: 'everyday'
+    4: 'everyday',
   };
   return typeMap[type] || 'unknown';
 }
@@ -206,28 +206,28 @@ function getDateType(type: number): string {
 /**
  * Format appointment data to Slack Block Kit format
  */
-function formatAppointmentBlocks(appointmentData: any): any[] {
+function formatAppointmentBlocks(appointmentData: any, userId: string): any[] {
   const { appointment, petDetails, order } = appointmentData;
 
   const blocks = [];
 
   // Header
   blocks.push({
-    type: "header",
+    type: 'header',
     text: {
-      type: "plain_text",
+      type: 'plain_text',
       text: `Appointment #${appointment.id}`,
-      emoji: false
-    }
+      emoji: false,
+    },
   });
 
   // Appointment Details Section
   blocks.push({
-    type: "section",
+    type: 'section',
     text: {
-      type: "mrkdwn",
-      text: "*Appointment Details*"
-    }
+      type: 'mrkdwn',
+      text: '*Appointment Details*',
+    },
   });
 
   const appointmentFields = [
@@ -281,31 +281,31 @@ function formatAppointmentBlocks(appointmentData: any): any[] {
     `*company_id:* ${appointment.company_id}`,
     `*is_auto_accept:* ${appointment.is_auto_accept} (${appointment.is_auto_accept === 1 ? 'Yes' : 'No'})`,
     `*wait_list_status:* ${appointment.wait_list_status} (${getWaitListStatus(appointment.wait_list_status)})`,
-    `*service_type_include:* ${appointment.service_type_include} (${getServiceTypes(appointment.service_type_include)})`
+    `*service_type_include:* ${appointment.service_type_include} (${getServiceTypes(appointment.service_type_include)})`,
   ];
 
   // Split fields into chunks of 10 for Slack's field limit
   for (let i = 0; i < appointmentFields.length; i += 10) {
     blocks.push({
-      type: "section",
+      type: 'section',
       fields: appointmentFields.slice(i, i + 10).map(field => ({
-        type: "mrkdwn",
-        text: field
-      }))
+        type: 'mrkdwn',
+        text: field,
+      })),
     });
   }
 
   // Divider
-  blocks.push({ type: "divider" });
+  blocks.push({ type: 'divider' });
 
   // Pet Service Details
   if (petDetails && petDetails.length > 0) {
     blocks.push({
-      type: "section",
+      type: 'section',
       text: {
-        type: "mrkdwn",
-        text: "*Pet Service Details*"
-      }
+        type: 'mrkdwn',
+        text: '*Pet Service Details*',
+      },
     });
 
     petDetails.forEach((detail: any, index: number) => {
@@ -345,40 +345,40 @@ function formatAppointmentBlocks(appointmentData: any): any[] {
         `*created_at:* ${formatTimestamp(detail.created_at)}`,
         `*updated_at:* ${formatTimestamp(detail.updated_at)}`,
         `*quantity_per_day:* ${detail.quantity_per_day}`,
-        `*date_type:* ${detail.date_type} (${getDateType(detail.date_type)})`
+        `*date_type:* ${detail.date_type} (${getDateType(detail.date_type)})`,
       ];
 
       blocks.push({
-        type: "section",
+        type: 'section',
         text: {
-          type: "mrkdwn",
-          text: `*Pet Service #${index + 1}*`
-        }
+          type: 'mrkdwn',
+          text: `*Pet Service #${index + 1}*`,
+        },
       });
 
       // Split fields into chunks of 10
       for (let i = 0; i < petFields.length; i += 10) {
         blocks.push({
-          type: "section",
+          type: 'section',
           fields: petFields.slice(i, i + 10).map(field => ({
-            type: "mrkdwn",
-            text: field
-          }))
+            type: 'mrkdwn',
+            text: field,
+          })),
         });
       }
     });
 
-    blocks.push({ type: "divider" });
+    blocks.push({ type: 'divider' });
   }
 
   // Order Information
   if (order) {
     blocks.push({
-      type: "section",
+      type: 'section',
       text: {
-        type: "mrkdwn",
-        text: "*Order Information*"
-      }
+        type: 'mrkdwn',
+        text: '*Order Information*',
+      },
     });
 
     const orderFields = [
@@ -416,20 +416,31 @@ function formatAppointmentBlocks(appointmentData: any): any[] {
       `*order_version:* ${order.order_version}`,
       `*tax_round_mod:* ${order.tax_round_mod}`,
       `*company_id:* ${order.company_id}`,
-      `*currency_code:* ${order.currency_code}`
+      `*currency_code:* ${order.currency_code}`,
     ];
 
     // Split fields into chunks of 10
     for (let i = 0; i < orderFields.length; i += 10) {
       blocks.push({
-        type: "section",
+        type: 'section',
         fields: orderFields.slice(i, i + 10).map(field => ({
-          type: "mrkdwn",
-          text: field
-        }))
+          type: 'mrkdwn',
+          text: field,
+        })),
       });
     }
   }
+
+  blocks.push(
+    { type: 'divider' },
+    {
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: `Query by <@${userId}> on ${formatTimestamp(new Date().getTime())}(UTC)`,
+        emoji: false,
+      },
+    });
 
   return blocks;
 }
@@ -437,16 +448,17 @@ function formatAppointmentBlocks(appointmentData: any): any[] {
 /**
  * Send appointment information to Slack channel
  * @param appointmentId - Appointment ID
+ * @param userId - User ID
  * @param channelId - Slack channel ID
  * @param thread_ts - Thread timestamp to reply in thread
  */
-export async function sendAppointmentToSlack(appointmentId: number, channelId: string, thread_ts?: string) {
+export async function sendAppointmentToSlack(appointmentId: number, userId: string, channelId: string, thread_ts?: string) {
   try {
     // Query appointment data
     const appointmentData = await queryByAppointmentId(appointmentId);
 
     // Format blocks
-    const blocks = formatAppointmentBlocks(appointmentData);
+    const blocks = formatAppointmentBlocks(appointmentData, userId);
 
     // Send to Slack
     await postBlockMessage(channelId, thread_ts || '', blocks);
