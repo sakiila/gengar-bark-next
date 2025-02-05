@@ -23,6 +23,13 @@ function formatTimestamp(timestamp: number | string | Date | undefined | null): 
     let date: Date;
 
     if (typeof timestamp === 'string') {
+      // 尝试解析 ISO 格式的时间字符串
+      if (timestamp.includes('T') && timestamp.includes('Z')) {
+        date = new Date(timestamp);
+        if (!isNaN(date.getTime())) {
+          return date.toISOString();
+        }
+      }
       timestamp = parseInt(timestamp);
     }
 
