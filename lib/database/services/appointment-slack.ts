@@ -220,7 +220,7 @@ function addAdditionalInfo(blocks: any[], userId: string) {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: `Query by <@${userId}> on ${formatTimestamp(new Date())}(UTC)`,
+        text: `Query by <@${userId}> on ${formatTimestamp(new Date())} (UTC)`,
       },
     });
 }
@@ -508,7 +508,7 @@ async function getAiMessage(appointmentData: any) {
       type: 'header',
       text: {
         type: 'plain_text',
-        text: `*AI Analysis*`,
+        text: `AI Analysis`,
       },
     },
     {
@@ -517,7 +517,15 @@ async function getAiMessage(appointmentData: any) {
         type: 'mrkdwn',
         text: analysis,
       },
-    }];
+    },
+    {
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: 'AI-generated, for reference only.',
+      },
+    },
+    ];
 }
 
 /**
