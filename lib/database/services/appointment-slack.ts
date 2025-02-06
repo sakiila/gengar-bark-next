@@ -568,6 +568,12 @@ export async function sendOrderToSlack(orderId: number, userId: string, channelI
     // Send to Slack
     await postBlockMessage(channelId, thread_ts || '', blocks);
 
+    // 分析数据
+    const gptBlocks = await getAiMessage(appointmentData);
+
+    // Send to Slack
+    await postBlockMessage(channelId, thread_ts || '', gptBlocks);
+
     return true;
   } catch (error) {
     console.error('Failed to send appointment to Slack:', error);
