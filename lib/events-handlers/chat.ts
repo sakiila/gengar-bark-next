@@ -12,6 +12,8 @@ import { execute_build } from '@/lib/jenkins/build';
 import { logger } from '@/lib/utils/logger';
 import { extractId, IdType } from '@/lib/utils/id-utils';
 import { sendAppointmentToSlack, sendOrderToSlack } from '@/lib/database/services/appointment-slack';
+import { CommandContext } from '../commands/command';
+import { IdCommand, CreateAppointmentCommand, GptCommand } from '../commands/commands';
 
 /**
  * Send GPT response to the channel
@@ -23,8 +25,8 @@ export async function send_gpt_response_in_channel(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  const channel = req.body.event.channel; // channel the message was sent in
-  const ts = req.body.event.thread_ts ?? req.body.event.ts; // message timestamp
+  const channel = req.body.event.channel;
+  const ts = req.body.event.thread_ts ?? req.body.event.ts;
   let text: string = req.body.event.text;
   const userId = req.body.event.user;
 
@@ -32,48 +34,31 @@ export async function send_gpt_response_in_channel(
   text = text.replace(/^<@[A-Z0-9]+>\s*/, '');
 
   // check if the text has been sent in the last 2 minutes
-  const hasSentText = await existsCacheThanSet(text);
+  let cacheKey = text + ":" + ts;
+  const hasSentText = await existsCacheThanSet(cacheKey);
   if (hasSentText) {
     logger.info('Already sent same text in 2 minutes:', { text });
     return res.status(200).send('Already sent same text in 2 minutes.');
   }
 
-  const id = extractId(text);
-  if (id.type === IdType.APPOINTMENT) {
-    await sendAppointmentToSlack(parseInt(id.value), userId, channel, ts);
-    return res.status(200).send('');
-  } else if (id.type === IdType.ORDER) {
-    await sendOrderToSlack(parseInt(id.value), userId, channel, ts);
-    return res.status(200).send('');
-  }
 
-
-  // create appointment
-  const regex = /预约|appointment|appt/i;
-  if (text.trim().toLowerCase().startsWith('create') && regex.test(text)) {
-    await execute_moego(req, res);
-    return;
-  }
-
-    // if (text.trim().startsWith('build')) {
-  //   await execute_build(req, res);
-  //   return;
-  // }
-
-  const thread = await getThreadReply(channel, ts);
-
-  const prompts = await generatePromptFromThread(thread);
-  const gptResponse = await getGPT4(prompts);
+  const commands = [
+    new IdCommand(channel, ts, userId),
+    new CreateAppointmentCommand(channel, ts, userId),
+    new GptCommand(channel, ts),
+  ];
 
   try {
-    await threadReply(
-      channel,
-      ts,
-      res,
-      `${gptResponse.choices[0].message.content}`,
-    );
+    for (const command of commands) {
+      if (command.matches(text)) {
+        await command.execute(text);
+        break;
+      }
+    }
+    return res.status(200).send('');
   } catch (error) {
     logger.error('send_gpt_response_in_channel', error instanceof Error ? error : new Error('Unknown error'));
+    return res.status(500).send('Internal Server Error');
   }
 }
 
@@ -136,5 +121,5 @@ export async function response_container(
     logger.error('send_gpt_response_in_channel', error instanceof Error ? error : new Error('Unknown error'));
   }
 
- await send_gpt_response_in_channel(req, res);
+  await send_gpt_response_in_channel(req, res);
 }
