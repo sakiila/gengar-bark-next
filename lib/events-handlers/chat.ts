@@ -1,19 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import {
-  getThreadReply,
-  setStatus,
-  setSuggestedPrompts,
-  threadReply,
-} from '@/lib/slack/slack';
-import { generatePromptFromThread, getGPT4 } from '@/lib/ai/openai';
+import { setStatus, setSuggestedPrompts } from '@/lib/slack/slack';
 import { existsCacheThanSet } from '@/lib/upstash/upstash';
-import { execute_moego } from '@/lib/moego/moego';
-import { execute_build } from '@/lib/jenkins/build';
 import { logger } from '@/lib/utils/logger';
-import { extractId, IdType } from '@/lib/utils/id-utils';
-import { sendAppointmentToSlack, sendOrderToSlack } from '@/lib/database/services/appointment-slack';
-import { CommandContext } from '../commands/command';
-import { IdCommand, CreateAppointmentCommand, GptCommand, HelpCommand } from '../commands/commands';
+import { CreateAppointmentCommand, GptCommand, HelpCommand, IdCommand } from '../commands/commands';
 
 /**
  * Send GPT response to the channel
