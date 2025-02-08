@@ -136,6 +136,7 @@ export class CiCommand implements Command {
         channel_name: this.channelName,
         user_id: this.userId,
         user_name: this.userName,
+        timestamp: this.ts,
       },
     ];
 
