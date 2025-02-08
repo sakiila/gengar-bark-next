@@ -97,7 +97,6 @@ export async function response_container(
 ) {
   const channelId = req.body.event.channel;
   const threadTs = req.body.event.thread_ts ?? req.body.event.ts;
-  const text: string = req.body.event.text;
 
   // console.log("channelId:", channelId);
   // console.log("threadTs:", threadTs);
