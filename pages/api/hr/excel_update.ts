@@ -1,5 +1,4 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { autoMessageReminderTask } from '@/lib/hr/auto-message-reminder-task';
 import { userUpdate } from '@/lib/database/services/user-update';
 
 export default async function handler(
