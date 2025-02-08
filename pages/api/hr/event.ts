@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { verifyHrRequest } from '@/lib/slack/slack';
 import app_home_opened from '@/lib/events-handlers/hr-app-home-opened';
 import { response_policy } from '@/lib/hr/policy-chat';
+import { set_suggested_prompts } from '@/lib/events-handlers/chat';
 
 export default async function handler(
   req: NextApiRequest,
@@ -23,6 +24,9 @@ export default async function handler(
             if (!res.writableEnded) {
               return res.status(200).json({ message: 'App home opened processed' });
             }
+            break;
+          case "assistant_thread_started":
+            await set_suggested_prompts(req, res);
             break;
           case 'message':
             const { channel_type, hidden, bot_profile, subtype, user } = req.body.event;

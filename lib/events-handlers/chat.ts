@@ -21,7 +21,7 @@ import { IdCommand, CreateAppointmentCommand, GptCommand, HelpCommand } from '..
  * @param req
  * @param res
  */
-export async function send_gpt_response_in_channel(
+export async function send_response(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
@@ -56,7 +56,7 @@ export async function send_gpt_response_in_channel(
     }
     return res.status(200).send('');
   } catch (error) {
-    logger.error('send_gpt_response_in_channel', error instanceof Error ? error : new Error('Unknown error'));
+    logger.error('send_response', error instanceof Error ? error : new Error('Unknown error'));
     return res.status(500).send('Internal Server Error');
   }
 }
@@ -79,7 +79,7 @@ export async function set_suggested_prompts(
     // });
     return res.status(200).send('');
   } catch (error) {
-    logger.error('send_gpt_response_in_channel', error instanceof Error ? error : new Error('Unknown error'));
+    logger.error('send_response', error instanceof Error ? error : new Error('Unknown error'));
   }
 }
 
@@ -98,7 +98,7 @@ export async function set_status(req: NextApiRequest, res: NextApiResponse) {
     // });
     return res.status(200).send('');
   } catch (error) {
-    logger.error('send_gpt_response_in_channel', error instanceof Error ? error : new Error('Unknown error'));
+    logger.error('send_response', error instanceof Error ? error : new Error('Unknown error'));
   }
 }
 
@@ -117,8 +117,8 @@ export async function response_container(
   try {
     await setStatus(res, channelId, threadTs);
   } catch (error) {
-    logger.error('send_gpt_response_in_channel', error instanceof Error ? error : new Error('Unknown error'));
+    logger.error('send_response', error instanceof Error ? error : new Error('Unknown error'));
   }
 
-  await send_gpt_response_in_channel(req, res);
+  await send_response(req, res);
 }
