@@ -1,7 +1,8 @@
-import { getUserId, postToUserId } from '@/lib/slack/slack';
+import { getUserId } from '@/lib/slack/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { insertWithSupabase, postgres } from '@/lib/database/supabase';
 import { BuildRecordService } from '@/lib/database/services/build-record.service';
+import { postMessage } from '@/lib/slack/gengar-bolt';
 
 export default async function handler(
   req: NextApiRequest,
@@ -76,24 +77,25 @@ export default async function handler(
     if (email.toLowerCase() === 'pc@moego.pet') {
       // no opt
     } else {
-      await postToUserId(userId, res, notification);
-      // await postMessage(userId,  notification);
+      // await postToUserId(userId, res, notification);
+      await postMessage(userId, '', notification);
     }
 
     // notify watch list
     if (record) {
-      let { data: build_watchs, error } = await postgres
+      let { data: build_watchs } = await postgres
       .from('build_watch')
       .select('*')
       .eq('repository', record.repository.trim())
       .eq('branch', record.branch.trim());
 
       build_watchs?.forEach(async (build_watch) => {
-        await postToUserId(
-          build_watch.channel,
-          res,
-          `${notification} by <@${userId}>`,
-        );
+        // await postToUserId(
+        //   build_watch.channel,
+        //   res,
+        //   `${notification} by <@${userId}>`,
+        // );
+        await postMessage(build_watch.channel, build_watch.timestamp, `${notification} by <@${userId}>`);
       });
     }
 
