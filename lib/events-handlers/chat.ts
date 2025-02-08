@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { setStatus, setSuggestedPrompts } from '@/lib/slack/slack';
 import { existsCacheThanSet } from '@/lib/upstash/upstash';
 import { logger } from '@/lib/utils/logger';
-import { CreateAppointmentCommand, GptCommand, HelpCommand, IdCommand } from '../commands/commands';
+import { CiCommand, CreateAppointmentCommand, GptCommand, HelpCommand, IdCommand } from '../commands/commands';
 
 /**
  * Send GPT response to the channel
@@ -18,6 +18,8 @@ export async function send_response(
   const ts = req.body.event.thread_ts ?? req.body.event.ts;
   let text: string = req.body.event.text;
   const userId = req.body.event.user;
+  const userName = req.body.event.user_name;
+  const channelName = req.body.event.channel_name;
 
   // 只移除消息最前面的 Slack 用户 ID（例如 <@U0666R94C83>）
   text = text.replace(/^<@[A-Z0-9]+>\s*/, '');
@@ -33,6 +35,7 @@ export async function send_response(
     new IdCommand(channel, ts, userId),
     new CreateAppointmentCommand(channel, ts, userId),
     new HelpCommand(channel, ts),
+    new CiCommand(ts, userId, userName, channel, channelName),
     new GptCommand(channel, ts),
   ];
 

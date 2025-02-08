@@ -89,8 +89,8 @@ export class HelpCommand implements Command {
    • 直接输入任何问题，AI 助手会为您解答
 
 3. *预约相关*
-   • 输入 \`a<appointment id>\`查看预约详情（如 \`a123456\`）
-   • 输入 \`o<order id>\`查看订单详情（如 \`o123456\`）
+   • 输入 \`a<appointment id>\` 查看预约详情（如 \`a123456\`）
+   • 输入 \`o<order id>\` 查看订单详情（如 \`o123456\`）
    • 输入 \`create <包含预约的文本>\` 创建新预约（如 \`create an appointment \`）
    
 4. *CI 相关*
@@ -108,7 +108,7 @@ export class CiCommand implements Command {
     private ts: string,
     private userId: string,
     private userName: string,
-    private channelId: string,
+    private channel: string,
     private channelName: string,
   ) {
   }
@@ -132,7 +132,7 @@ export class CiCommand implements Command {
       {
         repository: repository,
         branch: branch,
-        channel: this.channelId,
+        channel: this.channel,
         channel_name: this.channelName,
         user_id: this.userId,
         user_name: this.userName,
@@ -141,8 +141,10 @@ export class CiCommand implements Command {
 
     try {
       await postgres.from('build_watch').insert(newArr).select();
+      await postMessage(this.channel, this.ts, `订阅成功`);
     } catch (err) {
       console.log('fetch Error:', err);
+      await postMessage(this.channel, this.ts, `订阅失败`);
     }
   }
 }
