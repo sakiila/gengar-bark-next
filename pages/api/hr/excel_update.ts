@@ -12,6 +12,7 @@ export default async function handler(
     confirm: string;
     birthday: string;
     tz: string;
+    country: string;
   }>;
 
   console.log('/hr/excel_update payload = ', JSON.stringify(payload));

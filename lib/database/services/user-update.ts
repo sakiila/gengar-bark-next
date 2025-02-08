@@ -7,6 +7,7 @@ export async function userUpdate(
     confirm: string;
     birthday: string;
     tz: string;
+    country: string;
   }>,
 ) {
   try {
@@ -21,6 +22,7 @@ export async function userUpdate(
           confirm_date: load.confirm,
           birthday_date: load.birthday,
           tz: load.tz,
+          country: load.country,
         })
         .ilike('email', load.email.trim())
         .then((response) => {
