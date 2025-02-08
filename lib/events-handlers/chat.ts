@@ -13,7 +13,7 @@ import { logger } from '@/lib/utils/logger';
 import { extractId, IdType } from '@/lib/utils/id-utils';
 import { sendAppointmentToSlack, sendOrderToSlack } from '@/lib/database/services/appointment-slack';
 import { CommandContext } from '../commands/command';
-import { IdCommand, CreateAppointmentCommand, GptCommand } from '../commands/commands';
+import { IdCommand, CreateAppointmentCommand, GptCommand, HelpCommand } from '../commands/commands';
 
 /**
  * Send GPT response to the channel
@@ -34,17 +34,16 @@ export async function send_gpt_response_in_channel(
   text = text.replace(/^<@[A-Z0-9]+>\s*/, '');
 
   // check if the text has been sent in the last 2 minutes
-  let cacheKey = text + ":" + ts;
-  const hasSentText = await existsCacheThanSet(cacheKey);
+  const hasSentText = await existsCacheThanSet(text);
   if (hasSentText) {
     logger.info('Already sent same text in 2 minutes:', { text });
     return res.status(200).send('Already sent same text in 2 minutes.');
   }
 
-
   const commands = [
     new IdCommand(channel, ts, userId),
     new CreateAppointmentCommand(channel, ts, userId),
+    new HelpCommand(channel, ts),
     new GptCommand(channel, ts),
   ];
 

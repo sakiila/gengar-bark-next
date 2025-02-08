@@ -8,7 +8,7 @@ import channelCreated from "@/lib/events-handlers/channel-created";
 import channelArchive from "@/lib/events-handlers/channel-archive";
 import {
   response_container,
-  send_gpt_response_in_channel,
+  send_response,
   set_suggested_prompts,
 } from "@/lib/events-handlers/chat";
 import { logger } from "@/lib/utils/logger";
@@ -81,7 +81,7 @@ export default async function handler(
             await channelArchive(req, res);
             break;
           case "app_mention":
-            await send_gpt_response_in_channel(req, res);
+            await send_response(req, res);
             break;
           case "assistant_thread_started":
             await set_suggested_prompts(req, res);
