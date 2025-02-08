@@ -47,10 +47,6 @@ export async function send_gpt_response_in_channel(
     return res.status(200).send('');
   }
 
-  // if (text.trim().startsWith('build')) {
-  //   await execute_build(req, res);
-  //   return;
-  // }
 
   // create appointment
   const regex = /预约|appointment|appt/i;
@@ -58,6 +54,11 @@ export async function send_gpt_response_in_channel(
     await execute_moego(req, res);
     return;
   }
+
+    // if (text.trim().startsWith('build')) {
+  //   await execute_build(req, res);
+  //   return;
+  // }
 
   const thread = await getThreadReply(channel, ts);
 
@@ -135,27 +136,5 @@ export async function response_container(
     logger.error('send_gpt_response_in_channel', error instanceof Error ? error : new Error('Unknown error'));
   }
 
-  const regex = /预约|appointment|appt/i;
-  if (text.trim().toLowerCase().startsWith('create') && regex.test(text)) {
-    await execute_moego(req, res);
-    return;
-  }
-
-  const thread = await getThreadReply(channelId, threadTs);
-
-  const prompts = await generatePromptFromThread(thread);
-  const gptResponse = await getGPT4(prompts);
-
-  // console.log("gptResponse:", JSON.stringify(gptResponse));
-
-  try {
-    await threadReply(
-      channelId,
-      threadTs,
-      res,
-      `${gptResponse.choices[0].message.content}`,
-    );
-  } catch (error) {
-    logger.error('send_gpt_response_in_channel', error instanceof Error ? error : new Error('Unknown error'));
-  }
+ await send_gpt_response_in_channel(req, res);
 }
