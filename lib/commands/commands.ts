@@ -91,7 +91,7 @@ export class HelpCommand implements Command {
 3. *预约相关*
    • 输入 \`a<appointment id>\` 查看预约详情（如 \`a123456\`）
    • 输入 \`o<order id>\` 查看订单详情（如 \`o123456\`）
-   • 输入 \`create <包含预约的文本>\` 创建新预约（如 \`create an appointment \`）
+   • 输入 \`create <语义化文本>\` 创建新预约（如 \`create an appointment today at 10am\`）
    
 4. *CI 相关*
    • 输入 \`ci <repository> <branch>\` 订阅 CI 状态
