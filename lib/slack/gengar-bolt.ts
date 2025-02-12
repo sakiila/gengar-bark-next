@@ -32,6 +32,25 @@ async function sendMessage(params: any) {
 }
 
 /**
+ * 发送带有自定义图标和用户名的消息
+ * @param params - 消息参数
+ * @param iconUrl - 自定义图标 URL
+ * @param username - 自定义用户名
+ */
+async function sendMessageWithCustomization(params: any, iconUrl?: string, username?: string) {
+  try {
+    return await botClient.chat.postMessage({
+      ...params,
+      icon_url: iconUrl,
+      username: username
+    });
+  } catch (error) {
+    console.error('Error sending customized message:', error);
+    throw error;
+  }
+}
+
+/**
  * Send a simple text message
  * @param channel - Channel or user ID
  * @param thread_ts - Thread timestamp to reply in thread. If not provided, sends as a new message
@@ -42,6 +61,13 @@ export async function postMessage(channel: string, thread_ts: string, text: stri
     return sendMessage({ channel, text });
   }
   return sendMessage({ channel, thread_ts, text });
+}
+
+export async function postMessageByAnon(channel: string, thread_ts: string, text: string) {
+  if (!thread_ts || thread_ts.length === 0) {
+    return sendMessageWithCustomization({ channel, text }, 'https://ca.slack-edge.com/T011CF3CMJN-U03JFM4M82C-b91caa2d5299-512', '不愿透露姓名的匿名人士');
+  }
+  return sendMessageWithCustomization({ channel, thread_ts, text }, 'https://ca.slack-edge.com/T011CF3CMJN-U03JFM4M82C-b91caa2d5299-512', '不愿透露姓名的匿名人士');
 }
 
 /**

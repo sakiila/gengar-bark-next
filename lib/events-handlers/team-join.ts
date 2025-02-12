@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { postToProd } from '@/lib/slack/slack';
 import { getUser, postgres } from '@/lib/database/supabase';
+import { postMessageByAnon } from '@/lib/slack/gengar-bolt';
 
 export default async function teamJoin(
   req: NextApiRequest,
@@ -42,8 +42,10 @@ export default async function teamJoin(
 
   try {
     const text = `:tada: <@${id}> (${realName}) has joined MoeGo!`;
-    await postToProd(res, text);
+    // await postToProd(res, text);
+    await postMessageByAnon(process.env.PROD_CHANNEL as string, '', text);
   } catch (e) {
     console.log(e);
   }
+  return res.status(200).send('');
 }
