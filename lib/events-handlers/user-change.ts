@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { postgres } from '@/lib/database/supabase';
 import { postMessageByAnon } from '@/lib/slack/gengar-bolt';
+import { postToProd } from '@/lib/slack/slack';
 
 export default async function userChange(
   req: NextApiRequest,
@@ -16,7 +17,7 @@ export default async function userChange(
     const deleted = user.deleted;
     const teamId = user.team_id;
 
-    const { data: dbUser, error } = await postgres
+    const { data: dbUser } = await postgres
       .from("user")
       .select("*")
       .eq("user_id", id);
@@ -46,14 +47,9 @@ export default async function userChange(
 
     if (userLeft) {
       const text = `:smiling_face_with_tear: ${realName} (<@${id}>) has left MoeGo team.`;
-      // await postToProd(res, text);
+      await postToProd(res, text);
       await postMessageByAnon(process.env.PROD_CHANNEL as string, '', text);
-    }
-    // else if (userJoinAgain) {
-    //   const text = `:tada: <@${id}> (${realName}) has joined MoeGo AGAIN!`;
-    //   await postToProd(res, text);
-    // }
-    else {
+    } else {
       res
         .status(200)
         .send(
