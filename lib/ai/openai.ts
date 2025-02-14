@@ -48,7 +48,7 @@ export async function getThird(messages: ChatCompletionMessageParam[]) {
       headers: headers,
       body: JSON.stringify(params),
     });
-    return response.json()
+    return response.json();
     // return res['choices'][0]['message']['content']
   } catch (err) {
     console.log(err);
@@ -69,24 +69,24 @@ export async function generatePromptFromThread(messages: any) {
   };
 
   const result = messages
-    .map((message: any) => {
-      if (!message || !message.text || message.subtype === 'assistant_app_thread') {
-        return null;
-      }
-      const isBot = !!message.bot_id && !message.client_msg_id;
-      // const isNotMentioned = !isBot && !message.text.startsWith(`<@`);
-      // if (isNotMentioned) {
-      //   return null;
-      // }
+  .map((message: any) => {
+    if (!message || !message.text || message.subtype === 'assistant_app_thread') {
+      return null;
+    }
+    const isBot = !!message.bot_id && !message.client_msg_id;
+    // const isNotMentioned = !isBot && !message.text.startsWith(`<@`);
+    // if (isNotMentioned) {
+    //   return null;
+    // }
 
-      return {
-        role: isBot ? 'assistant' : 'user',
-        content: isBot
-          ? message.text
-          : message.text.replace(`<@${botID}> `, ''),
-      };
-    })
-    .filter(Boolean);
+    return {
+      role: isBot ? 'assistant' : 'user',
+      content: isBot
+        ? message.text
+        : message.text.replace(`<@${botID}> `, ''),
+    };
+  })
+  .filter(Boolean);
 
   console.log('result = ', result);
 
@@ -96,14 +96,47 @@ export async function generatePromptFromThread(messages: any) {
 export async function generatePromptForMoeGo(text: string) {
   return [
     {
-      role: "system",
+      role: 'system',
       content: `Extract appointment details from user input and provide them in JSON format. If any information is missing, leave it blank.
-intent must be one of create/modify/cancel, quantity default is 1, email can be blank if the input have not, the customerName can be blank if the input have not. Today is ${timeUtils.today()}, calculate the date if user mentioned, the time should be the minute of the day if user input.
-example: {"intent":"Create/Modify/Cancel","quantity":1,"email":"bob@moego.pet","customerName":"bob","date":"2024-11-11","time":600}/Modify/Cancel", "quantity": 1, "email": "bob@moego.pet", "customerName": "bob" }.`,
+      intent must be one of create/modify/cancel, quantity default is 1, email can be blank if the input have not, the customerName can be blank if the input have not. Today is ${timeUtils.today()}, calculate the date if user mentioned, the time should be the minute of the day if user input.
+      example: {"intent":"Create/Modify/Cancel","quantity":1,"email":"bob@moego.pet","customerName":"bob","date":"2024-11-11","time":600}/Modify/Cancel", "quantity": 1, "email": "bob@moego.pet", "customerName": "bob" }.`,
     },
     {
-      role: "user",
+      role: 'user',
       content: text,
     },
   ] as ChatCompletionMessageParam[];
+}
+
+export async function generatePromptForJira(messages: any) {
+  const assistantBackground: ChatCompletionMessageParam = {
+    role: 'system',
+    content: `Extract issue details from user input and provide them in JSON format. 
+    Only provide summary, description and issueKey, every field must less than 300 characters. issueKey can be blank if the input have not.
+    example: {"summary":"Fix bug", "description":"The app is not working properly", "issueKey": "CS-1234"}.`,
+  };
+
+  const botID = 'U0666R94C83';
+
+  const result = messages
+  .map((message: any) => {
+    if (!message || !message.text || message.subtype === 'assistant_app_thread') {
+      return null;
+    }
+    const isBot = !!message.bot_id && !message.client_msg_id;
+    // const isNotMentioned = !isBot && !message.text.startsWith(`<@`);
+    // if (isNotMentioned) {
+    //   return null;
+    // }
+
+    return {
+      role: isBot ? 'assistant' : 'user',
+      content: isBot
+        ? message.text
+        : message.text.replace(`<@${botID}> `, ''),
+    };
+  })
+  .filter(Boolean);
+
+  return [assistantBackground, ...result] as ChatCompletionMessageParam[];
 }

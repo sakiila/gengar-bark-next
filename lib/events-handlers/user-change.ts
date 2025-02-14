@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { postgres } from '@/lib/database/supabase';
 import { postMessageByAnon } from '@/lib/slack/gengar-bolt';
-import { postToProd } from '@/lib/slack/slack';
 
 export default async function userChange(
   req: NextApiRequest,
@@ -47,7 +46,7 @@ export default async function userChange(
 
     if (userLeft) {
       const text = `:smiling_face_with_tear: ${realName} (<@${id}>) has left MoeGo team.`;
-      await postToProd(res, text);
+      // await postToProd(res, text);
       await postMessageByAnon(process.env.PROD_CHANNEL as string, '', text);
     } else {
       res

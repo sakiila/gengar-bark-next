@@ -6,6 +6,7 @@ import { getThreadReply } from '@/lib/slack/slack';
 import { generatePromptFromThread, getGPT4 } from '@/lib/ai/openai';
 import { postMessage } from '@/lib/slack/gengar-bolt';
 import { postgres } from '@/lib/database/supabase';
+import { createIssue } from '@/lib/jira/create-issue';
 
 export class IdCommand implements Command {
   constructor(
@@ -96,6 +97,10 @@ export class HelpCommand implements Command {
 4. *CI 相关*
    • 输入 \`ci <repository> <branch>\` 订阅 CI 状态
 
+5. *Jira 相关*
+   • 输入 \`jira <projectKey> <issueType> [summary]\` 创建 Jira issue（如 \`jira MER Task 修复登录问题\`）
+   * 注意：projectKey 可用 MER、CRM、FIN，issueType 可用 Task、Bug，summary 可选。
+
 更多信息请查看网站文档：https://pearl.baobo.me/guide
 `;
 
@@ -142,10 +147,43 @@ export class CiCommand implements Command {
 
     try {
       await postgres.from('build_watch').insert(newArr).select();
-      await postMessage(this.channel, this.ts, `订阅成功`);
+      await postMessage(this.channel, this.ts, `:white_check_mark: 订阅成功`);
     } catch (err) {
       console.log('fetch Error:', err);
-      await postMessage(this.channel, this.ts, `订阅失败`);
+      await postMessage(this.channel, this.ts, `:x: 订阅失败`);
+    }
+  }
+}
+
+export class JiraCommand implements Command {
+  constructor(
+    private channel: string,
+    private ts: string,
+    private userId: string,
+    private userName: string,
+  ) {
+  }
+
+  matches(text: string): boolean {
+    const pattern = new RegExp('^jira\\s+\\S+\\s+\\S+.*$', 'i');
+    return pattern.test(text);
+  }
+
+  async execute(text: string): Promise<void> {
+    try {
+      const issueKey = await createIssue(text, this.channel, this.ts, this.userName);
+      await postMessage(
+        this.channel,
+        this.ts,
+        `:white_check_mark: Jira issue 创建成功！\n链接：https://moego.atlassian.net/browse/${issueKey}`,
+      );
+    } catch (err) {
+      console.error('Jira API Error:', err);
+      await postMessage(
+        this.channel,
+        this.ts,
+        `:x: 创建 Jira issue 失败：${err instanceof Error ? err.message : '未知错误'}`,
+      );
     }
   }
 }

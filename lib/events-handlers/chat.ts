@@ -2,7 +2,14 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { setStatus, setSuggestedPrompts } from '@/lib/slack/slack';
 import { existsCacheThanSet } from '@/lib/upstash/upstash';
 import { logger } from '@/lib/utils/logger';
-import { CiCommand, CreateAppointmentCommand, GptCommand, HelpCommand, IdCommand } from '../commands/commands';
+import {
+  CiCommand,
+  CreateAppointmentCommand,
+  GptCommand,
+  HelpCommand,
+  IdCommand,
+  JiraCommand,
+} from '../commands/commands';
 import { postMessage } from '@/lib/slack/gengar-bolt';
 
 /**
@@ -40,6 +47,7 @@ export async function send_response(
     new HelpCommand(channel, ts),
     new CiCommand(ts, userId, userName, channel, channelName),
     new GptCommand(channel, ts),
+    new JiraCommand(channel, ts, userId, userName),
   ];
 
   try {

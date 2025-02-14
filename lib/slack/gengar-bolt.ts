@@ -65,9 +65,9 @@ export async function postMessage(channel: string, thread_ts: string, text: stri
 
 export async function postMessageByAnon(channel: string, thread_ts: string, text: string) {
   if (!thread_ts || thread_ts.length === 0) {
-    return sendMessageWithCustomization({ channel, text }, 'https://ca.slack-edge.com/T011CF3CMJN-U03JFM4M82C-b91caa2d5299-512', '不愿透露姓名的匿名人士');
+    return sendMessageWithCustomization({ channel, text }, 'https://ca.slack-edge.com/T011CF3CMJN-U03JFM4M82C-b91caa2d5299-512', '不愿透露姓名的知情人士');
   }
-  return sendMessageWithCustomization({ channel, thread_ts, text }, 'https://ca.slack-edge.com/T011CF3CMJN-U03JFM4M82C-b91caa2d5299-512', '不愿透露姓名的匿名人士');
+  return sendMessageWithCustomization({ channel, thread_ts, text }, 'https://ca.slack-edge.com/T011CF3CMJN-U03JFM4M82C-b91caa2d5299-512', '不愿透露姓名的知情人士');
 }
 
 /**
