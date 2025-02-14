@@ -65,5 +65,4 @@ docker-compose*
 .eslintrc
 .eslintignore
 jest.config.js
-tsconfig.json
-*.local 
+*.local
