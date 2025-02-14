@@ -1,0 +1,69 @@
+# 依赖目录
+node_modules
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+.pnpm-debug.log
+
+# 测试文件
+__tests__
+test
+tests
+coverage
+*.test.js
+*.spec.js
+*.test.ts
+*.spec.ts
+
+# 开发工具和配置文件
+.git
+.gitignore
+.github
+.vscode
+.idea
+*.swp
+*.swo
+.DS_Store
+.env
+.env.*
+!.env.example
+
+# 文档和其他资源
+README.md
+CHANGELOG.md
+docs
+*.md
+LICENSE
+
+# 构建输出
+.next
+out
+dist
+build
+*.tsbuildinfo
+
+# 调试文件
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 缓存目录
+.cache
+.npm
+.yarn
+.pnpm-store
+
+# Docker 相关
+Dockerfile*
+docker-compose*
+.docker
+
+# 其他
+*.log
+.editorconfig
+.prettierrc
+.eslintrc
+.eslintignore
+jest.config.js
+tsconfig.json
+*.local 
