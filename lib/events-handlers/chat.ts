@@ -44,7 +44,7 @@ export async function send_response(
   const commands = [
     new HelpCommand(channel, ts),
     new IdCommand(channel, ts, userId),
-    new JiraCommand(channel, ts, userId, userName),
+    new JiraCommand(channel, ts, userId),
     new CiCommand(ts, userId, userName, channel, channelName),
     new CreateAppointmentCommand(channel, ts, userId),
     new GptCommand(channel, ts), // always the last command to avoid conflicts with other commands

@@ -5,7 +5,7 @@ import { execute_moego } from '@/lib/moego/moego';
 import { getThreadReply } from '@/lib/slack/slack';
 import { generatePromptFromThread, getGPT4 } from '@/lib/ai/openai';
 import { postMessage } from '@/lib/slack/gengar-bolt';
-import { postgres } from '@/lib/database/supabase';
+import { getUser, postgres } from '@/lib/database/supabase';
 import { createIssue } from '@/lib/jira/create-issue';
 
 export class IdCommand implements Command {
@@ -160,7 +160,6 @@ export class JiraCommand implements Command {
     private channel: string,
     private ts: string,
     private userId: string,
-    private userName: string,
   ) {
   }
 
@@ -170,8 +169,14 @@ export class JiraCommand implements Command {
   }
 
   async execute(text: string): Promise<void> {
+    let name = this.userId;
+    const user = await getUser(this.userId);
+    if (user) {
+      name = user[0].real_name_normalized;
+    }
+
     try {
-      const issueKey = await createIssue(text, this.channel, this.ts, this.userName);
+      const issueKey = await createIssue(text, this.channel, this.ts, name);
       await postMessage(
         this.channel,
         this.ts,

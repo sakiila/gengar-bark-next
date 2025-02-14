@@ -36,7 +36,7 @@ export async function createIssue(text: string, channel: string, ts: string, use
         key: projectKey.toUpperCase(),
       },
       summary: summary,
-      description: `Issue created via Slack by JiraCommand\n\nReporter: ${userName}\n\nAI generated summary: ${result.description as string}`,
+      description: `Issue created via Slack by Jira Command\n\nReporter: ${userName}\n\nAI generated summary:\n${result.description as string}`,
       issuetype: {
         name: issueType,
       },
