@@ -1,7 +1,7 @@
 import { getThreadReply } from '@/lib/slack/slack';
 import { generatePromptForJira, getGPT4 } from '@/lib/ai/openai';
 import { postMessage } from '@/lib/slack/gengar-bolt';
-import { capitalizeFirstLetter } from '@/lib/utils/string-utils';
+import { capitalizeWords } from '@/lib/utils/string-utils';
 
 async function aiSummary(channel: string, ts: string) {
   const thread = await getThreadReply(channel, ts);
@@ -22,18 +22,18 @@ export async function createIssue(text: string, channel: string, ts: string, use
   const result = await aiSummary(channel, ts);
 
   let [_, projectKey, issueType, summary = result.summary as string] = match;
-  projectKey = capitalizeFirstLetter(projectKey);
-  issueType = capitalizeFirstLetter(issueType);
 
-  // issueType 较正
-  if (('MER' == projectKey.toUpperCase() || 'FIN' == projectKey.toUpperCase()) && 'BUG' == issueType.toUpperCase()) {
+  // 较正
+  projectKey = projectKey.toUpperCase();
+  issueType = capitalizeWords(issueType);
+  if (('MER' == projectKey || 'FIN' == projectKey) && 'Bug' == issueType) {
     issueType = 'Bug Online';
   }
 
   const requestBody: any = {
     fields: {
       project: {
-        key: projectKey.toUpperCase(),
+        key: projectKey,
       },
       summary: summary,
       description: `Issue created via Slack by Jira Command\n\nReporter: ${userName}\n\nAI generated summary:\n${result.description as string}`,
