@@ -46,8 +46,8 @@ export async function send_response(
     new CreateAppointmentCommand(channel, ts, userId),
     new HelpCommand(channel, ts),
     new CiCommand(ts, userId, userName, channel, channelName),
-    new GptCommand(channel, ts),
     new JiraCommand(channel, ts, userId, userName),
+    new GptCommand(channel, ts),
   ];
 
   try {
