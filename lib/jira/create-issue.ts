@@ -26,7 +26,7 @@ export async function createIssue(text: string, channel: string, ts: string, use
   issueType = capitalizeFirstLetter(issueType);
 
   // issueType 较正
-  if (('MER' == projectKey || 'FIN' == projectKey) && 'BUG' == issueType) {
+  if (('MER' == projectKey.toUpperCase() || 'FIN' == projectKey.toUpperCase()) && 'BUG' == issueType.toUpperCase()) {
     issueType = 'Bug Online';
   }
 
