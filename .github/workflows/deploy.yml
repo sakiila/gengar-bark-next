@@ -39,15 +39,6 @@ jobs:
           driver-opts: |
             image=moby/buildkit:latest
             network=host
-          buildkitd-flags: --debug
-
-      - name: Cache Docker layers
-        uses: actions/cache@v3
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
 
       - name: Generate version tag
         id: tag
@@ -94,19 +85,9 @@ jobs:
           labels: |
             org.opencontainers.image.source=${{ github.event.repository.html_url }}
             org.opencontainers.image.revision=${{ github.sha }}
-          # 优化：调整压缩设置
+          # 修改压缩配置
           outputs: |
-            type=registry,compression=zstd,compression-level=3,force-compression=true
-          # 优化：添加构建参数
-          provenance: false
-          no-cache-filters: |
-            node_modules
-          build-contexts: |
-            app=.
-          allow: |
-            network.host
-          secrets: |
-            GIT_AUTH_TOKEN=${{ github.token }}
+            type=registry,compression=zstd,compression-level=5,force-compression=true
 
       # 临时缓存处理
       - name: Move cache
