@@ -24,9 +24,9 @@ coverage
 *.swp
 *.swo
 .DS_Store
-.env
-.env.*
-!.env.example
+.env.development
+.env.local
+.env.*.local
 
 # 文档和其他资源
 README.md
