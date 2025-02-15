@@ -47,10 +47,10 @@ export async function createIssue(text: string, channel: string, ts: string, use
 
   if ((('MER' == nowProjectKey || 'ERP' == nowProjectKey) && 'Bug Online' == nowIssueType)) {
     requestBody.fields.customfield_10052 = `Issue created via Slack by Jira Command\n\nReporter: ${userName}\n\nAI generated summary:\n${result.description as string}\n\n
-    *Reproduce Steps*\\r\\n\\r\\n*Actual Results*\\r\\n\\r\\n*Expected Results*\\r\\n\\r\\n*Causes & Reasons*\\r\\n\\r\\n*Solutions & Scopes*\\r\\n `;
+    *Reproduce Steps*\n\n*Actual Results*\n\n*Expected Results*\n\n*Causes & Reasons*\n\n*Solutions & Scopes*\n\n `;
   } else {
     requestBody.fields.description = `Issue created via Slack by Jira Command\n\nReporter: ${userName}\n\nAI generated summary:\n${result.description as string}\n\n
-    *Reproduce Steps*\\r\\n\\r\\n*Actual Results*\\r\\n\\r\\n*Expected Results*\\r\\n\\r\\n*Causes & Reasons*\\r\\n\\r\\n*Solutions & Scopes*\\r\\n`;
+    *Reproduce Steps*\n\n*Actual Results*\n\n*Expected Results*\n\n*Causes & Reasons*\n\n*Solutions & Scopes*\n\n`;
   }
 
   // 只有当 issueKey 存在时才添加关联
