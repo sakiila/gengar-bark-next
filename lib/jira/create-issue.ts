@@ -1,6 +1,5 @@
 import { getThreadReply } from '@/lib/slack/slack';
 import { generatePromptForJira, getGPT4 } from '@/lib/ai/openai';
-import { postMessage } from '@/lib/slack/gengar-bolt';
 import { capitalizeWords } from '@/lib/utils/string-utils';
 
 async function aiSummary(channel: string, ts: string) {
