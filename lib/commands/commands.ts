@@ -99,7 +99,7 @@ export class HelpCommand implements Command {
 
 5. *Jira 相关*
    • 输入 \`jira <projectKey> <issueType> [summary]\` 创建 Jira issue（如 \`jira MER Task 修复登录问题\`）
-   * 注意：projectKey 可用 MER|ERP|CRM|FIN，issueType 可用 Task|Story|Bug，summary 选填。
+   * 注意：projectKey 可用 MER|ERP|CRM|FIN，issueType 可用 Task|Bug，summary 选填。
 
 更多信息请查看网站文档：https://pearl.baobo.me/guide
 `;

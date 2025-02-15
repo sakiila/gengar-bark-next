@@ -33,7 +33,7 @@ export async function send_response(
   text = text.replace(/^<@[A-Z0-9]+>\s*/, '');
 
   // check if the text has been sent in the last 2 minutes
-  const key = `${text}-${ts}-${userId}`;
+  const key = `${userId}-${channel}-${ts}-${text}`;
   const hasSentText = await existsCacheThanSet(key);
   if (hasSentText) {
     logger.info('Already sent same text in 2 minutes:', { text });

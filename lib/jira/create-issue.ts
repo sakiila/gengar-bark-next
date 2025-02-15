@@ -21,27 +21,38 @@ export async function createIssue(text: string, channel: string, ts: string, use
   // use ai to generate summary and description
   const result = await aiSummary(channel, ts);
 
-  let [_, projectKey, issueType, summary = result.summary as string] = match;
+  const [_, projectKey, issueType, summary = result.summary as string] = match;
 
   // 较正
-  projectKey = projectKey.toUpperCase();
-  issueType = capitalizeWords(issueType);
-  if (('MER' == projectKey || 'FIN' == projectKey) && 'Bug' == issueType) {
-    issueType = 'Bug Online';
+  // MER Bug -> Bug Online 10004 -> customfield_10052
+  // CRM Bug -> Bug 10045 ->  description
+  // FIN Bug -> Bug Online 10004 -> description
+  // ERP Bug -> Bug Online 10004 -> customfield_10052
+  const nowProjectKey = projectKey.toUpperCase();
+  let nowIssueType = capitalizeWords(issueType);
+  if (('MER' == nowProjectKey || 'FIN' == nowProjectKey || 'ERP' == nowProjectKey) && 'Bug' == nowIssueType) {
+    nowIssueType = 'Bug Online';
   }
 
   const requestBody: any = {
     fields: {
       project: {
-        key: projectKey,
+        key: nowProjectKey,
       },
       summary: summary,
-      description: `Issue created via Slack by Jira Command\n\nReporter: ${userName}\n\nAI generated summary:\n${result.description as string}`,
       issuetype: {
-        name: issueType,
+        name: nowIssueType,
       },
     },
   };
+
+  if ((('MER' == nowProjectKey || 'ERP' == nowProjectKey) && 'Bug Online' == nowIssueType)) {
+    requestBody.fields.customfield_10052 = `Issue created via Slack by Jira Command\n\nReporter: ${userName}\n\nAI generated summary:\n${result.description as string}\n\n
+    *Reproduce Steps*\\r\\n\\r\\n*Actual Results*\\r\\n\\r\\n*Expected Results*\\r\\n\\r\\n*Causes & Reasons*\\r\\n\\r\\n*Solutions & Scopes*\\r\\n `;
+  } else {
+    requestBody.fields.description = `Issue created via Slack by Jira Command\n\nReporter: ${userName}\n\nAI generated summary:\n${result.description as string}\n\n
+    *Reproduce Steps*\\r\\n\\r\\n*Actual Results*\\r\\n\\r\\n*Expected Results*\\r\\n\\r\\n*Causes & Reasons*\\r\\n\\r\\n*Solutions & Scopes*\\r\\n`;
+  }
 
   // 只有当 issueKey 存在时才添加关联
   if (result.issueKey) {
@@ -61,6 +72,8 @@ export async function createIssue(text: string, channel: string, ts: string, use
       ],
     };
   }
+
+  console.log('requestBody=', requestBody);
 
   // api docs: https://developer.atlassian.com/server/jira/platform/rest/v10004/api-group-issue/#api-api-2-issue-post
   const response = await fetch('https://moego.atlassian.net/rest/api/2/issue', {
