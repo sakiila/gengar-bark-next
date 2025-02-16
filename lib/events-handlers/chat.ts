@@ -10,7 +10,6 @@ import {
   IdCommand,
   JiraCommand,
 } from '../commands/commands';
-import { postMessage } from '@/lib/slack/gengar-bolt';
 
 /**
  * Send GPT response to the channel
@@ -37,7 +36,7 @@ export async function send_response(
   const hasSentText = await existsCacheThanSet(key);
   if (hasSentText) {
     logger.info('Already sent same text in 2 minutes:', { text });
-    await postMessage(channel, ts, 'Please wait for 2 minutes and try again.');
+    // await postMessage(channel, ts, 'Please wait for 2 minutes and try again.');
     return res.status(200).send('Already sent same text in 2 minutes.');
   }
 
