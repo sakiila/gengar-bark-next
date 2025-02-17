@@ -80,7 +80,7 @@ The project includes Docker support for easy deployment. You can deploy using:
 
 ```bash
 docker build -t gengar-bark .
-docker run -p 3000:3000 gengar-bark
+docker run -p 3001:3001 gengar-bark
 ```
 
 ## 📝 License

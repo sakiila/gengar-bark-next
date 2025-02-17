@@ -141,10 +141,10 @@ jobs:
             docker run -d \
               --name gengar-bark \
               --restart unless-stopped \
-              -p 127.0.0.1:3001:3000 \
+              -p 127.0.0.1:3001:3001 \
               --memory="1g" \
               --memory-reservation="512m" \
-              --health-cmd="curl -f http://localhost:3000/api/health || exit 1" \
+              --health-cmd="curl -f http://localhost:3001/api/health || exit 1" \
               --health-interval=30s \
               --health-timeout=10s \
               --health-retries=3 \
