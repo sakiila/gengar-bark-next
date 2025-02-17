@@ -54,7 +54,7 @@ RUN apk add --no-cache curl \
 # 设置环境变量
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
-    PORT=3001 \
+    PORT=3000 \
     HOSTNAME="0.0.0.0"
 
 # 优化复制策略，只复制必要文件
@@ -80,10 +80,10 @@ USER nextjs
 
 # 优化健康检查配置
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-    CMD curl -f http://localhost:3001/api/health || exit 1
+    CMD curl -f http://localhost:3000/api/health || exit 1
 
 # 暴露端口
-EXPOSE 3001
+EXPOSE 3000
 
 # 启动服务
 CMD ["node", "server.js"]
