@@ -6,7 +6,9 @@ async function aiSummary(channel: string, ts: string) {
   const thread = await getThreadReply(channel, ts);
   const prompts = await generatePromptForJira(thread);
   const gptResponse = await getGPT4(prompts);
-  return JSON.parse(gptResponse.choices[0].message.content as string);
+  const result = JSON.parse(gptResponse.choices[0].message.content as string);
+  console.info('aiSummary result:', result);
+  return result;
 }
 
 export async function createIssue(text: string, channel: string, ts: string, userName: string) {
