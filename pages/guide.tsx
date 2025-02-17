@@ -90,12 +90,12 @@ const GuidePage: React.FC = () => {
             <h3>Command function list</h3>
             <div>
               <h4>1. Help Commands</h4>
-              <p>- Type <code>help</code> or <code>help</code> to display the help message</p>
+              <p>- Type <code>help</code> or <code>帮助</code> to display the help message</p>
 
               <h4>2. AI Conversation</h4>
               <p>- Enter any question and the AI assistant will answer it</p>
 
-              <h4>3. Appointment-related</h4>
+              <h4>3. Appointment</h4>
               <p>
                 - Type <code>a&lt;appointment id&gt;</code> to view appointment details
                 (e.g. <code>a123456</code>)<br />
@@ -103,13 +103,13 @@ const GuidePage: React.FC = () => {
                 - Type <code>create &lt;semanticized text&gt;</code> to create a new appointment
               </p>
 
-              <h4>4. CI Related</h4>
+              <h4>4. CI</h4>
               <p>- Enter <code>ci &lt;repository&gt; &lt;branch&gt;</code> Subscribe to CI status</p>
 
-              <h4>5. Jira-related</h4>
+              <h4>5. Jira</h4>
               <p>
                 - Input <code>jira &lt;projectKey&gt; &lt;issueType&gt; [summary]</code> Create Jira issue<br />
-                - Note: projectKey can be MER|ERP|CRM|FIN, issueType can be Task|Bug, and summary is optional.
+                - Note: projectKey can be MER, ERP, CRM and FIN, issueType can be Task or Bug, and summary is optional.
               </p>
             </div>
           </motion.div>
