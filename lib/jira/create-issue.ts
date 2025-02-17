@@ -55,6 +55,13 @@ export async function createIssue(text: string, channel: string, ts: string, use
     *Reproduce Steps*\n\n*Actual Results*\n\n*Expected Results*\n\n*Causes & Reasons*\n\n*Solutions & Scopes*\n\n`;
   }
 
+  // 只有当 projectKey 为 MER 时才添加父 issue
+  if ('MER' == nowProjectKey) {
+    requestBody.fields.parent = {
+      key: 'MER-74',
+    };
+  }
+
   // 只有当 issueKey 存在时才添加关联
   if (result.issueKey) {
     requestBody.update = {
