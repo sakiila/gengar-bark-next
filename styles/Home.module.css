@@ -313,20 +313,42 @@
 }
 
 .guideDescription {
-  font-size: 1.1rem;
-  line-height: 1.8;
+  background: rgba(82, 66, 98, 0.15);
+  border-radius: 1rem;
+  padding: 2rem;
+  margin-bottom: 4rem;
+  border: 1px solid rgba(224, 99, 87, 0.2);
+  box-shadow: 0 8px 32px rgba(82, 66, 98, 0.1);
+}
+
+.guideDescription h3 {
+  font-size: 2rem;
+  margin: 0 0 2rem 0;
+  background: linear-gradient(90deg, #e06357, #b4755e);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-align: center;
+}
+
+.guideDescription h4 {
+  font-size: 1.3rem;
+  color: #ffffff;
+  margin: 1.5rem 0 0.5rem 0;
+}
+
+.guideDescription p {
+  margin: 0.5rem 0;
   color: rgba(255, 255, 255, 0.9);
+  line-height: 1.6;
 }
 
 .guideDescription code {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 0.2em 0.4em;
-  border-radius: 4px;
-  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+  background: rgba(224, 99, 87, 0.15);
+  padding: 0.2rem 0.5rem;
+  border-radius: 0.3rem;
+  font-family: 'Space Mono', monospace;
   font-size: 0.9em;
   color: #e06357;
-  margin: 0 0.2em;
-  display: inline-block;
 }
 
 .guideDescription a {
