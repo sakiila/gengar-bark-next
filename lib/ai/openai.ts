@@ -112,7 +112,7 @@ export async function generatePromptForJira(messages: any) {
   const assistantBackground: ChatCompletionMessageParam = {
     role: 'system',
     content: `Extract issue details from user input and provide them in JSON format. 
-    Only provide summary, description and issueKey, every field must less than 300 characters. issueKey can be blank if the input have not.
+    Only provide summary, description and issueKey, every field must less than 300 characters. issueKey can be found in text, such as CS-1234. issueKey can be blank if the input have not.
     example: {"summary":"Fix bug", "description":"The app is not working properly", "issueKey": "CS-1234"}.`,
   };
 
@@ -137,6 +137,8 @@ export async function generatePromptForJira(messages: any) {
     };
   })
   .filter(Boolean);
+
+  console.log('result = ', result);
 
   return [assistantBackground, ...result] as ChatCompletionMessageParam[];
 }

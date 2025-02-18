@@ -11,6 +11,14 @@ async function aiSummary(channel: string, ts: string) {
   return result;
 }
 
+async function getThreadLink(channelId: string, threadTs: string): Promise<string> {
+  // 构造链接
+  //或者使用 slack:// 协议的链接：
+  //const threadLink = `slack://channel?team=${teamId}&id=${channelId}&message_ts=${threadTs}`;
+
+  return `https://app.slack.com/client/T011CF3CMJN/${channelId}/thread/${threadTs}`;
+}
+
 export async function createIssue(text: string, channel: string, ts: string, userName: string) {
   const pattern = new RegExp('^jira\\s+(\\S+)\\s+(\\S+)(?:\\s+(.+))?$', 'i');
   const match = text.match(pattern);
@@ -18,6 +26,8 @@ export async function createIssue(text: string, channel: string, ts: string, use
   if (!match) {
     throw new Error('命令格式错误，请使用: jira <projectKey> <issueType> [summary]');
   }
+
+  const threadLink = getThreadLink(channel, ts);
 
   // use ai to generate summary and description
   const result = await aiSummary(channel, ts);
@@ -48,10 +58,10 @@ export async function createIssue(text: string, channel: string, ts: string, use
   };
 
   if ((('MER' == nowProjectKey || 'ERP' == nowProjectKey) && 'Bug Online' == nowIssueType)) {
-    requestBody.fields.customfield_10052 = `Issue created via Slack by Jira Command\n\nReporter: ${userName}\n\nAI generated summary:\n${result.description as string}\n\n
+    requestBody.fields.customfield_10052 = `Reporter: ${userName}\n\nAI generated summary:\n${result.description as string}\n\nSlack Thread: ${threadLink}\n\n
     *Reproduce Steps*\n\n*Actual Results*\n\n*Expected Results*\n\n*Causes & Reasons*\n\n*Solutions & Scopes*\n\n `;
   } else {
-    requestBody.fields.description = `Issue created via Slack by Jira Command\n\nReporter: ${userName}\n\nAI generated summary:\n${result.description as string}\n\n
+    requestBody.fields.description = `Reporter: ${userName}\n\nAI generated summary:\n${result.description as string}\n\nSlack Thread: ${threadLink}\n\n
     *Reproduce Steps*\n\n*Actual Results*\n\n*Expected Results*\n\n*Causes & Reasons*\n\n*Solutions & Scopes*\n\n`;
   }
 
