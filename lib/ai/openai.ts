@@ -116,24 +116,15 @@ export async function generatePromptForJira(messages: any) {
     example: {"summary":"Fix bug", "description":"The app is not working properly", "issueKey": "CS-1234"}.`,
   };
 
-  const botID = 'U0666R94C83';
-
   const result = messages
   .map((message: any) => {
     if (!message || !message.text || message.subtype === 'assistant_app_thread') {
       return null;
     }
-    const isBot = !!message.bot_id && !message.client_msg_id;
-    // const isNotMentioned = !isBot && !message.text.startsWith(`<@`);
-    // if (isNotMentioned) {
-    //   return null;
-    // }
 
     return {
-      role: isBot ? 'assistant' : 'user',
-      content: isBot
-        ? message.text
-        : message.text.replace(`<@${botID}> `, ''),
+      role: 'user',
+      content: message.text,
     };
   })
   .filter(Boolean);
