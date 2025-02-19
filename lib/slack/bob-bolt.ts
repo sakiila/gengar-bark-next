@@ -4,6 +4,7 @@ import { bot_token, personalCookie, personalToken } from '@/lib/slack/slack';
 // Initialize the Slack Bolt app with more configuration options
 const app = new App({
   token: process.env.SLACK_USER_TOKEN,
+  signingSecret: process.env.SLACK_SIGNING_SECRET,
   logLevel: LogLevel.DEBUG,
 });
 
@@ -115,4 +116,14 @@ export async function getAddedUserId(name: string) {
   return foundEmoji ? foundEmoji.user_id : 'unknown';
 }
 
-
+export async function sharedPublicURL(fileId: string) {
+  try {
+    const result = await botClient.files.sharedPublicURL({
+      file: fileId,
+    });
+    return result.file || 'unknown';
+  } catch (error) {
+    console.error('Error getting replies:', error);
+    return 'unknown';
+  }
+}

@@ -1,15 +1,13 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { postgres } from '@/lib/database/supabase';
-import { openView, postToUserIdHrDirectSchedule, publishView } from '@/lib/slack/slack';
+import { openView, publishView } from '@/lib/slack/slack';
 import { adminUser, banView, getView, getViewByUserIds } from '@/lib/events-handlers/hr-app-home-opened';
-
-interface SlackScheduledMessageResponse {
-  ok: boolean;
-  channel: string;
-  scheduled_message_id: string;
-  post_at: string;
-  error?: string;
-}
+import {
+  deleteScheduledMessages,
+  getConversationsInfo, postBlockMessage, postMessage,
+  scheduleMessage,
+} from '@/lib/slack/gengar-bolt';
+import { sharedPublicURL } from '@/lib/slack/bob-bolt';
 
 export default async function handler(
   req: NextApiRequest,
@@ -84,6 +82,10 @@ export default async function handler(
             page,
           );
           break;
+        case 'cancel_task':
+          await cancelTask(action.value.split('_')[1], action.value.split('_')[2]);
+          await publishView(userId, await getView(userId, page));
+          break;
       }
     }
   } else if (payload.type === 'view_submission') {
@@ -156,53 +158,25 @@ export default async function handler(
       const text_value =
         values.template_text_input.template_text_input_action.rich_text_value;
 
-      const image_values = [
-        {
-          type: 'image',
-          image_url: values.url_text_input_block1.url_text_input_action1.value,
-          alt_text: '',
+      const image_values = values.file_input_block.file_input_action.files.map(
+        (file: any) => {
+          return {
+            type: 'image',
+            title: {
+              type: 'plain_text',
+              text: file.title,
+            },
+            image_url: file.permalink,
+            alt_text: file.name,
+          };
         },
-        {
-          type: 'image',
-          image_url: values.url_text_input_block2.url_text_input_action2.value,
-          alt_text: '',
-        },
-        {
-          type: 'image',
-          image_url: values.url_text_input_block3.url_text_input_action3.value,
-          alt_text: '',
-        },
-        {
-          type: 'image',
-          image_url: values.url_text_input_block4.url_text_input_action4.value,
-          alt_text: '',
-        },
-        {
-          type: 'image',
-          image_url: values.url_text_input_block5.url_text_input_action5.value,
-          alt_text: '',
-        },
-      ];
+      );
 
-      // const image_value = values.file_input_block.file_input_action.files.map(
-      //   (file: any) => {
-      //     return {
-      //       type: "image",
-      //       title: {
-      //         type: "plain_text",
-      //         text: file.title,
-      //       },
-      //       image_url: file.permalink_public,
-      //       alt_text: file.name,
-      //     };
-      //   },
-      // );
-
-      // await Promise.all(
-      //   values.file_input_block.file_input_action.files.map((file: any) => {
-      //     sharedPublicURL(file.id);
-      //   }),
-      // );
+      await Promise.all(
+        values.file_input_block.file_input_action.files.map((file: any) => {
+          sharedPublicURL(file.id);
+        }),
+      );
 
       const blocks = [text_value, ...image_values];
       console.log('blocks = ', JSON.stringify(blocks));
@@ -217,17 +191,25 @@ export default async function handler(
       })
       .eq('id', template_id);
 
-      const selected_channels =
-        values.multi_channels_select_block.multi_channels_select_action
-          .selected_channels;
+      // const selected_channels =
+      //   values.multi_channels_select_block.multi_channels_select_action
+      //     .selected_channels;
+      const selected_channels = ['C067ENL1TLN'];
       const selected_date_time =
         values.datetimepicker_block.datetimepicker_action.selected_date_time;
 
       const scheduledMessages = (await Promise.all(
-        selected_channels.map((channel: string) =>
-          postToUserIdHrDirectSchedule(channel, blocks, selected_date_time),
-        ),
-      )) as SlackScheduledMessageResponse[];
+        selected_channels.map(async (channel) => {
+          try {
+            const result = await scheduleMessage(channel, 'HR People Management Message', blocks, selected_date_time);
+            await postBlockMessage(channel, '', blocks);
+            return result === 'unknown' ? null : result;
+          } catch (error) {
+            console.error(`Failed to schedule message for channel ${channel}:`, error);
+            return null;
+          }
+        })
+      )).filter((msg): msg is NonNullable<typeof msg> => msg !== null);
 
       const scheduledMessageDetails = scheduledMessages.map((msg) => ({
         channel: msg.channel,
@@ -235,22 +217,46 @@ export default async function handler(
       }));
       console.log('Scheduled message details:', scheduledMessageDetails);
 
-      const { data: taskData, error: taskError } = await postgres
-      .from('hr_auto_message_task')
-      .insert({
-        template_id: template_id,
-        template_text: JSON.stringify(blocks),
-        plan_send_time: new Date(selected_date_time).toISOString(), // Ensure the date is in ISO format
-        user_id: userId,
-        public_channel: selected_channels,
-        send_info: JSON.stringify(scheduledMessageDetails), // Ensure send_info is a string
-      });
+      await Promise.all(
+        scheduledMessages.map(async (msg) => {
+            if (!msg.channel) {
+              console.error('Channel ID is missing in scheduled message');
+              return;
+            }
+            const conversationsInfo = await getConversationsInfo(msg.channel);
+            if (conversationsInfo === 'unknown') {
+              console.error(`Unknown channel: ${msg.channel}`);
+              return;
+            }
+            return postgres
+            .from('hr_auto_message_task')
+            .insert({
+              template_id: template_id,
+              template_text: JSON.stringify(blocks),
+              plan_send_time: new Date(selected_date_time).toISOString(),
+              user_id: userId,
+              channel: msg.channel,
+              scheduled_message_id: msg.scheduled_message_id,
+              template_name: name,
+              channel_name: conversationsInfo.name,
+            });
+          },
+        ),
+      );
+
+      // const { data: taskData, error: taskError } = await postgres
+      // .from('hr_auto_message_task')
+      // .insert({
+      //   template_id: template_id,
+      //   template_text: JSON.stringify(blocks),
+      //   plan_send_time: new Date(selected_date_time).toISOString(), // Ensure the date is in ISO format
+      //   user_id: userId,
+      //   public_channel: selected_channels,
+      //   send_info: JSON.stringify(scheduledMessageDetails), // Ensure send_info is a string
+      // });
 
       if (error) {
         console.error('Error updating message template:', error);
-      }
-      if (taskError) {
-        console.error('Error updating task message:', taskError);
       }
       await publishView(userId, await getView(userId, page));
     }
@@ -549,6 +555,25 @@ async function getPushTemplateInfo(
         },
       },
       {
+        'type': 'input',
+        'block_id': 'file_input_block',
+        'label': {
+          'type': 'plain_text',
+          'text': 'Upload Images',
+        },
+        'element': {
+          'type': 'file_input',
+          'action_id': 'file_input_action',
+          'filetypes': [
+            'jpg',
+            'png',
+            'jpeg',
+            'gif',
+          ],
+          'max_files': 5,
+        },
+      },
+      {
         type: 'section',
         text: {
           type: 'plain_text',
@@ -561,7 +586,7 @@ async function getPushTemplateInfo(
         block_id: 'multi_channels_select_block',
         text: {
           type: 'mrkdwn',
-          text: 'Pick channels from the list',
+          text: '*Pick channels from the list*',
         },
         accessory: {
           action_id: 'multi_channels_select_action',
@@ -585,91 +610,6 @@ async function getPushTemplateInfo(
           emoji: true,
         },
       },
-      {
-        type: 'input',
-        block_id: 'url_text_input_block1',
-        element: {
-          type: 'url_text_input',
-          action_id: 'url_text_input_action1',
-          placeholder: {
-            type: 'plain_text',
-            text: 'https://gengar.baobo.me/vision.jpg',
-          },
-        },
-        label: {
-          type: 'plain_text',
-          text: 'Label',
-          emoji: true,
-        },
-      },
-      {
-        type: 'input',
-        block_id: 'url_text_input_block2',
-        element: {
-          type: 'url_text_input',
-          action_id: 'url_text_input_action2',
-          placeholder: {
-            type: 'plain_text',
-            text: 'https://gengar.baobo.me/chris.jpg',
-          },
-        },
-        label: {
-          type: 'plain_text',
-          text: 'Label',
-          emoji: true,
-        },
-      },
-      {
-        type: 'input',
-        block_id: 'url_text_input_block3',
-        element: {
-          type: 'url_text_input',
-          action_id: 'url_text_input_action3',
-          placeholder: {
-            type: 'plain_text',
-            text: 'https://gengar.baobo.me/joanne.jpg',
-          },
-        },
-        label: {
-          type: 'plain_text',
-          text: 'Label',
-          emoji: true,
-        },
-      },
-      {
-        type: 'input',
-        block_id: 'url_text_input_block4',
-        element: {
-          type: 'url_text_input',
-          action_id: 'url_text_input_action4',
-          placeholder: {
-            type: 'plain_text',
-            text: 'https://gengar.baobo.me/pinxuan.jpg',
-          },
-        },
-        label: {
-          type: 'plain_text',
-          text: 'Label',
-          emoji: true,
-        },
-      },
-      {
-        type: 'input',
-        block_id: 'url_text_input_block5',
-        element: {
-          type: 'url_text_input',
-          action_id: 'url_text_input_action5',
-          placeholder: {
-            type: 'plain_text',
-            text: 'https://gengar.baobo.me/bob.jpg',
-          },
-        },
-        label: {
-          type: 'plain_text',
-          text: 'Label',
-          emoji: true,
-        },
-      },
     ],
     submit: {
       type: 'plain_text',
@@ -685,4 +625,8 @@ async function getPushTemplateInfo(
   // console.log("modalView = ", JSON.stringify(modalView));
 
   await openView(triggerId, modalView);
+}
+
+async function cancelTask(channel: string, scheduledMessageId: string) {
+  await deleteScheduledMessages(channel, scheduledMessageId);
 }

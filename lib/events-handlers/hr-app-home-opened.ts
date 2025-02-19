@@ -24,11 +24,11 @@ export default async function openAppHome(
 
 export async function getView(userId: string, page: number) {
   const { error, data, count } = await postgres
-    .from('user')
-    .select('*', { count: 'exact' })
-    .eq('deleted', false)
-    .eq('is_bot', false)
-    .eq('team_id', 'T011CF3CMJN');
+  .from('user')
+  .select('*', { count: 'exact' })
+  .eq('deleted', false)
+  .eq('is_bot', false)
+  .eq('team_id', 'T011CF3CMJN');
 
   if (error || !count) {
     console.error('Error fetching users:', error);
@@ -43,13 +43,20 @@ export async function getView(userId: string, page: number) {
     page = 1;
   }
 
-  const [niceDayBlock, userBlocks, templateBlocks, templateLogBlocks, pushTemplateBlocks] =
+  const [niceDayBlock,
+    userBlocks,
+    templateBlocks,
+    templateLogBlocks,
+    pushTemplateBlocks,
+    pushTemplateTaskBlocks,
+  ] =
     await Promise.all([
       fetchUser(userId),
       fetchUserBlocks(page),
       fetchReminderTemplateBlocks(),
       fetchReminderTemplateLogBlocks(),
       fetchPushTemplateBlocks(),
+      fetchPushTemplateTaskBlocks(),
     ]);
 
   const view = {
@@ -145,11 +152,11 @@ export async function getView(userId: string, page: number) {
         type: 'header',
         text: {
           type: 'plain_text',
-          text: 'Manage Reminder Templates (5 templates)',
+          text: 'Manage Push Templates (Beta)',
           emoji: true,
         },
       },
-      ...templateBlocks,
+      ...pushTemplateBlocks,
       {
         type: 'actions',
         elements: [
@@ -161,8 +168,8 @@ export async function getView(userId: string, page: number) {
               emoji: true,
               text: 'Refresh',
             },
-            value: 'refresh_template',
-            action_id: 'refresh_template',
+            value: 'refresh_push_template',
+            action_id: 'refresh_push_template',
           },
         ],
       },
@@ -183,11 +190,33 @@ export async function getView(userId: string, page: number) {
         type: 'header',
         text: {
           type: 'plain_text',
-          text: 'Manage Push Templates (Beta)',
+          text: 'Manage Push Tasks (latest 10)',
           emoji: true,
         },
       },
-      ...pushTemplateBlocks,
+      ...pushTemplateTaskBlocks,
+      {
+        type: 'divider',
+      },
+      {
+        type: 'context',
+        elements: [
+          {
+            type: 'plain_text',
+            text: ' ',
+            emoji: true,
+          },
+        ],
+      },
+      {
+        type: 'header',
+        text: {
+          type: 'plain_text',
+          text: 'Manage Reminder Templates (5 templates)',
+          emoji: true,
+        },
+      },
+      ...templateBlocks,
       {
         type: 'actions',
         elements: [
@@ -199,8 +228,8 @@ export async function getView(userId: string, page: number) {
               emoji: true,
               text: 'Refresh',
             },
-            value: 'refresh_push_template',
-            action_id: 'refresh_push_template',
+            value: 'refresh_template',
+            action_id: 'refresh_template',
           },
         ],
       },
@@ -244,17 +273,17 @@ export async function getView(userId: string, page: number) {
 export async function getViewByUserIds(userIds: string[]) {
   let blo: any[] = [];
   await postgres
-    .from('user')
-    .select('*')
-    .in('user_id', userIds)
-    .eq('deleted', false)
-    .eq('is_bot', false)
-    .eq('team_id', 'T011CF3CMJN')
-    .order('real_name_normalized', { ascending: true })
-    .then(({ data, error }) => {
-      const usersBlocks = data?.map((user) => getUserBlock(user));
-      blo = blo.concat(usersBlocks);
-    });
+  .from('user')
+  .select('*')
+  .in('user_id', userIds)
+  .eq('deleted', false)
+  .eq('is_bot', false)
+  .eq('team_id', 'T011CF3CMJN')
+  .order('real_name_normalized', { ascending: true })
+  .then(({ data, error }) => {
+    const usersBlocks = data?.map((user) => getUserBlock(user));
+    blo = blo.concat(usersBlocks);
+  });
 
   const view = {
     private_metadata: JSON.stringify({
@@ -412,6 +441,26 @@ function getTemplateLogBlock(templateLog: any) {
   };
 }
 
+function getPushTemplateTaskBlock(pushTemplateTask: any) {
+  return {
+    type: 'section',
+    text: {
+      type: 'mrkdwn',
+      text: `${pushTemplateTask.id}. *${pushTemplateTask.template_name}* in *${pushTemplateTask.channel_name}* on ${formatDateTime(new Date(pushTemplateTask.plan_send_time))} ${pushTemplateTask.status == 1 ? 'Planned' : pushTemplateTask.status == 2 ? 'Sent' : pushTemplateTask.status == 3 ? 'Failed' : ''}`,
+    },
+    accessory: {
+      type: 'button',
+      text: {
+        type: 'plain_text',
+        text: `Cancel ${pushTemplateTask.id}`,
+        emoji: true,
+      },
+      value: `cancel_${pushTemplateTask.channel}_${pushTemplateTask.scheduled_message_id}`,
+      action_id: 'cancel_task',
+    },
+  };
+}
+
 export const adminUser = [
   'U03FPQWGTN2', // Bob
   'U03JFM4M82C', // Peter
@@ -440,12 +489,12 @@ export const banView = {
 
 async function fetchUser(userId: string) {
   const { data, error } = await postgres
-    .from('user')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('deleted', false)
-    .eq('is_bot', false)
-    .eq('team_id', 'T011CF3CMJN');
+  .from('user')
+  .select('*')
+  .eq('user_id', userId)
+  .eq('deleted', false)
+  .eq('is_bot', false)
+  .eq('team_id', 'T011CF3CMJN');
 
   if (error) {
     console.error('Error fetching user blocks:', error);
@@ -469,20 +518,20 @@ export async function getBirthdayUsers() {
   if (!dbUser || dbUser.length === 0) {
     return '';
   }
-  return "Happy birthday to " + dbUser?.map((user: User) => `${user.real_name_normalized}`).join(', ').trim() + ".";
+  return 'Happy birthday to ' + dbUser?.map((user: User) => `${user.real_name_normalized}`).join(', ').trim() + '.';
 }
 
 async function fetchUserBlocks(page: number) {
   const { data, error } = await postgres
-    .from('user')
-    .select('*')
-    .eq('deleted', false)
-    .eq('is_bot', false)
-    .eq('team_id', 'T011CF3CMJN')
-    // .ilike('email', '%@moego.pet%')
-    // .not('email', 'ilike', '%devops%')
-    .order('real_name_normalized', { ascending: true })
-    .range((page - 1) * 5, (page - 1) * 5 + 4);
+  .from('user')
+  .select('*')
+  .eq('deleted', false)
+  .eq('is_bot', false)
+  .eq('team_id', 'T011CF3CMJN')
+  // .ilike('email', '%@moego.pet%')
+  // .not('email', 'ilike', '%devops%')
+  .order('real_name_normalized', { ascending: true })
+  .range((page - 1) * 5, (page - 1) * 5 + 4);
 
   if (error) {
     console.error('Error fetching user blocks:', error);
@@ -494,10 +543,10 @@ async function fetchUserBlocks(page: number) {
 
 async function fetchReminderTemplateBlocks() {
   const { data, error } = await postgres
-    .from('hr_auto_message_template')
-    .select('*')
-    .gt('template_type', 0)
-    .order('id', { ascending: true });
+  .from('hr_auto_message_template')
+  .select('*')
+  .gt('template_type', 0)
+  .order('id', { ascending: true });
 
   if (error) {
     console.error('Error fetching template blocks:', error);
@@ -509,10 +558,10 @@ async function fetchReminderTemplateBlocks() {
 
 async function fetchReminderTemplateLogBlocks() {
   const { data, error } = await postgres
-    .from('hr_auto_message_template_log')
-    .select('*')
-    .order('id', { ascending: false })
-    .limit(10);
+  .from('hr_auto_message_template_log')
+  .select('*')
+  .order('id', { ascending: false })
+  .limit(10);
 
   if (error) {
     console.error('Error fetching template log blocks:', error);
@@ -535,6 +584,21 @@ async function fetchPushTemplateBlocks() {
   }
 
   return data.map(getPushTemplateBlock);
+}
+
+async function fetchPushTemplateTaskBlocks() {
+  const { data, error } = await postgres
+  .from('hr_auto_message_task')
+  .select('*')
+  .order('id', { ascending: false })
+  .limit(10);
+
+  if (error) {
+    console.error('Error fetching template log blocks:', error);
+    return [];
+  }
+
+  return data.map(getPushTemplateTaskBlock);
 }
 
 function formatDateTime(date: Date): string {

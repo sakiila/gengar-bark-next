@@ -42,7 +42,7 @@ async function sendMessageWithCustomization(params: any, iconUrl?: string, usern
     return await botClient.chat.postMessage({
       ...params,
       icon_url: iconUrl,
-      username: username
+      username: username,
     });
   } catch (error) {
     console.error('Error sending customized message:', error);
@@ -65,9 +65,16 @@ export async function postMessage(channel: string, thread_ts: string, text: stri
 
 export async function postMessageByAnon(channel: string, thread_ts: string, text: string) {
   if (!thread_ts || thread_ts.length === 0) {
-    return sendMessageWithCustomization({ channel, text }, 'https://ca.slack-edge.com/T011CF3CMJN-U03JFM4M82C-b91caa2d5299-512', '不愿透露姓名的知情人士');
+    return sendMessageWithCustomization({
+      channel,
+      text,
+    }, 'https://ca.slack-edge.com/T011CF3CMJN-U03JFM4M82C-b91caa2d5299-512', '不愿透露姓名的知情人士');
   }
-  return sendMessageWithCustomization({ channel, thread_ts, text }, 'https://ca.slack-edge.com/T011CF3CMJN-U03JFM4M82C-b91caa2d5299-512', '不愿透露姓名的知情人士');
+  return sendMessageWithCustomization({
+    channel,
+    thread_ts,
+    text,
+  }, 'https://ca.slack-edge.com/T011CF3CMJN-U03JFM4M82C-b91caa2d5299-512', '不愿透露姓名的知情人士');
 }
 
 /**
@@ -125,10 +132,6 @@ export async function deleteMessage(channel: string, ts: string) {
   }
 }
 
-interface ProfileStatus {
-  status_emoji: string;
-  status_text: string;
-}
 
 /**
  * Get thread replies
@@ -438,3 +441,45 @@ export async function dataImport(timeoutMinutes: number = 30) {
     throw err;
   }
 }
+
+export async function scheduleMessage(channel: string, text: string, blocks: any[], post_at: number) {
+  try {
+    const result = await botClient.chat.scheduleMessage({
+      channel,
+      blocks,
+      text,
+      post_at,
+    });
+    return result || 'unknown';
+  } catch (error) {
+    console.error('Error getting replies:', error);
+    return 'unknown';
+  }
+}
+
+export async function deleteScheduledMessages(channel: string, scheduled_message_id: string) {
+  try {
+    const result = await botClient.chat.deleteScheduledMessage({
+      channel,
+      scheduled_message_id,
+    });
+    return result.ok || 'unknown';
+  } catch (error) {
+    console.error('Error getting replies:', error);
+    return 'unknown';
+  }
+}
+
+export async function getConversationsInfo(channel: string) {
+  try {
+    const result = await botClient.conversations.info({
+      channel,
+    });
+    return result.channel || 'unknown';
+  } catch (error) {
+    console.error('Error getting replies:', error);
+    return 'unknown';
+  }
+}
+
+
