@@ -415,22 +415,6 @@ function getPushTemplateBlock(template: any) {
   };
 }
 
-// function getTemplateLogBlock(templateLog: any) {
-//   return {
-//     type: 'section',
-//     fields: [
-//       {
-//         type: 'mrkdwn',
-//         text: `${templateLog.id}. *${templateLog.log_name}* for *${templateLog.log_user_name}*\n        ${formatDateTime(new Date(templateLog.log_user_time))} ${templateLog.success ? ':white_check_mark:' : ':x:'} ${templateLog.log_result || ''}`,
-//       },
-//       {
-//         type: 'mrkdwn',
-//         text: `${templateLog.log_text.length > 90 ? templateLog.log_text.substring(0, 90) + '...' : templateLog.log_text}`,
-//       },
-//     ],
-//   };
-// }
-
 function getTemplateLogBlock(templateLog: any) {
   return {
     type: 'section',
@@ -446,13 +430,13 @@ function getPushTemplateTaskBlock(pushTemplateTask: any) {
     type: 'section',
     text: {
       type: 'mrkdwn',
-      text: `${pushTemplateTask.id}. *${pushTemplateTask.template_name}* in *${pushTemplateTask.channel_name}* on ${formatDateTime(new Date(pushTemplateTask.plan_send_time))} ${pushTemplateTask.status == 1 ? 'Planned' : pushTemplateTask.status == 2 ? 'Sent' : pushTemplateTask.status == 3 ? 'Failed' : ''}`,
+      text: `${pushTemplateTask.id}. *${pushTemplateTask.template_name}* in *#${pushTemplateTask.channel_name}* on ${formatDateTime(new Date(pushTemplateTask.plan_send_time))} ${pushTemplateTask.status == 1 ? 'Planned' : pushTemplateTask.status == 2 ? 'Sent' : pushTemplateTask.status == 3 ? 'Failed' : ''}`,
     },
     accessory: {
       type: 'button',
       text: {
         type: 'plain_text',
-        text: `Cancel ${pushTemplateTask.id}`,
+        text: `Cancel No.${pushTemplateTask.id}`,
         emoji: true,
       },
       value: `cancel_${pushTemplateTask.channel}_${pushTemplateTask.scheduled_message_id}`,

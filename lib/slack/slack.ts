@@ -126,7 +126,6 @@ export function verifyHrRequest(req: NextApiRequest) {
   }
 }
 
-
 export const reminderBlock = (
   reminder: string,
   text: string,
@@ -278,36 +277,6 @@ export async function postBoldBlockToChannelId(
   }
 }
 
-export async function postToUserId(
-  userId: string,
-  res: NextApiResponse,
-  text: string,
-) {
-  const message = {
-    channel: userId,
-    text: text,
-    // blocks: buildMarkdown(text),
-  };
-  const url = "https://slack.com/api/chat.postMessage";
-
-  try {
-    await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-        Authorization: `Bearer ${bot_token}`,
-      },
-      body: JSON.stringify(message),
-    });
-  } catch (err) {
-    console.log(err);
-    res.send({
-      response_type: "ephemeral",
-      text: `${err}`,
-    });
-  }
-}
-
 export async function postToUserIdHr(
   userId: string,
   res: NextApiResponse,
@@ -384,95 +353,6 @@ export async function postToUserIdHrDirect(
     }
   }
 }
-
-export async function postToUserIdHrDirectSchedule(
-  userId: string,
-  blocks: any,
-  postAt: number,
-): Promise<any> {
-  const message = {
-    channel: 'C067ENL1TLN',
-    text: "HR People Management Message",
-    blocks: blocks,
-    unfurl_links: false,
-    post_at: postAt,
-  };
-
-  console.log("message: ", JSON.stringify(message));
-
-  const url = "https://slack.com/api/chat.scheduleMessage";
-  try {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-        Authorization: `Bearer ${bot_hr_token}`,
-      },
-      body: JSON.stringify(message),
-    });
-
-    // Check if the response status is not successful
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    console.log("response data: ", data); // Log the response data here instead
-
-    // Make sure to handle this error in your calling function
-    if (data.error) {
-      throw new Error(data.error);
-    }
-
-    return data;
-  } catch (err) {
-    if (err instanceof Error) {
-      throw new Error(`postToUserIdHrDirect failed: ${err.message}`);
-    } else {
-      throw new Error(`postToUserIdHrDirect failed: ${err}`);
-    }
-  }
-}
-
-// export async function sharedPublicURL(
-//   fileId: string,
-// ): Promise<any> {
-//   const message = {
-//     file: fileId,
-//   };
-//
-//   const url = "https://slack.com/api/files.sharedPublicURL";
-//   try {
-//     const response = await fetch(url, {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json; charset=utf-8",
-//         Authorization: `Bearer ${user_token}`,
-//       },
-//       body: JSON.stringify(message),
-//     });
-//
-//     // Check if the response status is not successful
-//     if (!response.ok) {
-//       throw new Error(`HTTP error! status: ${response.status}`);
-//     }
-//
-//     const data = await response.json();
-//
-//     // Make sure to handle this error in your calling function
-//     if (data.error) {
-//       throw new Error(data.error);
-//     }
-//
-//     return data;
-//   } catch (err) {
-//     if (err instanceof Error) {
-//       throw new Error(`postToUserIdHrDirect failed: ${err.message}`);
-//     } else {
-//       throw new Error(`postToUserIdHrDirect failed: ${err}`);
-//     }
-//   }
-// }
 
 export async function postToProd(res: NextApiResponse, payload: string) {
   await postToChannelId(prodChannel, res, payload);

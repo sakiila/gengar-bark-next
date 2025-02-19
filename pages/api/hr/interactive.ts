@@ -166,20 +166,23 @@ export default async function handler(
               type: 'plain_text',
               text: file.title,
             },
-            image_url: file.permalink,
+            image_url: `${file.url_private}?pub_secret=${file.permalink_public?.split('-').pop()}`,
             alt_text: file.name,
           };
         },
       );
 
       await Promise.all(
-        values.file_input_block.file_input_action.files.map((file: any) => {
-          sharedPublicURL(file.id);
+        values.file_input_block.file_input_action.files.map(async (file: any) => {
+          await sharedPublicURL(file.id);
         }),
       );
 
+      // 添加 2 秒延迟
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
       const blocks = [text_value, ...image_values];
-      console.log('blocks = ', JSON.stringify(blocks));
+      // console.log('blocks = ', JSON.stringify(blocks));
 
       const { data: data, error: error } = await postgres
       .from('hr_auto_message_template')
@@ -191,15 +194,14 @@ export default async function handler(
       })
       .eq('id', template_id);
 
-      // const selected_channels =
-      //   values.multi_channels_select_block.multi_channels_select_action
-      //     .selected_channels;
-      const selected_channels = ['C067ENL1TLN'];
+      const selected_channels =
+        values.multi_channels_select_block.multi_channels_select_action
+          .selected_channels;
       const selected_date_time =
         values.datetimepicker_block.datetimepicker_action.selected_date_time;
 
       const scheduledMessages = (await Promise.all(
-        selected_channels.map(async (channel) => {
+        selected_channels.map(async (channel: string) => {
           try {
             const result = await scheduleMessage(channel, 'HR People Management Message', blocks, selected_date_time);
             return result === 'unknown' ? null : result;
@@ -214,7 +216,7 @@ export default async function handler(
         channel: msg.channel,
         scheduled_message_id: msg.scheduled_message_id,
       }));
-      console.log('Scheduled message details:', scheduledMessageDetails);
+      // console.log('Scheduled message details:', scheduledMessageDetails);
 
       await Promise.all(
         scheduledMessages.map(async (msg) => {
@@ -232,7 +234,7 @@ export default async function handler(
             .insert({
               template_id: template_id,
               template_text: JSON.stringify(blocks),
-              plan_send_time: new Date(selected_date_time).toISOString(),
+              plan_send_time: new Date(selected_date_time * 1000).toISOString(),
               user_id: userId,
               channel: msg.channel,
               scheduled_message_id: msg.scheduled_message_id,
@@ -242,17 +244,6 @@ export default async function handler(
           },
         ),
       );
-
-      // const { data: taskData, error: taskError } = await postgres
-      // .from('hr_auto_message_task')
-      // .insert({
-      //   template_id: template_id,
-      //   template_text: JSON.stringify(blocks),
-      //   plan_send_time: new Date(selected_date_time).toISOString(), // Ensure the date is in ISO format
-      //   user_id: userId,
-      //   public_channel: selected_channels,
-      //   send_info: JSON.stringify(scheduledMessageDetails), // Ensure send_info is a string
-      // });
 
       if (error) {
         console.error('Error updating message template:', error);
