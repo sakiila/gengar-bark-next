@@ -426,6 +426,25 @@ function getTemplateLogBlock(templateLog: any) {
 }
 
 function getPushTemplateTaskBlock(pushTemplateTask: any) {
+  if (pushTemplateTask.scheduled_message_id && pushTemplateTask.scheduled_message_id.length > 0) {
+    return {
+      type: 'section',
+      text: {
+        type: 'mrkdwn',
+        text: `${pushTemplateTask.id}. *${pushTemplateTask.template_name}* in *#${pushTemplateTask.channel_name}* on ${formatDateTime(new Date(pushTemplateTask.plan_send_time))} ${pushTemplateTask.status == 1 ? 'Planned' : pushTemplateTask.status == 2 ? 'Sent' : pushTemplateTask.status == 3 ? 'Failed' : ''}`,
+      },
+      accessory: {
+        type: 'button',
+        text: {
+          type: 'plain_text',
+          text: `Cancel No.${pushTemplateTask.id}`,
+          emoji: true,
+        },
+        value: `cancel_${pushTemplateTask.channel}_${pushTemplateTask.scheduled_message_id}`,
+        action_id: 'cancel_task',
+      },
+    };
+  }
   return {
     type: 'section',
     text: {
@@ -436,7 +455,7 @@ function getPushTemplateTaskBlock(pushTemplateTask: any) {
       type: 'button',
       text: {
         type: 'plain_text',
-        text: `Cancel No.${pushTemplateTask.id}`,
+        text: `Click to see`,
         emoji: true,
       },
       value: `cancel_${pushTemplateTask.channel}_${pushTemplateTask.scheduled_message_id}`,

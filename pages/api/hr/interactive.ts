@@ -200,23 +200,36 @@ export default async function handler(
       const selected_date_time =
         values.datetimepicker_block.datetimepicker_action.selected_date_time;
 
-      const scheduledMessages = (await Promise.all(
-        selected_channels.map(async (channel: string) => {
-          try {
-            const result = await scheduleMessage(channel, 'HR People Management Message', blocks, selected_date_time);
-            return result === 'unknown' ? null : result;
-          } catch (error) {
-            console.error(`Failed to schedule message for channel ${channel}:`, error);
-            return null;
-          }
-        })
-      )).filter((msg): msg is NonNullable<typeof msg> => msg !== null);
-
-      const scheduledMessageDetails = scheduledMessages.map((msg) => ({
-        channel: msg.channel,
-        scheduled_message_id: msg.scheduled_message_id,
-      }));
-      // console.log('Scheduled message details:', scheduledMessageDetails);
+      let scheduledMessages: any[];
+      if (selected_date_time <= new Date().getTime() / 1000) {
+        scheduledMessages = (await Promise.all(
+          selected_channels.map(async (channel: string) => {
+            try {
+              await postBlockMessage(channel, '', blocks);
+              return {
+                channel,
+                scheduled_message_id: '',
+                status: 2,
+              };
+            } catch (error) {
+              console.error(`Failed to schedule message for channel ${channel}:`, error);
+              return null;
+            }
+          }),
+        )).filter((msg): msg is NonNullable<typeof msg> => msg !== null);
+      } else {
+        scheduledMessages = (await Promise.all(
+          selected_channels.map(async (channel: string) => {
+            try {
+              const result = await scheduleMessage(channel, 'HR People Management Message', blocks, selected_date_time);
+              return result === 'unknown' ? null : result;
+            } catch (error) {
+              console.error(`Failed to schedule message for channel ${channel}:`, error);
+              return null;
+            }
+          }),
+        )).filter((msg): msg is NonNullable<typeof msg> => msg !== null);
+      }
 
       await Promise.all(
         scheduledMessages.map(async (msg) => {
@@ -240,6 +253,7 @@ export default async function handler(
               scheduled_message_id: msg.scheduled_message_id,
               template_name: name,
               channel_name: conversationsInfo.name,
+              status: msg.status || 1,
             });
           },
         ),
