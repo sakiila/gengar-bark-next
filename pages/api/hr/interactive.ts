@@ -202,7 +202,6 @@ export default async function handler(
         selected_channels.map(async (channel) => {
           try {
             const result = await scheduleMessage(channel, 'HR People Management Message', blocks, selected_date_time);
-            await postBlockMessage(channel, '', blocks);
             return result === 'unknown' ? null : result;
           } catch (error) {
             console.error(`Failed to schedule message for channel ${channel}:`, error);
