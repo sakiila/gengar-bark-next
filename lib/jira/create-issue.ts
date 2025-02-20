@@ -27,7 +27,7 @@ export async function createIssue(text: string, channel: string, ts: string, use
     throw new Error('命令格式错误，请使用: jira <projectKey> <issueType> [summary]');
   }
 
-  const threadLink = getThreadLink(channel, ts);
+  const threadLink = await getThreadLink(channel, ts);
 
   // use ai to generate summary and description
   const result = await aiSummary(channel, ts);
