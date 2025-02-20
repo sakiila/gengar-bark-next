@@ -12,11 +12,15 @@ async function aiSummary(channel: string, ts: string) {
 }
 
 async function getThreadLink(channelId: string, threadTs: string): Promise<string> {
-  // 构造链接
-  //或者使用 slack:// 协议的链接：
-  //const threadLink = `slack://channel?team=${teamId}&id=${channelId}&message_ts=${threadTs}`;
+  // 统一处理 threadTs 格式
+  let formattedTs = threadTs;
 
-  return `https://app.slack.com/client/T011CF3CMJN/${channelId}/thread/${threadTs}`;
+  // 如果包含小数点，说明是 1740041242.568629 格式
+  if (threadTs.includes('.')) {
+    formattedTs = threadTs.replace('.', '');
+  }
+
+  return `https://moegoworkspace.slack.com/archives/${channelId}/p${formattedTs}`;
 }
 
 export async function createIssue(text: string, channel: string, ts: string, userName: string) {
