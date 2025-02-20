@@ -183,7 +183,7 @@ export default async function handler(
       await new Promise(resolve => setTimeout(resolve, 2000));
 
       const blocks = [text_value, ...image_values];
-      // console.log('blocks = ', JSON.stringify(blocks));
+      console.log('blocks = ', JSON.stringify(blocks));
 
       const { data: data, error: error } = await postgres
       .from('hr_auto_message_template')
