@@ -4,9 +4,10 @@ import { openView, publishView } from '@/lib/slack/slack';
 import { adminUser, banView, getView, getViewByUserIds } from '@/lib/events-handlers/hr-app-home-opened';
 import {
   deleteScheduledMessages,
-  getConversationsInfo, postBlockMessage, postMessage,
+  getConversationsInfo,
+  postBlockMessage,
   scheduleMessage,
-} from '@/lib/slack/gengar-bolt';
+} from '@/lib/slack/hr-bolt';
 import { sharedPublicURL } from '@/lib/slack/bob-bolt';
 
 export default async function handler(

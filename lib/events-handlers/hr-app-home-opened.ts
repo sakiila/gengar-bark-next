@@ -466,8 +466,6 @@ function getPushTemplateTaskBlock(pushTemplateTask: any) {
 
 export const adminUser = [
   'U03FPQWGTN2', // Bob
-  'U03JFM4M82C', // Peter
-  'U02J9Q2ST1B', // Chris
   'U054RLGNA5U', // Iris
   'U01G0F85QGG', // Fiona
   'U0565L2DV50', // Eva
@@ -475,6 +473,8 @@ export const adminUser = [
   'U06PLNDC6KF', // Sora
   'U06RKRMELA2', // Teresa
   'U072DFTJ6G1', // Melody
+  'U03JFM4M82C', // Peter
+  'U02J9Q2ST1B', // Chris
 ];
 
 export const banView = {

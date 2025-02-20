@@ -25,27 +25,6 @@ async function sendMessage(params: any) {
   }
 }
 
-/**
- * Schedule a message to be sent later
- * @param channel - Channel or user ID
- * @param blocks - Message blocks
- * @param postAt - Unix timestamp for scheduled time
- */
-export async function scheduleMessage(channel: string, blocks: any[], postAt: number) {
-  try {
-    return await botClient.chat.scheduleMessage({
-      channel,
-      text: 'HR People Management Message',
-      blocks,
-      post_at: postAt,
-      unfurl_links: false,
-    });
-  } catch (error) {
-    console.error('Error scheduling message:', error);
-    throw error;
-  }
-}
-
 export async function publishView(userId: string, view: any) {
   const url = 'https://slack.com/api/views.publish';
 
@@ -113,5 +92,52 @@ export async function threadReply(channelId: string,
   } catch (error) {
     console.error('Error replying to thread:', error);
     throw error;
+  }
+}
+
+export async function postBlockMessage(channel: string, thread_ts: string, blocks: any[]) {
+  if (!thread_ts || thread_ts.length === 0) {
+    return sendMessage({ channel, blocks });
+  }
+  return sendMessage({ channel, thread_ts, blocks });
+}
+
+export async function scheduleMessage(channel: string, text: string, blocks: any[], post_at: number) {
+  try {
+    const result = await botClient.chat.scheduleMessage({
+      channel,
+      blocks,
+      text,
+      post_at,
+    });
+    return result || 'unknown';
+  } catch (error) {
+    console.error('Error getting replies:', error);
+    return 'unknown';
+  }
+}
+
+export async function deleteScheduledMessages(channel: string, scheduled_message_id: string) {
+  try {
+    const result = await botClient.chat.deleteScheduledMessage({
+      channel,
+      scheduled_message_id,
+    });
+    return result.ok || 'unknown';
+  } catch (error) {
+    console.error('Error getting replies:', error);
+    return 'unknown';
+  }
+}
+
+export async function getConversationsInfo(channel: string) {
+  try {
+    const result = await botClient.conversations.info({
+      channel,
+    });
+    return result.channel || 'unknown';
+  } catch (error) {
+    console.error('Error getting replies:', error);
+    return 'unknown';
   }
 }
