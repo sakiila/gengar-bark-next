@@ -62,10 +62,10 @@ export async function createIssue(text: string, channel: string, ts: string, use
   };
 
   if ((('MER' == nowProjectKey || 'ERP' == nowProjectKey) && 'Bug Online' == nowIssueType)) {
-    requestBody.fields.customfield_10052 = `Reporter: ${userName}\n\nAI generated summary:\n${result.description as string}\n\nSlack Thread: ${threadLink}\n\n
+    requestBody.fields.customfield_10052 = `Reporter: ${userName}\n\nSlack Thread: ${threadLink}\n\nAI generated summary: ${result.description as string}\n\n
     *Reproduce Steps*\n\n*Actual Results*\n\n*Expected Results*\n\n*Causes & Reasons*\n\n*Solutions & Scopes*\n\n `;
   } else {
-    requestBody.fields.description = `Reporter: ${userName}\n\nAI generated summary:\n${result.description as string}\n\nSlack Thread: ${threadLink}\n\n
+    requestBody.fields.description = `Reporter: ${userName}\n\nSlack Thread: ${threadLink}\n\nAI generated summary: ${result.description as string}\n\n
     *Reproduce Steps*\n\n*Actual Results*\n\n*Expected Results*\n\n*Causes & Reasons*\n\n*Solutions & Scopes*\n\n`;
   }
 
