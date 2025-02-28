@@ -101,7 +101,7 @@ export class HelpCommand implements Command {
    • 输入 \`jira <projectKey> <issueType> [summary]\` 创建 Jira issue（如 \`jira MER Task 修复登录问题\`）
    * 注意：projectKey 可用 MER|ERP|CRM|FIN，issueType 可用 Task|Bug，summary 选填。
 
-更新时间：2025-02-28。反馈建议：<@C08EXLMF5SQ>。
+更新时间：2025-02-28。反馈建议：<#C08EXLMF5SQ|bot-feedback-fuel>。
 `;
 
     await postMessage(this.channel, this.ts, helpText);
