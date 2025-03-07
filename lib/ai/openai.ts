@@ -82,8 +82,8 @@ export async function generatePromptFromThread(messages: any) {
     return {
       role: isBot ? 'assistant' : 'user',
       content: isBot
-        ? message.text
-        : message.text.replace(`<@${botID}> `, ''),
+        ?  cleanText(message.text)
+        : cleanText(message.text).replace(`<@${botID}> `, ''),
     };
   })
   .filter(Boolean);
@@ -108,6 +108,14 @@ export async function generatePromptForMoeGo(text: string) {
   ] as ChatCompletionMessageParam[];
 }
 
+function cleanText(text: string) {
+  // 清理文本中的特殊字符
+  return text
+  .replace(/[\r\n]+/g, ' ') // 替换换行符为空格
+  .replace(/\s+/g, ' ')     // 将多个空格替换为单个空格
+  .trim();  // 移除首尾空格
+}
+
 export async function generatePromptForJira(messages: any) {
   const assistantBackground: ChatCompletionMessageParam = {
     role: 'system',
@@ -124,7 +132,7 @@ export async function generatePromptForJira(messages: any) {
 
     return {
       role: 'user',
-      content: message.text,
+      content: cleanText(message.text),
     };
   })
   .filter(Boolean);
