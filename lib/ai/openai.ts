@@ -111,17 +111,19 @@ export async function generatePromptForMoeGo(text: string) {
 function cleanText(text: string) {
   // 清理文本中的特殊字符
   return text
-  .replace(/[\r\n]+/g, ' ') // 替换换行符为空格
-  .replace(/\s+/g, ' ')     // 将多个空格替换为单个空格
-  .trim();  // 移除首尾空格
+    .replace(/[\r\n]+/g, ' ')    // 替换换行符为空格
+    .replace(/\s+/g, ' ')        // 将多个空格替换为单个空格
+    .replace(/`/g, "'")          // 将反引号替换为单引号
+    .replace(/[\u2018\u2019]/g, "'")    // 替换智能引号为普通单引号
+    .replace(/[\u201C\u201D]/g, '"')    // 替换智能双引号为普通双引号
+    .replace(/[^\x20-\x7E\u4e00-\u9fa5]/g, '') // 只保留基本ASCII字符、中文和空格
+    .trim();  // 移除首尾空格
 }
 
 export async function generatePromptForJira(messages: any) {
   const assistantBackground: ChatCompletionMessageParam = {
     role: 'system',
-    content: `Extract issue details from user input and provide them in JSON format. 
-    Only provide summary, description and issueKey, every field must less than 300 characters. issueKey can be found in text, such as CS-1234. issueKey can be blank if the input have not.
-    example: {"summary":"Fix bug", "description":"The app is not working properly", "issueKey": "CS-1234"}.`,
+    content: 'Extract issue details from user input and provide them in JSON format. Only provide summary, description and issueKey. Every field must be less than 300 characters and must not contain any special characters or markdown formatting. The issueKey can be found in text (format: XX-1234) and can be blank if not present. Response must be a valid JSON string. Example: {"summary":"Fix login bug","description":"Users cannot log in using email","issueKey":"CS-1234"}',
   };
 
   const result = messages
@@ -136,8 +138,6 @@ export async function generatePromptForJira(messages: any) {
     };
   })
   .filter(Boolean);
-
-  console.log('result = ', result);
 
   return [assistantBackground, ...result] as ChatCompletionMessageParam[];
 }
