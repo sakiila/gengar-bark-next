@@ -560,22 +560,33 @@ async function getPushTemplateInfo(
         },
       },
       {
-        'type': 'input',
-        'block_id': 'file_input_block',
-        'label': {
-          'type': 'plain_text',
-          'text': 'Upload Images',
+        type: 'input',
+        block_id: 'file_input_block',
+        label: {
+          type: 'plain_text',
+          text: 'Upload Images',
         },
-        'element': {
-          'type': 'file_input',
-          'action_id': 'file_input_action',
-          'filetypes': [
+        optional: true,
+        element: {
+          type: 'file_input',
+          action_id: 'file_input_action',
+          filetypes: [
             'jpg',
             'png',
             'jpeg',
             'gif',
+            'mp4',
+            'mov',
+            'pdf',
+            'doc',
+            'docx',
+            'xls',
+            'xlsx',
+            'ppt',
+            'pptx',
+            'zip',
           ],
-          'max_files': 5,
+          max_files: 5,
         },
       },
       {
@@ -591,14 +602,22 @@ async function getPushTemplateInfo(
         block_id: 'multi_channels_select_block',
         text: {
           type: 'mrkdwn',
-          text: '*Pick channels from the list*',
+          text: '*Pick channels*',
         },
         accessory: {
           action_id: 'multi_channels_select_action',
-          type: 'multi_channels_select',
-          placeholder: {
-            type: 'plain_text',
-            text: 'Select channels',
+          type: 'multi_conversations_select',
+          initial_conversations: [
+            'C082T3YECAK',
+          ],
+          filter: {
+            include: [
+              'public',
+              'private',
+              'mpim',
+            ],
+            exclude_external_shared_channels: true,
+            exclude_bot_users: true,
           },
         },
       },
@@ -609,6 +628,7 @@ async function getPushTemplateInfo(
           type: 'datetimepicker',
           action_id: 'datetimepicker_action',
         },
+        optional: true,
         label: {
           type: 'plain_text',
           text: 'Plan sending time',
