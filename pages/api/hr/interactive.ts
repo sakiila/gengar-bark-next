@@ -159,30 +159,36 @@ export default async function handler(
       const text_value =
         values.template_text_input.template_text_input_action.rich_text_value;
 
-      const image_values = values.file_input_block.file_input_action.files.map(
-        (file: any) => {
-          return {
-            type: 'image',
-            title: {
-              type: 'plain_text',
-              text: file.title,
-            },
-            image_url: `${file.url_private}?pub_secret=${file.permalink_public?.split('-').pop()}`,
-            alt_text: file.name,
-          };
-        },
-      );
+      let blocks = [text_value];
 
-      await Promise.all(
-        values.file_input_block.file_input_action.files.map(async (file: any) => {
-          await sharedPublicURL(file.id);
-        }),
-      );
+      const files = values.file_input_block.file_input_action.files;
+      if (files && files.length > 0) {
+        const image_values = files.map(
+          (file: any) => {
+            return {
+              type: 'image',
+              title: {
+                type: 'plain_text',
+                text: file.title,
+              },
+              image_url: `${file.url_private}?pub_secret=${file.permalink_public?.split('-').pop()}`,
+              alt_text: file.name,
+            };
+          },
+        );
 
-      // 添加 2 秒延迟
-      await new Promise(resolve => setTimeout(resolve, 2000));
+        await Promise.all(
+          files.map(async (file: any) => {
+            await sharedPublicURL(file.id);
+          }),
+        );
 
-      const blocks = [text_value, ...image_values];
+        // 添加 2 秒延迟
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        blocks = [text_value, ...image_values];
+      }
+
       console.log('blocks = ', JSON.stringify(blocks));
 
       const { data: data, error: error } = await postgres
@@ -202,7 +208,7 @@ export default async function handler(
         values.datetimepicker_block.datetimepicker_action.selected_date_time;
 
       let scheduledMessages: any[];
-      if (selected_date_time <= new Date().getTime() / 1000) {
+      if (selected_date_time == null || selected_date_time <= new Date().getTime() / 1000) {
         scheduledMessages = (await Promise.all(
           selected_channels.map(async (channel: string) => {
             try {
