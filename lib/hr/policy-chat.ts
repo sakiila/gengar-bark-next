@@ -50,10 +50,10 @@ export async function response_policy(
 
 function processString(answer: string): string {
   // Step 1: Replace image patterns like ![](/api/image/abc) with https://amber.baobo.me/api/image/abc
-  let processed = answer.replace(/!\[\]\(\/api\/image\/([^)]+)\)/g, '<https://amber.baobo.me/api/image/$1|点击查看图片>');
+  let processed = answer.replace(/!\[]\(\/api\/image\/([^)]+)\)/g, '<https://amber.baobo.me/api/image/$1|点击查看图片>');
 
   // Step 2: Replace link patterns like [123](https://mengshikeji.feishu.cn/wiki/abc) with <123|https://mengshikeji.feishu.cn/wiki/abc>
-  processed = processed.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<$2|$1>');
+  processed = processed.replace(/\[([^\]]+)]\(([^)]+)\)/g, '<$2|$1>');
 
   return processed;
 }

@@ -1,6 +1,5 @@
 import { App, LogLevel } from '@slack/bolt';
-import { bot_hr_token, textToMarkdown } from '@/lib/slack/slack';
-import { NextApiResponse } from 'next';
+import { bot_hr_token } from '@/lib/slack/slack';
 
 // Initialize the Slack Bolt app with more configuration options
 const app = new App({
@@ -46,9 +45,7 @@ export async function publishView(userId: string, view: any) {
       throw new Error(message);
     }
 
-    const data = await response.json();
-
-    return data;
+    return await response.json();
   } catch (error) {
     console.error('Error publishing view:', error);
   }
