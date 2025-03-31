@@ -87,7 +87,7 @@ export async function threadReply(channelId: string,
       channel: channelId,
       thread_ts: ts,
       text,
-      blocks: textToMarkdown(text),
+      // blocks: textToMarkdown(text),
     });
   } catch (error) {
     console.error('Error replying to thread:', error);

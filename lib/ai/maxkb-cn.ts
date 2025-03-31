@@ -18,25 +18,25 @@ interface ChatCompletionResponse {
   }[];
 }
 
-export class MaxKBClient {
-  private static instance: MaxKBClient;
+export class MaxKBCNClient {
+  private static instance: MaxKBCNClient;
   private baseURL: string;
   private apiKey: string;
 
   private constructor() {
-    this.baseURL = process.env.MAXKB_BASE_URL || '';
-    this.apiKey = process.env.MAXKB_API_KEY || '';
+    this.baseURL = process.env.CN_MAXKB_BASE_URL || '';
+    this.apiKey = process.env.CN_MAXKB_API_KEY || '';
 
     if (!this.baseURL || !this.apiKey) {
       throw new Error('MaxKB 配置缺失，请检查环境变量设置');
     }
   }
 
-  public static getInstance(): MaxKBClient {
-    if (!MaxKBClient.instance) {
-      MaxKBClient.instance = new MaxKBClient();
+  public static getInstance(): MaxKBCNClient {
+    if (!MaxKBCNClient.instance) {
+      MaxKBCNClient.instance = new MaxKBCNClient();
     }
-    return MaxKBClient.instance;
+    return MaxKBCNClient.instance;
   }
 
   async createChatCompletion(messages: Message[]): Promise<string> {
@@ -73,14 +73,14 @@ export class MaxKBClient {
 }
 
 // 导出一个便捷的问答函数
-export async function askQuestion(question: string): Promise<string> {
+export async function askCNQuestion(question: string): Promise<string> {
   try {
-    const maxkb = MaxKBClient.getInstance();
+    const maxkb = MaxKBCNClient.getInstance();
     const messages = [
-      MaxKBClient.createSystemMessage(),
+      MaxKBCNClient.createSystemMessage(),
       { role: 'user', content: question }
     ];
-    
+
     return await maxkb.createChatCompletion(messages);
   } catch (error) {
     console.error('MaxKB 调用出错:', error);
