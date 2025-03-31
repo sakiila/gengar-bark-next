@@ -201,16 +201,15 @@ export default async function handler(
       })
       .eq('id', template_id);
 
-      const selected_channels =
-        values.multi_channels_select_block.multi_channels_select_action
-          .selected_channels;
+      const selected_conversations =
+        values.multi_channels_select_block.multi_channels_select_action.selected_conversations;
       const selected_date_time =
         values.datetimepicker_block.datetimepicker_action.selected_date_time;
 
       let scheduledMessages: any[];
       if (selected_date_time == null || selected_date_time <= new Date().getTime() / 1000) {
         scheduledMessages = (await Promise.all(
-          selected_channels.map(async (channel: string) => {
+          selected_conversations.map(async (channel: string) => {
             try {
               await postBlockMessage(channel, '', blocks);
               return {
@@ -226,7 +225,7 @@ export default async function handler(
         )).filter((msg): msg is NonNullable<typeof msg> => msg !== null);
       } else {
         scheduledMessages = (await Promise.all(
-          selected_channels.map(async (channel: string) => {
+          selected_conversations.map(async (channel: string) => {
             try {
               const result = await scheduleMessage(channel, 'HR People Management Message', blocks, selected_date_time);
               return result === 'unknown' ? null : result;
