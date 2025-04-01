@@ -58,7 +58,7 @@ export class MaxKBUSClient {
       return response.data.choices[0].message.content;
     } catch (error) {
       if (axios.isAxiosError(error)) {
-        throw new Error(`MaxKB API 调用失败: ${error.message}`);
+        throw new Error(`MaxKB US API 调用失败: ${error.message}`);
       }
       throw error;
     }

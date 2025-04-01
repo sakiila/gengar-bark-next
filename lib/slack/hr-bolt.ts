@@ -138,3 +138,31 @@ export async function getConversationsInfo(channel: string) {
     return 'unknown';
   }
 }
+
+/**
+ * Set suggested prompts for assistant
+ * @param channel_id - Channel ID
+ * @param thread_ts - Thread timestamp
+ * @param messages - Array of suggested prompts
+ * @param is_cn - Whether to use simplified Chinese or not
+ */
+export async function setSuggestedPrompts(channel_id: string, thread_ts: string, messages: string[], is_cn: boolean) {
+ const prompts =  messages.map((message) => {
+    return {
+      title: message,
+      message: message,
+    }
+  });
+
+  try {
+    await app.client.apiCall('assistant.threads.setSuggestedPrompts', {
+      channel_id,
+      thread_ts,
+      title: is_cn ? '猜你想问：' : 'Suggested questions:',
+      prompts: prompts,
+    });
+  } catch (error) {
+    console.error('Error setting prompts:', error);
+    throw error;
+  }
+}
