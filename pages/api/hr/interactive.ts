@@ -207,7 +207,8 @@ export default async function handler(
         values.datetimepicker_block.datetimepicker_action.selected_date_time;
 
       let scheduledMessages: any[];
-      if (selected_date_time == null || selected_date_time <= new Date().getTime() / 1000) {
+      const sendNow = selected_date_time == null || selected_date_time <= new Date().getTime() / 1000;
+      if (sendNow) {
         scheduledMessages = (await Promise.all(
           selected_conversations.map(async (channel: string) => {
             try {
@@ -253,7 +254,7 @@ export default async function handler(
             .insert({
               template_id: template_id,
               template_text: JSON.stringify(blocks),
-              plan_send_time: new Date(selected_date_time * 1000).toISOString(),
+              plan_send_time: sendNow ? new Date().toISOString() : new Date(selected_date_time * 1000).toISOString(),
               user_id: userId,
               channel: msg.channel,
               scheduled_message_id: msg.scheduled_message_id,
