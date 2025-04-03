@@ -1,5 +1,6 @@
 import { App, LogLevel } from '@slack/bolt';
-import { bot_hr_token } from '@/lib/slack/slack';
+import { bot_hr_token, bot_token } from '@/lib/slack/slack';
+import { NextApiResponse } from 'next';
 
 // Initialize the Slack Bolt app with more configuration options
 const app = new App({
@@ -24,30 +25,27 @@ async function sendMessage(params: any) {
   }
 }
 
-export async function publishView(userId: string, view: any) {
-  const url = 'https://slack.com/api/views.publish';
-
+export async function openView(triggerId: string, view: any) {
   try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${bot_hr_token}`,
-        'Content-type': 'application/json; charset=UTF-8',
-      },
-      body: JSON.stringify({
-        user_id: userId,
-        view: view,
-      }),
+    return await botClient.views.open({
+      trigger_id: triggerId,
+      view,
     });
-
-    if (!response.ok) {
-      const message = `An error has occurred: ${response.status}`;
-      throw new Error(message);
-    }
-
-    return await response.json();
   } catch (error) {
-    console.error('Error publishing view:', error);
+    console.error('Error sending message:', error);
+    throw error;
+  }
+}
+
+export async function publishView(userId: string, view: any) {
+  try {
+    return await botClient.views.publish({
+      user_id: userId,
+      view,
+    });
+  } catch (error) {
+    console.error('Error sending message:', error);
+    throw error;
   }
 }
 
@@ -147,11 +145,11 @@ export async function getConversationsInfo(channel: string) {
  * @param is_cn - Whether to use simplified Chinese or not
  */
 export async function setSuggestedPrompts(channel_id: string, thread_ts: string, messages: string[], is_cn: boolean) {
- const prompts =  messages.map((message) => {
+  const prompts = messages.map((message) => {
     return {
       title: message,
       message: message,
-    }
+    };
   });
 
   try {
@@ -164,5 +162,27 @@ export async function setSuggestedPrompts(channel_id: string, thread_ts: string,
   } catch (error) {
     console.error('Error setting prompts:', error);
     throw error;
+  }
+}
+
+export async function deleteMessage(urlString: string) {
+  console.log('deleting message url: ', urlString);
+  try {
+    const url = new URL(urlString);
+    if (!url.hostname.endsWith('slack.com') || !url.pathname.startsWith('/archives/')) {
+      console.log('not a valid slack message url');
+      return;
+    }
+
+    //  ['', 'archives', 'C067ENL1TLN', 'p1743429646143019']
+    const pathParts = url.pathname.split('/');
+    const channel = pathParts[2];
+    const ts = pathParts[3].slice(1, -6) + '.' + pathParts[3].slice(-6);
+
+    console.log('deleting message: ', channel, ts);
+
+    await botClient.chat.delete({ channel, ts });
+  } catch (error) {
+    console.error('Error deleting message:', error);
   }
 }

@@ -132,7 +132,6 @@ export async function deleteMessage(channel: string, ts: string) {
   }
 }
 
-
 /**
  * Get thread replies
  * @param channel - Channel ID

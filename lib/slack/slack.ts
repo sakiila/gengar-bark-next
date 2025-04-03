@@ -612,62 +612,6 @@ export async function responseUrl(url: string, text: string) {
   }
 }
 
-export async function publishView(userId: string, view: any) {
-  const url = "https://slack.com/api/views.publish";
-
-  try {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${bot_hr_token}`,
-        "Content-type": "application/json; charset=UTF-8",
-      },
-      body: JSON.stringify({
-        user_id: userId,
-        view: view,
-      }),
-    });
-
-    if (!response.ok) {
-      const message = `An error has occurred: ${response.status}`;
-      throw new Error(message);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error publishing view:", error);
-  }
-}
-
-export async function openView(triggerId: string, view: any) {
-  const url = "https://slack.com/api/views.open";
-
-  try {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${bot_hr_token}`,
-        "Content-type": "application/json; charset=UTF-8",
-      },
-      body: JSON.stringify({
-        trigger_id: triggerId,
-        view: view,
-      }),
-    });
-
-    if (!response.ok) {
-      const message = `An error has occurred: ${response.status}`;
-      throw new Error(message);
-    }
-
-    const data = await response.json();
-
-    return data;
-  } catch (error) {
-    console.error("Error publishing view:", error);
-  }
-}
-
 export async function setSuggestedPrompts(
   res: NextApiResponse,
   channelId: string,

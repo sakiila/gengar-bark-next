@@ -1,8 +1,10 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { postgres } from '@/lib/database/supabase';
-import { openView, publishView } from '@/lib/slack/slack';
 import { adminUser, banView, getView, getViewByUserIds } from '@/lib/events-handlers/hr-app-home-opened';
 import {
+  openView,
+  publishView,
+  deleteMessage,
   deleteScheduledMessages,
   getConversationsInfo,
   postBlockMessage,
@@ -85,6 +87,10 @@ export default async function handler(
           break;
         case 'cancel_task':
           await cancelTask(action.value.split('_')[1], action.value.split('_')[2]);
+          await publishView(userId, await getView(userId, page));
+          break;
+        case 'delete_message':
+          await deleteMessage(action.value);
           await publishView(userId, await getView(userId, page));
           break;
       }

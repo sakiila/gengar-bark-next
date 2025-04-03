@@ -78,7 +78,6 @@ export async function getThreadReply(channelId: string, ts: string) {
   }
 }
 
-
 export async function getAddedUserId(name: string) {
   var myHeaders = new Headers();
   myHeaders.append('authority', 'moegoworkspace.slack.com');

@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { publishView } from '@/lib/slack/slack';
 import { postgres } from '@/lib/database/supabase';
+import { publishView } from '@/lib/slack/hr-bolt';
 
 interface User {
   real_name_normalized: string;
@@ -157,22 +157,22 @@ export async function getView(userId: string, page: number) {
         },
       },
       ...pushTemplateBlocks,
-      {
-        type: 'actions',
-        elements: [
-          {
-            type: 'button',
-            style: 'primary',
-            text: {
-              type: 'plain_text',
-              emoji: true,
-              text: 'Refresh',
-            },
-            value: 'refresh_push_template',
-            action_id: 'refresh_push_template',
-          },
-        ],
-      },
+      // {
+      //   type: 'actions',
+      //   elements: [
+      //     {
+      //       type: 'button',
+      //       style: 'primary',
+      //       text: {
+      //         type: 'plain_text',
+      //         emoji: true,
+      //         text: 'Refresh',
+      //       },
+      //       value: 'refresh_push_template',
+      //       action_id: 'refresh_push_template',
+      //     },
+      //   ],
+      // },
       {
         type: 'divider',
       },
@@ -217,22 +217,22 @@ export async function getView(userId: string, page: number) {
         },
       },
       ...templateBlocks,
-      {
-        type: 'actions',
-        elements: [
-          {
-            type: 'button',
-            style: 'primary',
-            text: {
-              type: 'plain_text',
-              emoji: true,
-              text: 'Refresh',
-            },
-            value: 'refresh_template',
-            action_id: 'refresh_template',
-          },
-        ],
-      },
+      // {
+      //   type: 'actions',
+      //   elements: [
+      //     {
+      //       type: 'button',
+      //       style: 'primary',
+      //       text: {
+      //         type: 'plain_text',
+      //         emoji: true,
+      //         text: 'Refresh',
+      //       },
+      //       value: 'refresh_template',
+      //       action_id: 'refresh_template',
+      //     },
+      //   ],
+      // },
       {
         type: 'divider',
       },
@@ -255,6 +255,44 @@ export async function getView(userId: string, page: number) {
         },
       },
       ...templateLogBlocks,
+      {
+        type: 'divider',
+      },
+      {
+        type: 'context',
+        elements: [
+          {
+            type: 'plain_text',
+            text: ' ',
+            emoji: true,
+          },
+        ],
+      },
+      {
+        type: 'header',
+        text: {
+          type: 'plain_text',
+          text: 'Delete Message',
+          emoji: true,
+        },
+      },
+      {
+        dispatch_action: true,
+        type: 'input',
+        element: {
+          type: 'plain_text_input',
+          action_id: 'delete_message',
+          placeholder: {
+            type: 'plain_text',
+            text: 'e.g. https://moegoworkspace.slack.com/archives/C067ENL1TLN/p1743429646143019',
+          },
+        },
+        label: {
+          type: 'plain_text',
+          text: 'Enter a message sharing link',
+          emoji: true,
+        },
+      },
       {
         type: 'divider',
       },
