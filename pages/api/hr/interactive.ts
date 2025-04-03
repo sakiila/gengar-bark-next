@@ -659,5 +659,18 @@ async function getPushTemplateInfo(
 }
 
 async function cancelTask(channel: string, scheduledMessageId: string) {
-  await deleteScheduledMessages(channel, scheduledMessageId);
+  const result = await deleteScheduledMessages(channel, scheduledMessageId);
+  let status = 3;
+  if (result === 'unknown') {
+    status = 4;
+  }
+
+  postgres
+  .from('hr_auto_message_task')
+  .update
+  ({ status: status })
+  .eq('channel', channel.toUpperCase())
+  .eq('scheduled_message_id', scheduledMessageId.toUpperCase());
+
+  return result;
 }
