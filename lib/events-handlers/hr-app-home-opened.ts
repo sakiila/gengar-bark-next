@@ -426,12 +426,13 @@ function getTemplateLogBlock(templateLog: any) {
 }
 
 function getPushTemplateTaskBlock(pushTemplateTask: any) {
-  if (pushTemplateTask.scheduled_message_id && pushTemplateTask.scheduled_message_id.length > 0) {
+  const planned = pushTemplateTask.status == 1;
+  if (planned) {
     return {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: `${pushTemplateTask.id}. *${pushTemplateTask.template_name}* in *#${pushTemplateTask.channel_name}* on ${formatDateTime(new Date(pushTemplateTask.plan_send_time))} [${pushTemplateTask.status == 1 ? 'Planned' : pushTemplateTask.status == 2 ? 'Sent' : pushTemplateTask.status == 3 ? 'Failed' : ''}]`,
+        text: `${pushTemplateTask.id}. *${pushTemplateTask.template_name}* in <#${pushTemplateTask.channel}> on ${formatDateTime(new Date(pushTemplateTask.plan_send_time))} [${pushTemplateTask.status == 1 ? 'Planned' : pushTemplateTask.status == 2 ? 'Sent' : pushTemplateTask.status == 3 ? 'Canceled' : 'Unknown'}]`,
       },
       accessory: {
         type: 'button',
@@ -449,17 +450,7 @@ function getPushTemplateTaskBlock(pushTemplateTask: any) {
     type: 'section',
     text: {
       type: 'mrkdwn',
-      text: `${pushTemplateTask.id}. *${pushTemplateTask.template_name}* in *#${pushTemplateTask.channel_name}* on ${formatDateTime(new Date(pushTemplateTask.plan_send_time))} ${pushTemplateTask.status == 1 ? 'Planned' : pushTemplateTask.status == 2 ? 'Sent' : pushTemplateTask.status == 3 ? 'Failed' : ''}`,
-    },
-    accessory: {
-      type: 'button',
-      text: {
-        type: 'plain_text',
-        text: `Check Message`,
-        emoji: true,
-      },
-      value: `cancel_${pushTemplateTask.channel}_${pushTemplateTask.scheduled_message_id}`,
-      action_id: 'cancel_task',
+      text: `${pushTemplateTask.id}. *${pushTemplateTask.template_name}* in <#${pushTemplateTask.channel}> on ${formatDateTime(new Date(pushTemplateTask.plan_send_time))} [${pushTemplateTask.status == 1 ? 'Planned' : pushTemplateTask.status == 2 ? 'Sent' : pushTemplateTask.status == 3 ? 'Canceled' : 'Unknown'}]`,
     },
   };
 }
