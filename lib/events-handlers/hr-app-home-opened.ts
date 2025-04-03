@@ -470,7 +470,7 @@ function getPushTemplateTaskBlock(pushTemplateTask: any) {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: `${pushTemplateTask.id}. *${pushTemplateTask.template_name}* in <#${pushTemplateTask.channel}> on ${formatDateTime(new Date(pushTemplateTask.plan_send_time))} [${pushTemplateTask.status == 1 ? 'Planned' : pushTemplateTask.status == 2 ? 'Sent' : pushTemplateTask.status == 3 ? 'Canceled' : 'Unknown'}]`,
+        text: `${pushTemplateTask.id}. *${pushTemplateTask.template_name}* in <#${pushTemplateTask.channel}> on ${formatDateTime(new Date(pushTemplateTask.plan_send_time))} ${pushTemplateTask.status == 1 ? ':alarm_clock: Planned' : pushTemplateTask.status == 2 ? ':white_check_mark: Sent' : pushTemplateTask.status == 3 ? ':dove_of_peace: Canceled' : 'Unknown'}`,
       },
       accessory: {
         type: 'button',
@@ -488,7 +488,7 @@ function getPushTemplateTaskBlock(pushTemplateTask: any) {
     type: 'section',
     text: {
       type: 'mrkdwn',
-      text: `${pushTemplateTask.id}. *${pushTemplateTask.template_name}* in <#${pushTemplateTask.channel}> on ${formatDateTime(new Date(pushTemplateTask.plan_send_time))} [${pushTemplateTask.status == 1 ? 'Planned' : pushTemplateTask.status == 2 ? 'Sent' : pushTemplateTask.status == 3 ? 'Canceled' : 'Unknown'}]`,
+      text: `${pushTemplateTask.id}. *${pushTemplateTask.template_name}* in <#${pushTemplateTask.channel}> on ${formatDateTime(new Date(pushTemplateTask.plan_send_time))} ${pushTemplateTask.status == 1 ? ':alarm_clock: Planned' : pushTemplateTask.status == 2 ? ':white_check_mark: Sent' : pushTemplateTask.status == 3 ? ':dove_of_peace: Canceled' : 'Unknown'}`,
     },
   };
 }
