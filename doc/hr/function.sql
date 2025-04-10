@@ -28,7 +28,7 @@ FROM "user"
 WHERE deleted = false
   AND is_bot = false
   AND team_id = 'T011CF3CMJN'
-  AND tz = 'Asia/Chongqing'
+  AND country = 'CN'
   AND confirm_date = CURRENT_DATE
   AND (
     (tz IS NULL AND EXTRACT(HOUR FROM now() AT TIME ZONE 'Asia/Chongqing') = 9)
@@ -92,7 +92,7 @@ FROM "user"
 WHERE deleted = false
   AND is_bot = false
   AND team_id = 'T011CF3CMJN'
-  AND tz = 'Asia/Chongqing'
+  AND country = 'CN'
   AND entry_date = CURRENT_DATE - INTERVAL '30 days'
   AND (
     (tz IS NULL AND EXTRACT(HOUR FROM now() AT TIME ZONE 'Asia/Chongqing') = 9)
