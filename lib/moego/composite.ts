@@ -164,7 +164,7 @@ async function create(
     notes: [
       {
         note: `Created with Gengar AI by ${slackName}`,
-        type: 1,
+        type: 2,
       },
     ],
     petBelongings: [],
