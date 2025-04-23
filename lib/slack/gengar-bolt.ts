@@ -63,6 +63,10 @@ export async function postMessage(channel: string, thread_ts: string, text: stri
   return sendMessage({ channel, thread_ts, text });
 }
 
+export async function postMessageProdByAnon(thread_ts: string, text: string) {
+  await postMessageByAnon(process.env.PROD_CHANNEL as string, thread_ts, text);
+}
+
 export async function postMessageByAnon(channel: string, thread_ts: string, text: string) {
   if (!thread_ts || thread_ts.length === 0) {
     return sendMessageWithCustomization({

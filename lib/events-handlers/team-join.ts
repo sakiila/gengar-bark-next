@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { getUser, postgres } from '@/lib/database/supabase';
-import { postMessageByAnon } from '@/lib/slack/gengar-bolt';
+import { postMessageProdByAnon } from '@/lib/slack/gengar-bolt';
 
-export default async function teamJoin(
+export async function teamJoin(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
@@ -35,17 +35,30 @@ export default async function teamJoin(
         new Date().setMonth(
           new Date().getMonth() + 3,
         ),
-      )
+      ),
     },
     { onConflict: 'user_id' },
   );
 
   try {
-    const text = `:tada: <@${id}> (${realName}) has joined MoeGo!`;
-    // await postToProd(res, text);
-    await postMessageByAnon(process.env.PROD_CHANNEL as string, '', text);
+    const text = `:tada: <@${id}> (${realName}) has joined MoeGo in Slack!`;
+    await postMessageProdByAnon( '', text);
   } catch (e) {
     console.log(e);
   }
   return res.status(200).send('');
 }
+
+
+export async function teamJoinFeiShu(
+  realName: string,
+) {
+
+  try {
+    const text = `:tada: ${realName} has joined MoeGo in FeiShu!`;
+    await postMessageProdByAnon( '', text);
+  } catch (e) {
+    console.log(e);
+  }
+}
+

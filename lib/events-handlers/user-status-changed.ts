@@ -1,12 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import {
-  postToChannelId,
-  postToProd,
-  postToTest,
-  prodChannel,
-} from '@/lib/slack/slack';
+import { postToChannelId } from '@/lib/slack/slack';
 import { postgres } from '@/lib/database/supabase';
-import { getCache, setCacheEx } from '@/lib/upstash/upstash';
 
 export default async function userStatusChanged(
   req: NextApiRequest,

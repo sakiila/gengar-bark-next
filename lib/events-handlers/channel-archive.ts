@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { postToProd } from '@/lib/slack/slack';
+import { postMessageProdByAnon } from '@/lib/slack/gengar-bolt';
 
 export default async function channelArchive(
   req: NextApiRequest,
@@ -8,10 +8,8 @@ export default async function channelArchive(
   const event = req.body.event;
 
   try {
-    await postToProd(
-      res,
-      `:innocent: A channel archived: <#${event.channel}> by <@${event.user}> !`,
-    );
+    const text = `:innocent: A channel archived: <#${event.channel}> by <@${event.user}> !`;
+    await postMessageProdByAnon( '', text);
   } catch (e) {
     console.log(e);
   }

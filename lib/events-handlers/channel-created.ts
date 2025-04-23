@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { postToProd } from '@/lib/slack/slack';
+import { postMessageProdByAnon } from '@/lib/slack/gengar-bolt';
 
 export default async function channelCreated(
   req: NextApiRequest,
@@ -8,10 +8,8 @@ export default async function channelCreated(
   const event = req.body.event;
 
   try {
-    await postToProd(
-      res,
-      `:eyes: A new channel created: <#${event.channel.id}> by <@${event.channel.creator}> !`,
-    );
+    const text = `:eyes: A new channel created: <#${event.channel.id}> by <@${event.channel.creator}> !`;
+    await postMessageProdByAnon( '', text);
   } catch (e) {
     console.log(e);
   }

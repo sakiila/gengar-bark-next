@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { postgres } from '@/lib/database/supabase';
-import { postMessageByAnon } from '@/lib/slack/gengar-bolt';
+import { postMessageProdByAnon } from '@/lib/slack/gengar-bolt';
 
-export default async function userChange(
+export async function userChange(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
@@ -17,9 +17,9 @@ export default async function userChange(
     const teamId = user.team_id;
 
     const { data: dbUser } = await postgres
-      .from("user")
-      .select("*")
-      .eq("user_id", id);
+    .from('user')
+    .select('*')
+    .eq('user_id', id);
 
     const userLeft =
       !isBot &&
@@ -30,30 +30,29 @@ export default async function userChange(
     //   !deleted &&
     //   (!dbUser || dbUser.length === 0 || dbUser[0].deleted === true);
 
-    await postgres.from("user").upsert(
+    await postgres.from('user').upsert(
       {
         user_id: id,
         deleted: deleted,
         email: email,
         real_name_normalized: realName,
         updated_at: new Date().toISOString(),
-        tz: user.tz || (dbUser?.[0]?.tz || "Asia/Chongqing"),
+        tz: user.tz || (dbUser?.[0]?.tz || 'Asia/Chongqing'),
         is_bot: isBot,
         team_id: teamId,
       },
-      { onConflict: "user_id" },
+      { onConflict: 'user_id' },
     );
 
     if (userLeft) {
-      const text = `:smiling_face_with_tear: ${realName} (<@${id}>) has left MoeGo team.`;
-      // await postToProd(res, text);
-      await postMessageByAnon(process.env.PROD_CHANNEL as string, '', text);
+      const text = `:smiling_face_with_tear: ${realName} (<@${id}>) has left MoeGo team in Slack.`;
+      await postMessageProdByAnon( '', text);
     } else {
       res
-        .status(200)
-        .send(
-          `user_change ${realName} (<@${id}>) not deleted or not changed, no need to notify.`,
-        );
+      .status(200)
+      .send(
+        `user_change ${realName} (<@${id}>) not deleted or not changed, no need to notify.`,
+      );
     }
   } catch (e) {
     console.log(e);
@@ -141,3 +140,15 @@ export default async function userChange(
     "is_ext_shared_channel":false
 }
  */
+
+export async function teamLeftFeiShu(
+  realName: string,
+) {
+
+  try {
+    const text = `:smiling_face_with_tear: ${realName} has left MoeGo team in FeiShu.`;
+    await postMessageProdByAnon( '', text);
+  } catch (e) {
+    console.log(e);
+  }
+}
