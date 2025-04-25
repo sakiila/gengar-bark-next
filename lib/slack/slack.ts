@@ -540,27 +540,27 @@ export async function getProfileStatus() {
   }
 }
 
-export async function getThreadReply(channelId: string, ts: string) {
-  const url = `https://slack.com/api/conversations.replies?channel=${channelId}&ts=${ts}&inclusive=true`;
-
-  try {
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-        Authorization: `Bearer ${bot_token}`,
-      },
-    });
-    const data = await response.json();
-    if (data.ok) {
-      return data.messages;
-    } else {
-      return "unknown";
-    }
-  } catch (err) {
-    console.log(err);
-  }
-}
+// export async function getThreadReply(channelId: string, ts: string) {
+//   const url = `https://slack.com/api/conversations.replies?channel=${channelId}&ts=${ts}&inclusive=true`;
+//
+//   try {
+//     const response = await fetch(url, {
+//       method: "GET",
+//       headers: {
+//         "Content-Type": "application/json; charset=utf-8",
+//         Authorization: `Bearer ${bot_token}`,
+//       },
+//     });
+//     const data = await response.json();
+//     if (data.ok) {
+//       return data.messages;
+//     } else {
+//       return "unknown";
+//     }
+//   } catch (err) {
+//     console.log(err);
+//   }
+// }
 
 export async function threadReply(
   channelId: string,
@@ -609,60 +609,6 @@ export async function responseUrl(url: string, text: string) {
     });
   } catch (err) {
     console.log(err);
-  }
-}
-
-export async function setSuggestedPrompts(
-  res: NextApiResponse,
-  channelId: string,
-  ts: string,
-) {
-  const message = {
-    channel_id: channelId,
-    thread_ts: ts,
-    title: "Welcome buddy. What can I do for you today?",
-    prompts: [
-      {
-        title: "Who are you",
-        message: "Who are you?",
-      },
-      {
-        title: "Generate ideas",
-        message:
-          "Pretend you are a marketing associate and you need new ideas for an enterprise productivity feature. Generate 10 ideas for a new feature launch.",
-      },
-      {
-        title: "Describe how AI works",
-        message: "How does artificial intelligence work?",
-      },
-    ],
-  };
-
-  try {
-    const url: string =
-      "https://slack.com/api/assistant.threads.setSuggestedPrompts";
-    const response = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-        Authorization: `Bearer ${bot_token}`,
-      },
-      body: JSON.stringify(message),
-    });
-
-    const data = await response.json();
-    // console.log("data: ", data);
-    if (!data.ok) {
-      return res.status(200).send("");
-    }
-
-    return res.status(200).send("");
-  } catch (err) {
-    console.log(err);
-    res.send({
-      response_type: "ephemeral",
-      text: `${err}`,
-    });
   }
 }
 

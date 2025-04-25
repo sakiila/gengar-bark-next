@@ -181,9 +181,10 @@ export async function replyToThread(channel: string, thread_ts: string, text: st
  * @param channel_id - Channel ID
  * @param thread_ts - Thread timestamp
  */
-export async function setSuggestedPrompts(channel_id: string, thread_ts: string) {
+export async function setDefaultSuggestedPrompts(channel_id: string, thread_ts: string) {
   try {
-    await app.client.apiCall('assistant.threads.setSuggestedPrompts', {
+
+    await app.client.assistant.threads.setSuggestedPrompts({
       channel_id,
       thread_ts,
       title: 'Welcome buddy. What can I do for you today?',

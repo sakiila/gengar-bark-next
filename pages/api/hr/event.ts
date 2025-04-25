@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { verifyHrRequest } from '@/lib/slack/slack';
 import app_home_opened from '@/lib/events-handlers/hr-app-home-opened';
-import { response_policy } from '@/lib/hr/policy-chat';
-import { set_suggested_prompts } from '@/lib/events-handlers/chat';
+import { response_human_service, response_policy, set_suggested_prompts } from '@/lib/hr/policy-chat';
+import { send_response } from '@/lib/events-handlers/chat';
 
 export default async function handler(
   req: NextApiRequest,
@@ -38,6 +38,9 @@ export default async function handler(
             } else {
               return res.status(200).json({ message: 'Message ignored' });
             }
+            break;
+          case 'app_mention':
+            await response_human_service(req, res);
             break;
           default:
             return res.status(200).json({ message: 'Event ignored' });

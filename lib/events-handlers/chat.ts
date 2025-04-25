@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { setStatus, setSuggestedPrompts } from '@/lib/slack/slack';
+import { setStatus } from '@/lib/slack/slack';
 import { existsCacheThanSet } from '@/lib/upstash/upstash';
 import { logger } from '@/lib/utils/logger';
 import {
@@ -9,7 +9,8 @@ import {
   HelpCommand,
   IdCommand,
   JiraCommand,
-} from '../commands/commands';
+} from '../commands/gengar-commands';
+import { setDefaultSuggestedPrompts } from '@/lib/slack/gengar-bolt';
 
 /**
  * Send GPT response to the channel
@@ -74,7 +75,7 @@ export async function set_suggested_prompts(
   // console.log("thread_ts:", thread_ts);
 
   try {
-    await setSuggestedPrompts(res, channelId, thread_ts);
+    await setDefaultSuggestedPrompts(channelId, thread_ts);
     // return res.send({
     //   response_type: 'in_channel',
     //   text: `${gptResponse.choices[0].message.content}`,

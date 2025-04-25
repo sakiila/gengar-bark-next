@@ -1,6 +1,7 @@
 import { App, LogLevel } from '@slack/bolt';
 import { bot_hr_token, bot_token } from '@/lib/slack/slack';
 import { NextApiResponse } from 'next';
+import { MessageElement } from '@slack/web-api/dist/types/response/ConversationsRepliesResponse';
 
 // Initialize the Slack Bolt app with more configuration options
 const app = new App({
@@ -62,12 +63,15 @@ export async function setStatus(channelId: string, ts: string) {
   }
 }
 
-export async function getThreadReply(channelId: string, ts: string) {
+export async function getThreadReplies(channelId: string, ts: string) {
   try {
-    return await botClient.conversations.replies({
+    const result = await botClient.conversations.replies({
       channel: channelId,
-      ts: ts,
+      ts,
+      inclusive: true,
+      include_all_metadata: true,
     });
+    return result.messages || undefined;
   } catch (error) {
     console.error('Error getting thread reply:', error);
     throw error;
@@ -83,6 +87,29 @@ export async function threadReply(channelId: string,
       thread_ts: ts,
       text,
       // blocks: textToMarkdown(text),
+    });
+  } catch (error) {
+    console.error('Error replying to thread:', error);
+    throw error;
+  }
+}
+
+export async function threadReplyWithHumanMetaData(channelId: string,
+                                                   ts: string,
+                                                   text: string,
+                                                   firstTs: string) {
+  try {
+    return await botClient.chat.postMessage({
+      channel: channelId,
+      thread_ts: ts,
+      text,
+      // blocks: textToMarkdown(text),
+      metadata: {
+        event_type: 'human_reply',
+        event_payload: {
+          first_ts: firstTs,
+        },
+      },
     });
   } catch (error) {
     console.error('Error replying to thread:', error);
@@ -153,11 +180,44 @@ export async function setSuggestedPrompts(channel_id: string, thread_ts: string,
   });
 
   try {
-    await app.client.apiCall('assistant.threads.setSuggestedPrompts', {
+    await botClient.apiCall('assistant.threads.setSuggestedPrompts', {
       channel_id,
       thread_ts,
       title: is_cn ? '猜你想问：' : 'Suggested questions:',
       prompts: prompts,
+    });
+  } catch (error) {
+    console.error('Error setting prompts:', error);
+    throw error;
+  }
+}
+
+/**
+ * Set suggested prompts for assistant
+ * @param channel_id - Channel ID
+ * @param thread_ts - Thread timestamp
+ */
+export async function setDefaultSuggestedPrompts(channel_id: string, thread_ts: string) {
+  try {
+
+    await botClient.assistant.threads.setSuggestedPrompts({
+      channel_id,
+      thread_ts,
+      title: 'Hi! What can I do for you today?',
+      prompts: [
+        {
+          title: 'What is MoeGo\'s fundamental value?',
+          message: 'What is MoeGo\'s fundamental value?',
+        },
+        {
+          title: 'How do MoeGo view mediocrity?',
+          message: 'How do MoeGo view mediocrity?',
+        },
+        {
+          title: 'Calling human customer service',
+          message: 'Human',
+        },
+      ],
     });
   } catch (error) {
     console.error('Error setting prompts:', error);
