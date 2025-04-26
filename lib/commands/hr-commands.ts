@@ -5,6 +5,8 @@ import { askCNQuestion } from '@/lib/ai/maxkb-cn';
 import { askUSQuestion } from '@/lib/ai/maxkb-us';
 import { logger } from '@/lib/utils/logger';
 
+const humanServiceChannel = process.env.HUMAN_SERVICE_CHANNEL as string;
+
 export class HumanCommand implements Command {
   constructor(
     private channel: string,
@@ -29,7 +31,7 @@ export class HumanCommand implements Command {
 
     try {
       if (isCN) {
-        await threadReply(this.channel, this.ts, `请描述你的问题。人工客服一般会在工作时间回复。`);
+        await threadReply(this.channel, this.ts, `请描述你的问题。人工客服通常会在工作时间回复。`);
       } else {
         await threadReply(this.channel, this.ts, `Please describe your question. Human service usually replies during working hours.`);
       }
@@ -93,13 +95,12 @@ export class MaxKbCommand implements Command {
     .filter(text => text.trim().toLowerCase() === '人工' || text.trim().toLowerCase() === 'human');
 
     if (isHumanService) {
-
       const { data: record } = await postgres.from('hr_human_service')
       .select('*')
       .eq('bot_timestamp', this.ts);
 
       if (!record || record.length === 0) {
-        const result = await threadReplyWithHumanMetaData('C067ENL1TLN', '', `<@${this.userId}> ${text}`, this.ts);
+        const result = await threadReplyWithHumanMetaData(humanServiceChannel, '', `<!channel> <@${this.userId}> 说 ${text}`, this.ts);
         if (!result.ok) {
           throw new Error('Failed to send message');
         }
@@ -110,20 +111,21 @@ export class MaxKbCommand implements Command {
         }
 
         const ts = result.message?.ts;
-        const newArr = [
+       await postgres
+        .from('hr_human_service')
+        .insert([
           {
-            user_id: this.userId,
-            user_name: dbUser[0].real_name_normalized,
-            bot_timestamp: this.ts,
-            channel_timestamp: ts,
+            user_id: this.userId as string,
+            user_name: dbUser[0].real_name_normalized as string,
+            bot_timestamp: this.ts as string,
+            channel_timestamp: ts as string,
           },
-        ];
-        console.log('newArr:', newArr);
-        await postgres.from('hr_human_service').insert(newArr);
+        ])
+
         return;
       }
 
-      const result = await threadReplyWithHumanMetaData('C067ENL1TLN', record[0].channel_timestamp as string, `<@${this.userId}> ${text}`, record[0].bot_timestamp);
+      const result = await threadReplyWithHumanMetaData(humanServiceChannel, record[0].channel_timestamp as string, `<!channel> <@${this.userId}> 说 ${text}`, record[0].bot_timestamp);
 
       return;
     }

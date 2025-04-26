@@ -1,9 +1,9 @@
-import { getThreadReply } from '@/lib/slack/slack';
 import { generatePromptForJira, getGPT4 } from '@/lib/ai/openai';
 import { capitalizeWords } from '@/lib/utils/string-utils';
+import { getThreadReplies } from '@/lib/slack/gengar-bolt';
 
 async function aiSummary(channel: string, ts: string) {
-  const thread = await getThreadReply(channel, ts);
+  const thread = await getThreadReplies(channel, ts);
   const prompts = await generatePromptForJira(thread);
   const gptResponse = await getGPT4(prompts);
   const result = JSON.parse(gptResponse.choices[0].message.content as string);

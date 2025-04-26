@@ -1,7 +1,4 @@
 import { App, LogLevel } from '@slack/bolt';
-import { bot_hr_token, bot_token } from '@/lib/slack/slack';
-import { NextApiResponse } from 'next';
-import { MessageElement } from '@slack/web-api/dist/types/response/ConversationsRepliesResponse';
 
 // Initialize the Slack Bolt app with more configuration options
 const app = new App({
@@ -104,6 +101,7 @@ export async function threadReplyWithHumanMetaData(channelId: string,
       thread_ts: ts,
       text,
       // blocks: textToMarkdown(text),
+      username: "小伙伴求助（请在 Thread 中 @HrBot 回复）",
       metadata: {
         event_type: 'human_reply',
         event_payload: {
