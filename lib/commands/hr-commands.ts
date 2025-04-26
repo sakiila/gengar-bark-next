@@ -13,7 +13,6 @@ export class HumanCommand implements Command {
     private channel: string,
     private ts: string,
     private userId: string,
-    private userName: string,
   ) {
   }
 
@@ -77,7 +76,6 @@ export class MaxKbCommand implements Command {
     private channel: string,
     private ts: string,
     private userId: string,
-    private userName: string,
   ) {
   }
 
@@ -128,7 +126,7 @@ export class MaxKbCommand implements Command {
         return;
       }
 
-      const result = await threadReplyWithHumanMetaData(humanServiceChannel, record[0].channel_timestamp as string, `<!channel> <@${this.userId}> 说 ${text}`, record[0].bot_timestamp);
+      await threadReplyWithHumanMetaData(humanServiceChannel, record[0].channel_timestamp as string, `<!channel> <@${this.userId}> 说 ${text}`, record[0].bot_timestamp);
 
       return;
     }

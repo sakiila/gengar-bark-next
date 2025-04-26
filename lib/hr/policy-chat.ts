@@ -1,10 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import {
-  getThreadReplies,
-  setDefaultSuggestedPrompts,
-  setStatus, threadReply,
-  threadReplyWithHumanMetaData,
-} from '@/lib/slack/hr-bolt';
+import { getThreadReplies, setDefaultSuggestedPrompts, setStatus, threadReply } from '@/lib/slack/hr-bolt';
 import { logger } from '@/lib/utils/logger';
 import { HumanCommand, MaxKbCommand } from '@/lib/commands/hr-commands';
 import { postgres } from '@/lib/database/supabase';
@@ -14,7 +9,7 @@ export async function response_policy(
   res: NextApiResponse,
 ) {
   const userId = req.body.event.user;
-  const userName = req.body.event.user_name;
+  // const userName = req.body.event.user_name;
   const channel = req.body.event.channel;
   const ts = req.body.event.thread_ts ?? req.body.event.ts;
   const text: string = req.body.event.text;
@@ -30,8 +25,8 @@ export async function response_policy(
   }
 
   const commands = [
-    new HumanCommand(channel, ts, userId, userName),
-    new MaxKbCommand(channel, ts, userId, userName), // always the last command to avoid conflicts with other commands
+    new HumanCommand(channel, ts, userId),
+    new MaxKbCommand(channel, ts, userId), // always the last command to avoid conflicts with other commands
   ];
 
   try {
@@ -52,29 +47,20 @@ export async function set_suggested_prompts(
 ) {
   const channelId = req.body.event.assistant_thread.channel_id;
   const thread_ts = req.body.event.assistant_thread.thread_ts;
-
-  // console.log("channelId:", channelId);
-  // console.log("thread_ts:", thread_ts);
-
   try {
     await setDefaultSuggestedPrompts(channelId, thread_ts);
-    // return res.send({
-    //   response_type: 'in_channel',
-    //   text: `${gptResponse.choices[0].message.content}`,
-    // });
     return res.status(200).send('');
   } catch (error) {
     logger.error('send_response', error instanceof Error ? error : new Error('Unknown error'));
   }
 }
 
-
 export async function response_human_service(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  const userId = req.body.event.user;
-  const userName = req.body.event.user_name;
+  // const userId = req.body.event.user;
+  // const userName = req.body.event.user_name;
   const channel = req.body.event.channel;
   const ts = req.body.event.thread_ts ?? req.body.event.ts;
   const text: string = req.body.event.text;
