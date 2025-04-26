@@ -5,6 +5,7 @@ import { askCNQuestion } from '@/lib/ai/maxkb-cn';
 import { askUSQuestion } from '@/lib/ai/maxkb-us';
 import { logger } from '@/lib/utils/logger';
 
+// const humanServiceChannel = process.env.TEST_CHANNEL as string;
 const humanServiceChannel = process.env.HUMAN_SERVICE_CHANNEL as string;
 
 export class HumanCommand implements Command {
@@ -89,10 +90,12 @@ export class MaxKbCommand implements Command {
     if (!messages || messages.length === 0) {
       throw new Error('No messages found');
     }
-    const isHumanService = messages.map((message: any) => {
+    const isHumanService = messages
+    .map((message: any) => {
       return message.text;
     })
-    .filter(text => text.trim().toLowerCase() === '人工' || text.trim().toLowerCase() === 'human');
+    .filter(text => text?.trim().toLowerCase() === '人工' || text?.trim().toLowerCase() === 'human')
+      .length > 0; // Check if any messages match the criteria
 
     if (isHumanService) {
       const { data: record } = await postgres.from('hr_human_service')
@@ -111,7 +114,7 @@ export class MaxKbCommand implements Command {
         }
 
         const ts = result.message?.ts;
-       await postgres
+        await postgres
         .from('hr_human_service')
         .insert([
           {
@@ -120,7 +123,7 @@ export class MaxKbCommand implements Command {
             bot_timestamp: this.ts as string,
             channel_timestamp: ts as string,
           },
-        ])
+        ]);
 
         return;
       }
