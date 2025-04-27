@@ -1,5 +1,11 @@
 import { Command } from './command';
-import { getThreadReplies, setSuggestedPrompts, threadReply, threadReplyWithHumanMetaData } from '@/lib/slack/hr-bolt';
+import {
+  getThreadReplies,
+  setStatus,
+  setSuggestedPrompts,
+  threadReply,
+  threadReplyWithHumanMetaData,
+} from '@/lib/slack/hr-bolt';
 import { getUser, postgres } from '@/lib/database/supabase';
 import { askCNQuestion } from '@/lib/ai/maxkb-cn';
 import { askUSQuestion } from '@/lib/ai/maxkb-us';
@@ -127,8 +133,13 @@ export class MaxKbCommand implements Command {
       }
 
       await threadReplyWithHumanMetaData(humanServiceChannel, record[0].channel_timestamp as string, `<!channel> <@${this.userId}> 说 ${text}`, record[0].bot_timestamp);
-
       return;
+    }
+
+    try {
+      await setStatus(this.channel, this.ts);
+    } catch (error) {
+      logger.error('send_gpt_response_in_channel', error instanceof Error ? error : new Error('Unknown error'));
     }
 
     let country = 'CN';

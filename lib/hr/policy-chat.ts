@@ -18,12 +18,6 @@ export async function response_policy(
 
   res.status(200).send('');
 
-  try {
-    await setStatus(channel, ts);
-  } catch (error) {
-    logger.error('send_gpt_response_in_channel', error instanceof Error ? error : new Error('Unknown error'));
-  }
-
   const commands = [
     new HumanCommand(channel, ts, userId),
     new MaxKbCommand(channel, ts, userId), // always the last command to avoid conflicts with other commands
