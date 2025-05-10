@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getUser, postgres } from '@/lib/database/supabase';
+import { getUser, getUserByEmail, postgres } from '@/lib/database/supabase';
 import { postMessageProdByAnon } from '@/lib/slack/gengar-bolt';
+import { getCache, setCacheEx } from '@/lib/upstash/upstash';
 
 export async function teamJoin(
   req: NextApiRequest,
@@ -41,7 +42,7 @@ export async function teamJoin(
   );
 
   try {
-    const text = `:tada: <@${id}> (${realName}) has joined MoeGo in Slack!`;
+    const text = `:tada: <@${id}> (${realName}) has joined MoeGo in :slack: Slack!`;
     await postMessageProdByAnon( '', text);
   } catch (e) {
     console.log(e);
@@ -51,14 +52,26 @@ export async function teamJoin(
 
 
 export async function teamJoinFeiShu(
-  realName: string,
+  realName: string, email: string,
 ) {
+  if (await getCache(`feishu-join-${email}`) === 'true') {
+    return;
+  }
+
+  let text = `:tada: ${realName} has joined MoeGo team in :feishu: FeiShu!`;
+
+  const user = await getUserByEmail(email);
+  if (user && user.length > 0) {
+    text = `:tada: <@${user[0].user_id}> (${realName}) has joined MoeGo team in :feishu: FeiShu!`;
+  }
 
   try {
-    const text = `:tada: ${realName} has joined MoeGo in FeiShu!`;
     await postMessageProdByAnon( '', text);
   } catch (e) {
     console.log(e);
+    return;
   }
+
+  await setCacheEx(`feishu-join-${email}`, 'true', 60 * 60 * 24)
 }
 

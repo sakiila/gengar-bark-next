@@ -57,6 +57,20 @@ export async function getUser(userId: string) {
   .select('*')
   .eq('user_id', userId)
   .eq('deleted', false);
+  if (error) {
+    console.error('Supabase getUser Error:', error);
+  }
+  return dbUser;
+}
+
+export async function getUserByEmail(email: string) {
+  const { data: dbUser, error } = await postgres
+  .from('user')
+  .select('*')
+  .ilike('email', email);
+  if (error) {
+    console.error('Supabase getUserByEmail Error:', error);
+  }
   return dbUser;
 }
 
@@ -64,7 +78,10 @@ export async function getUserNoFilter(userId: string) {
   const { data: dbUser, error } = await postgres
   .from('user')
   .select('*')
-  .eq('user_id', userId)
+  .eq('user_id', userId);
+  if (error) {
+    console.error('Supabase getUserNoFilter Error:', error);
+  }
   return dbUser;
 }
 
@@ -72,5 +89,8 @@ export async function getAllUser() {
   const { data: dbUser, error } = await postgres
   .from('user')
   .select('*');
+  if (error) {
+    console.error('Supabase getAllUser Error:', error);
+  }
   return dbUser;
 }

@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { postgres } from '@/lib/database/supabase';
+import { getUserByEmail, postgres } from '@/lib/database/supabase';
 import { postMessageProdByAnon } from '@/lib/slack/gengar-bolt';
+import { getCache, setCacheEx } from '@/lib/upstash/upstash';
 
 export async function userChange(
   req: NextApiRequest,
@@ -45,7 +46,7 @@ export async function userChange(
     );
 
     if (userLeft) {
-      const text = `:smiling_face_with_tear: ${realName} (<@${id}>) has left MoeGo team in Slack.`;
+      const text = `:smiling_face_with_tear: ${realName} (<@${id}>) has left MoeGo team in :slack: Slack.`;
       await postMessageProdByAnon( '', text);
     } else {
       res
@@ -142,13 +143,24 @@ export async function userChange(
  */
 
 export async function teamLeftFeiShu(
-  realName: string,
+  realName: string, email: string,
 ) {
+  if (await getCache(`user-left-feishu-${email}`) === 'true') {
+    return;
+  }
+
+  let text = `:smiling_face_with_tear: ${realName} has left MoeGo team in :feishu: FeiShu.`;
+  const user = await getUserByEmail(email);
+  if (user && user.length > 0) {
+    text = `:smiling_face_with_tear: <@${user[0].user_id}> (${realName}) has left MoeGo team in :feishu: FeiShu!`;
+  }
 
   try {
-    const text = `:smiling_face_with_tear: ${realName} has left MoeGo team in FeiShu.`;
     await postMessageProdByAnon( '', text);
   } catch (e) {
     console.log(e);
+    return;
   }
+
+  await setCacheEx(`user-left-feishu-${email}`, 'true', 60 * 60 * 24);
 }

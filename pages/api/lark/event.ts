@@ -40,12 +40,14 @@ export default async function handler(
 
   const eventType = body.header.event_type;
 
+  const name = body.event.object.name;
+  const email = body.event.object.email;
   switch (eventType) {
     case 'contact.user.created_v3':
-      await teamJoinFeiShu(body.event.object.name);
+      await teamJoinFeiShu(name, email);
       break;
     case 'contact.user.deleted_v3':
-      await teamLeftFeiShu(body.event.object.name);
+      await teamLeftFeiShu(name, email);
       break;
   }
 
