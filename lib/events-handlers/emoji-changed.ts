@@ -1,10 +1,9 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextApiRequest } from 'next';
 import { getAddedUserId } from '@/lib/slack/slack';
 import { postMessageProdByAnon } from '@/lib/slack/gengar-bolt';
 
 export default async function emojiChanged(
   req: NextApiRequest,
-  res: NextApiResponse,
 ) {
   const event = req.body.event;
 
@@ -14,16 +13,16 @@ export default async function emojiChanged(
       case 'add':
         const userId = await getAddedUserId(event.name);
         if (userId !== 'unknown') {
-          text = `:tada:  ${event.subtype} Emoji :${event.name}: name: ${event.name} pic: ${event.value} user: <@${userId}>`;
+          text = `:tada:  ${event.subtype} emoji :${event.name}: (${event.name}) ${event.value} by <@${userId}>`;
           break;
         }
-        text = `:tada:  ${event.subtype} Emoji :${event.name}: name: ${event.name} pic: ${event.value}`;
+        text = `:tada:  ${event.subtype} emoji :${event.name}: (${event.name}) ${event.value}`;
         break;
       case 'remove':
-        text = `:tada:  ${event.subtype} Emoji ${event.names}`;
+        text = `:tada:  ${event.subtype} emoji ${event.names}`;
         break;
       case 'rename':
-        text = `:tada:  ${event.subtype} Emoji :${event.new_name}: name: ${event.new_name}`;
+        text = `:tada:  ${event.subtype} emoji :${event.new_name}: (${event.new_name})`;
         break;
     }
 

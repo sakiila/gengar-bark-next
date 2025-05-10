@@ -59,7 +59,7 @@ export default async function handler(
       try {
         switch (event_type) {
           case 'emoji_changed':
-            await emojiChanged(req, res);
+            await emojiChanged(req);
             break;
           case 'team_join':
             await teamJoin(req, res);
