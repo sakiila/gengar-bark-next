@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { teamLeftFeiShu } from '@/lib/events-handlers/user-change';
 import crypto from 'crypto';
 import { teamJoinFeiShu } from '@/lib/events-handlers/team-join';
+import { getCache, setCacheEx } from '@/lib/upstash/upstash';
 
 const larkToken = process.env.LARK_TOKEN as string;
 
@@ -38,6 +39,13 @@ export default async function handler(
     return res.status(200).json({ challenge: body.challenge });
   }
 
+  const eventId = body.header.event_id;
+  const value = await getCache(`feishu:event:${eventId}`);
+  if (value) {
+    console.log('event already handled');
+    return res.status(200).json({ challenge: body.challenge });
+  }
+
   const eventType = body.header.event_type;
 
   const name = body.event.object.name;
@@ -50,5 +58,7 @@ export default async function handler(
       await teamLeftFeiShu(name, email);
       break;
   }
+
+  await setCacheEx(`feishu:event:${eventId}`, 'true', 60 * 60 * 24 * 7);
 
 }

@@ -72,13 +72,13 @@ export async function postMessageByAnon(channel: string, thread_ts: string, text
     return sendMessageWithCustomization({
       channel,
       text,
-    }, 'https://ca.slack-edge.com/T011CF3CMJN-U03JFM4M82C-b91caa2d5299-512', 'Pater');
+    }, 'https://ca.slack-edge.com/T011CF3CMJN-U03JFM4M82C-b91caa2d5299-512', 'Petar');
   }
   return sendMessageWithCustomization({
     channel,
     thread_ts,
     text,
-  }, 'https://ca.slack-edge.com/T011CF3CMJN-U03JFM4M82C-b91caa2d5299-512', 'Pater');
+  }, 'https://ca.slack-edge.com/T011CF3CMJN-U03JFM4M82C-b91caa2d5299-512', 'Petar');
 }
 
 /**
