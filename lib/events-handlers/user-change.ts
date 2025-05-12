@@ -145,7 +145,8 @@ export async function userChange(
 export async function teamLeftFeiShu(
   realName: string, email: string,
 ) {
-  if (await getCache(`user-left-feishu-${email}`) === 'true') {
+  const value = await getCache(`user-left-feishu-${email}`);
+  if (value) {
     return;
   }
 

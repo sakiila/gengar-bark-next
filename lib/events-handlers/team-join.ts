@@ -54,7 +54,8 @@ export async function teamJoin(
 export async function teamJoinFeiShu(
   realName: string, email: string,
 ) {
-  if (await getCache(`feishu-join-${email}`) === 'true') {
+  const value = await getCache(`feishu-join-${email}`);
+  if (value) {
     return;
   }
 
