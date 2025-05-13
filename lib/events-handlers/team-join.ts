@@ -42,7 +42,7 @@ export async function teamJoin(
   );
 
   try {
-    const text = `:tada: <@${id}> (${realName}) has joined MoeGo in :slack: Slack!`;
+    const text = `:tada: ${realName} (<@${id}>) has joined MoeGo in :slack: Slack!`;
     await postMessageProdByAnon( '', text);
   } catch (e) {
     console.log(e);
@@ -63,7 +63,7 @@ export async function teamJoinFeiShu(
 
   const user = await getUserByEmail(email);
   if (user && user.length > 0) {
-    text = `:tada: <@${user[0].user_id}> (${realName}) has joined MoeGo team in :feishu: FeiShu!`;
+    text = `:tada: ${realName} (<@${user[0].user_id}>) has joined MoeGo team in :feishu: FeiShu!`;
   }
 
   try {
