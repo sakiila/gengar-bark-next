@@ -143,9 +143,10 @@ export async function userChange(
  */
 
 export async function teamLeftFeiShu(
-  realName: string, email: string,
+  realName: string, nickname: string, email: any,
 ) {
-  const value = await getCache(`user-left-feishu-${email}`);
+  const key = `user-left-feishu-${email}`;
+  const value = await getCache(key);
   if (value) {
     return;
   }
@@ -153,7 +154,9 @@ export async function teamLeftFeiShu(
   let text = `:smiling_face_with_tear: ${realName} has left MoeGo team in :feishu: FeiShu.`;
   const user = await getUserByEmail(email);
   if (user && user.length > 0) {
-    text = `:smiling_face_with_tear: ${realName} (<@${user[0].user_id}> ) has left MoeGo team in :feishu: FeiShu!`;
+    text = `:smiling_face_with_tear: ${realName} (<@${user[0].user_id}>) has left MoeGo team in :feishu: FeiShu!`;
+  } else if (nickname.length > 0) {
+    text = `:smiling_face_with_tear: ${realName} (${nickname}) has left MoeGo team in :feishu: FeiShu!`;
   }
 
   try {
@@ -163,5 +166,5 @@ export async function teamLeftFeiShu(
     return;
   }
 
-  await setCacheEx(`user-left-feishu-${email}`, 'true', 60 * 60 * 24);
+  await setCacheEx(key, 'true', 60 * 60 * 24);
 }

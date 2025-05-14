@@ -39,26 +39,18 @@ export default async function handler(
     return res.status(200).json({ challenge: body.challenge });
   }
 
-  const eventId = body.header.event_id;
-  const value = await getCache(`feishu:event:${eventId}`);
-  if (value) {
-    console.log('event already handled');
-    return res.status(200).json({ challenge: body.challenge });
-  }
-
   const eventType = body.header.event_type;
 
   const name = body.event.object.name;
+  const nickname = body.event.object.nickname;
   const email = body.event.object.email;
   switch (eventType) {
     case 'contact.user.created_v3':
-      await teamJoinFeiShu(name, email);
+      await teamJoinFeiShu(name,nickname, email);
       break;
     case 'contact.user.deleted_v3':
-      await teamLeftFeiShu(name, email);
+      await teamLeftFeiShu(name,nickname, email);
       break;
   }
-
-  await setCacheEx(`feishu:event:${eventId}`, 'true', 60 * 60 * 24 * 7);
 
 }

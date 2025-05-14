@@ -52,9 +52,10 @@ export async function teamJoin(
 
 
 export async function teamJoinFeiShu(
-  realName: string, email: string,
+  realName: string, nickname: string, email: any,
 ) {
-  const value = await getCache(`feishu-join-${email}`);
+  const key = `user-join-feishu-${email}`;
+  const value = await getCache(key);
   if (value) {
     return;
   }
@@ -64,6 +65,8 @@ export async function teamJoinFeiShu(
   const user = await getUserByEmail(email);
   if (user && user.length > 0) {
     text = `:tada: ${realName} (<@${user[0].user_id}>) has joined MoeGo team in :feishu: FeiShu!`;
+  } else if (nickname.length > 0) {
+    text = `:tada: ${realName} (${nickname}) has joined MoeGo team in :feishu: FeiShu!`;
   }
 
   try {
@@ -73,6 +76,6 @@ export async function teamJoinFeiShu(
     return;
   }
 
-  await setCacheEx(`feishu-join-${email}`, 'true', 60 * 60 * 24)
+  await setCacheEx(key, 'true', 60 * 60 * 24)
 }
 
