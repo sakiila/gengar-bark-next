@@ -123,7 +123,7 @@ function cleanText(text: string) {
 export async function generatePromptForJira(messages: any) {
   const assistantBackground: ChatCompletionMessageParam = {
     role: 'system',
-    content: 'Extract issue details from user input and provide them in JSON format. Only provide summary, description and issueKey. Every field must be less than 300 characters and must not contain any special characters or markdown formatting. The issueKey can be found in text (format: XX-1234) and can be blank if not present. Response must be a valid JSON string. Example: {"summary":"Fix login bug","description":"Users cannot log in using email","issueKey":"CS-1234"}',
+    content: 'Extract issue details from user input and provide them in JSON format. Only provide summary, description and issueKey. Every field must be less than 300 characters and must not contain any special characters or markdown formatting. The issueKey can be found in text (format: XX-1234) and can be blank if not present. Only return a plain text RFC8259 compliant JSON object. Do not use code blocks, markdown, or any formatting. Just return the raw JSON. Example: {"summary":"Fix login bug","description":"Users cannot log in using email","issueKey":"CS-1234"}',
   };
 
   const result = messages

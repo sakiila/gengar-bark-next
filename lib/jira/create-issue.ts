@@ -6,6 +6,7 @@ async function aiSummary(channel: string, ts: string) {
   const thread = await getThreadReplies(channel, ts);
   const prompts = await generatePromptForJira(thread);
   const gptResponse = await getGPT4(prompts);
+  console.log('gptResponse.choices[0].message.content: ', gptResponse.choices[0].message.content);
   const result = JSON.parse(gptResponse.choices[0].message.content as string);
   console.info('aiSummary result:', result);
   return result;
@@ -62,7 +63,7 @@ export async function createIssue(text: string, channel: string, ts: string, use
   };
 
   if ((('MER' == nowProjectKey || 'ERP' == nowProjectKey) && 'Bug Online' == nowIssueType)) {
-    requestBody.fields.customfield_10052 = `Reporter: ${userName}\n\nSlack Thread: ${threadLink}\n\nAI generated summary: ${result.description as string}\n\n
+    requestBody.fields.description = `Reporter: ${userName}\n\nSlack Thread: ${threadLink}\n\nAI generated summary: ${result.description as string}\n\n
     *Reproduce Steps*\n\n*Actual Results*\n\n*Expected Results*\n\n*Causes & Reasons*\n\n*Solutions & Scopes*\n\n `;
   } else {
     requestBody.fields.description = `Reporter: ${userName}\n\nSlack Thread: ${threadLink}\n\nAI generated summary: ${result.description as string}\n\n
