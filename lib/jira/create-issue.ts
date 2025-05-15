@@ -5,6 +5,7 @@ import { getThreadReplies } from '@/lib/slack/gengar-bolt';
 async function aiSummary(channel: string, ts: string) {
   const thread = await getThreadReplies(channel, ts);
   const prompts = await generatePromptForJira(thread);
+  console.log('prompts: ', prompts);
   const gptResponse = await getGPT4(prompts);
   console.log('gptResponse.choices[0].message.content: ', gptResponse.choices[0].message.content);
   const result = JSON.parse(gptResponse.choices[0].message.content as string);
@@ -35,7 +36,20 @@ export async function createIssue(text: string, channel: string, ts: string, use
   const threadLink = await getThreadLink(channel, ts);
 
   // use ai to generate summary and description
-  const result = await aiSummary(channel, ts);
+  let result;
+  try {
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('AI 总结超时')), 6000);
+    });
+    result = await Promise.race([aiSummary(channel, ts), timeoutPromise]);
+  } catch (error) {
+    console.error('获取 AI 总结失败:', error);
+    result = {
+      summary: '',
+      description: '',
+      issueKey: null
+    };
+  }
 
   const [_, projectKey, issueType, summary = result.summary as string] = match;
 
