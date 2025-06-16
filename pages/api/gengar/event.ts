@@ -57,8 +57,7 @@ export default async function handler(
         api_app_id: req.body.api_app_id,
       });
 
-      console.log('event_type:', event_type);
-      console.log('req.body:', JSON.stringify(req.body));
+      res.status(200).end();
 
       try {
         switch (event_type) {

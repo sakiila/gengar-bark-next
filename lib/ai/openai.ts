@@ -31,6 +31,22 @@ export async function getGPT4mini(messages: ChatCompletionMessageParam[]) {
   });
 }
 
+export async function translateToChinese(text: string) {
+  return openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [
+      {
+        role: 'system',
+        content: 'You are a translator. Your job is to translate text to Chinese.',
+      },
+      {
+        role: 'user',
+        content: text,
+      },
+    ],
+  }).then(res => res.choices[0].message.content);
+}
+
 export async function getThird(messages: ChatCompletionMessageParam[]) {
   const params = {
     messages: messages,
