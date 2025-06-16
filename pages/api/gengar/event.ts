@@ -8,6 +8,7 @@ import { response_container, send_response, set_suggested_prompts } from '@/lib/
 import { logger } from '@/lib/utils/logger';
 import { teamJoin } from '@/lib/events-handlers/team-join';
 import { userChange } from '@/lib/events-handlers/user-change';
+import { monitorUserMessages } from '@/lib/events-handlers/message-monitor';
 
 // Create a request-scoped logger with context
 const createRequestLogger = (req: NextApiRequest) => {
@@ -56,6 +57,9 @@ export default async function handler(
         api_app_id: req.body.api_app_id,
       });
 
+      console.log('event_type:', event_type);
+      console.log('req.body:', JSON.stringify(req.body));
+
       try {
         switch (event_type) {
           case 'emoji_changed':
@@ -86,6 +90,8 @@ export default async function handler(
             const { channel_type, hidden, bot_profile } = req.body.event;
             if (channel_type === 'im' && !hidden && !bot_profile) {
               await response_container(req, res);
+            } else if (channel_type === 'channel' || channel_type === 'group') {
+              await monitorUserMessages(req, res);
             }
             break;
           default:
