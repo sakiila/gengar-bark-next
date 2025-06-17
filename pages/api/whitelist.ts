@@ -50,7 +50,6 @@ function generateReportText(result: {
   allCount: number;
 }): string {
   const currentTime = formatDateToCustomString(new Date());
-  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const timezoneOffset = new Date().getTimezoneOffset();
   const timezoneString = timezoneOffset === 0 ? 'UTC' : `UTC${timezoneOffset > 0 ? '-' : '+'}${Math.abs(timezoneOffset / 60)}`;
   
@@ -80,8 +79,9 @@ export default async function handler(
   try {
     const result = await queryMultiPet();
     const reportText = generateReportText(result);
-    
-    await postToChannelId('C067ENL1TLN', res, reportText);
+
+    // #team-grooming-epd
+    await postToChannelId('C08M838EYGL', res, reportText);
     
     res.status(200).json({ success: true });
   } catch (error) {
