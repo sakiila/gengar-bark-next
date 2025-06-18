@@ -60,8 +60,7 @@ function generateReportText(result: {
 :tada: *每日白名单监控报告*\n
 截止 ${currentTime} (${timezoneString})，在白名单的 ${result.allCount} 家 Business 中，\n
 启用了 Shift Management by Slot 功能的有 ${result.shiftManagement.count} 家，占比 ${shiftManagementPercentage}%，\n
-启用了 Calendar Indicator 功能的有 ${result.calendar.count} 家，占比 ${calendarPercentage}%。\n
-<!subteam^S091A5NF49X> 继续加油！
+启用了 Calendar Indicator 功能的有 ${result.calendar.count} 家，占比 ${calendarPercentage}%。
   `.trim();
 }
 
