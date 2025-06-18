@@ -1,33 +1,7 @@
 import { postToChannelId } from '@/lib/slack/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { postgres } from '@/lib/database/supabase';
 import { queryMultiPet } from '@/lib/growthbook/multi-pet';
 import { formatDateToCustomString } from '@/lib/utils/time-utils';
-
-export const config = {
-  maxDuration: 60,
-};
-
-interface User {
-  user_id: string;
-  real_name_normalized: string;
-}
-
-/**
- * 格式化当前日期时间为中文格式
- * @returns 格式化后的日期时间字符串 (YYYY-MM-DD HH:mm:ss)
- */
-function formatCurrentDateTime(): string {
-  return new Date().toLocaleString('zh-CN', { 
-    year: 'numeric', 
-    month: '2-digit', 
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false
-  }).replace(/\//g, '-');
-}
 
 /**
  * 计算百分比
@@ -57,7 +31,7 @@ function generateReportText(result: {
   const calendarPercentage = calculatePercentage(Number(result.calendar.count), result.allCount);
 
   return `
-:tada: *每日白名单监控报告*\n
+:tada: *白名单监控报告*\n
 截止 ${currentTime} (${timezoneString})，在白名单的 ${result.allCount} 家 Business 中，\n
 启用了 Shift Management by Slot 功能的有 ${result.shiftManagement.count} 家，占比 ${shiftManagementPercentage}%，\n
 启用了 Calendar Indicator 功能的有 ${result.calendar.count} 家，占比 ${calendarPercentage}%。
@@ -78,6 +52,8 @@ export default async function handler(
   try {
     const result = await queryMultiPet();
     const reportText = generateReportText(result);
+
+    // console.log("reportText:", reportText);
 
     // #gr-usages-monitor
     await postToChannelId('C091YDUP3GU', res, reportText);
