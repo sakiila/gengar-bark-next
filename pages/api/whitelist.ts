@@ -80,8 +80,8 @@ export default async function handler(
     const result = await queryMultiPet();
     const reportText = generateReportText(result);
 
-    // #team-grooming-epd
-    await postToChannelId('C08M838EYGL', res, reportText);
+    // #gr-usages-monitor
+    await postToChannelId('C091YDUP3GU', res, reportText);
     
     res.status(200).json({ success: true });
   } catch (error) {
