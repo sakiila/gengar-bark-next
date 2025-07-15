@@ -41,8 +41,8 @@ export async function queryMultiPet(): Promise<any[]> {
          where b.company_id > 0
            and c.level > 0
            and b.app_type in (1, 2)
---              and a.email not ilike '%moego.pet%'
---              and a.email not ilike '%mymoement.com%'
+           and a.email not ilike '%moego.pet%'
+           and a.email not ilike '%mymoement.com%'
          order by b.id
              limit ${limit}
          offset ${offset}`,
