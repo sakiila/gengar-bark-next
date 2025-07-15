@@ -67,9 +67,9 @@ export async function queryMultiPet(): Promise<any[]> {
         if (!oldResult) {
           await postgres.from('book_by_slot_watch').insert({
             business_id: Number(newResult.business_id),
-            company_id:  Number(newResult.company_id),
+            company_id: Number(newResult.company_id),
             owner_email: newResult.owner_email,
-            staff_availability_type: Number(newResult.staff_availability_type)  ,
+            staff_availability_type: Number(newResult.staff_availability_type),
             show_slot_location: Number(newResult.show_slot_location),
             show_slot_time: Number(newResult.show_slot_time),
           });
@@ -79,7 +79,11 @@ export async function queryMultiPet(): Promise<any[]> {
       // 遍历 oldResults 和 newResults，如果 staff_availability_type 或 show_slot_location 或 show_slot_time 有变化，则查询出来，记录变化前后的数据，并返回
       for (const oldResult of oldResults) {
         const newResult = newResults.find((result: any) => Number(result.business_id) === Number(oldResult.business_id));
-        if (newResult && (Number(newResult.staff_availability_type) !== Number(oldResult.staff_availability_type) || Number(newResult.show_slot_location) !== Number(oldResult.show_slot_location) || Number(newResult.show_slot_time) !== Number(oldResult.show_slot_time))) {
+        if (
+          (newResult && Number(newResult.staff_availability_type) !== Number(oldResult.staff_availability_type) && Number(newResult.staff_availability_type) === 2) ||
+          (newResult && Number(newResult.show_slot_location) !== Number(oldResult.show_slot_location) && Number(newResult.show_slot_location) === 1) ||
+          (newResult && Number(newResult.show_slot_time) !== Number(oldResult.show_slot_time) && Number(newResult.show_slot_time) === 1)
+        ) {
           results.push({
             oldResult,
             newResult,
@@ -87,16 +91,21 @@ export async function queryMultiPet(): Promise<any[]> {
         }
       }
 
-      console.log('results:', results);
+      if (results.length > 0) {
+        console.log('results:', results);
+      }
 
-      // 遍历 results，更新 book_by_slot_watch 表中的数据
-      for (const result of results) {
-        await postgres.from('book_by_slot_watch').update({
-          staff_availability_type: Number(result.newResult.staff_availability_type) ,
-          show_slot_location: Number(result.newResult.show_slot_location),
-          show_slot_time: Number(result.newResult.show_slot_time),
-          update_time: new Date().toISOString(),
-        }).eq('business_id', Number(result.oldResult.business_id));
+      // 遍历 oldResults 和 newResults，如果 staff_availability_type 或 show_slot_location 或 show_slot_time 有变化，更新 book_by_slot_watch 表中的数据
+      for (const oldResult of oldResults) {
+        const newResult = newResults.find((result: any) => Number(result.business_id) === Number(oldResult.business_id));
+        if (newResult && (Number(newResult.staff_availability_type) !== Number(oldResult.staff_availability_type) || Number(newResult.show_slot_location) !== Number(oldResult.show_slot_location) || Number(newResult.show_slot_time) !== Number(oldResult.show_slot_time))) {
+          await postgres.from('book_by_slot_watch').update({
+            staff_availability_type: Number(newResult.staff_availability_type),
+            show_slot_location: Number(newResult.show_slot_location),
+            show_slot_time: Number(newResult.show_slot_time),
+            update_time: new Date().toISOString(),
+          }).eq('business_id', Number(oldResult.business_id));
+        }
       }
 
       allResults.push(...results);

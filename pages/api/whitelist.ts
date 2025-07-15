@@ -1,7 +1,6 @@
 import { postToChannelId } from '@/lib/slack/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { queryMultiPet } from '@/lib/growthbook/multi-pet';
-import { formatDateToCustomString } from '@/lib/utils/time-utils';
 
 /**
  * 计算百分比
@@ -83,9 +82,9 @@ export default async function handler(
     res.status(200).json({ success: true });
   } catch (error) {
     console.error('处理请求失败:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Internal server error' 
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
     });
   }
 }
