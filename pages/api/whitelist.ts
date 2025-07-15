@@ -18,24 +18,25 @@ function calculatePercentage(count: number, total: number): string {
  * @param result 查询结果
  * @returns 格式化的报告文本
  */
-function generateReportText(result: {
-  shiftManagement: { count: number };
-  calendar: { count: number };
-  allCount: number;
-}): string {
-  const currentTime = formatDateToCustomString(new Date());
-  const timezoneOffset = new Date().getTimezoneOffset();
-  const timezoneString = timezoneOffset === 0 ? 'UTC' : `UTC${timezoneOffset > 0 ? '-' : '+'}${Math.abs(timezoneOffset / 60)}`;
-  
-  const shiftManagementPercentage = calculatePercentage(Number(result.shiftManagement.count), result.allCount);
-  const calendarPercentage = calculatePercentage(Number(result.calendar.count), result.allCount);
+function generateReportText(result: any[]): string {
 
-  return `
-:tada: *<https://growthbook.moego.pet/features/enable_multi_pet_by_slot|By Slot 白名单>监控报告*\n 
-截止 ${currentTime} (${timezoneString})，在白名单的 ${result.allCount} 家 Business 中，\n
-启用了 Shift Management by Slot 功能的有 ${result.shiftManagement.count} 家，占比 ${shiftManagementPercentage}%，\n
-启用了 Calendar Indicator 功能的有 ${result.calendar.count} 家，占比 ${calendarPercentage}%。
-  `.trim();
+  // 遍历 result，如果 staff_availability_type 或 show_slot_location 或 show_slot_time 有变化，则拼装变化前后的数据文本
+  // 例如 staff_availability_type 从 1 变为 2，则拼装出：启用了 Shift Management by Slot 功能
+  // 例如 show_slot_location 从 0 变为 1，则拼装出：启用了 Calendar Indicator 功能
+  // 例如 show_slot_time 从 0 变为 1，则拼装出：启用了 Calendar Indicator 功能
+  let changeText = '';
+  for (const item of result) {
+    changeText += `\n${item.newResult.owner_email}(${item.newResult.business_id})：`;
+    if (Number(item.newResult.staff_availability_type) == 2) {
+      changeText += `启用了 Shift Management by Slot 功能`;
+    }
+    if (Number(item.newResult.show_slot_location) == 1 || Number(item.newResult.show_slot_time) == 1) {
+      changeText += `启用了 Calendar Indicator 功能`;
+    }
+
+  }
+
+  return changeText;
 }
 
 export default async function handler(
@@ -56,8 +57,9 @@ export default async function handler(
     // console.log("reportText:", reportText);
 
     // #gr-usages-monitor
-    await postToChannelId('C091YDUP3GU', res, reportText);
-    
+    // await postToChannelId('C091YDUP3GU', res, reportText);
+    await postToChannelId('C067ENL1TLN', res, reportText);
+
     res.status(200).json({ success: true });
   } catch (error) {
     console.error('处理请求失败:', error);
