@@ -7,59 +7,79 @@ export async function queryMultiPet(): Promise<any[]> {
 
   // const businessIds = await getBusinessIdsFromMultiPet();
 
-  try {
-    const appointmentDB = await initAppointmentConnection();
+  const allResults = [];
+  const limit = 200;
+  let offset = 0;
 
-    const newResults = await appointmentDB.query<{
-      business_id: string,
-      company_id: string,
-      owner_email: string,
-      staff_availability_type: number,
-      show_slot_location: number,
-      show_slot_time: string
-    }[]>(
-      `select b.id    as business_id,
-              c.id    as company_id,
-              a.email as owner_email,
-              b.staff_availability_type,
-              cal.show_slot_location,
-              cal.show_slot_time
-       from mysql_prod.moe_business.moe_business b
-                left join mysql_prod.moe_business.moe_company c on b.company_id = c.id
-                left join pg_moego_account_prod.public.account a on c.account_id = a.id
-                left join moe_business.moe_calendar cal on cal.business_id = b.id
-       where b.company_id > 0
-         and c.level > 0
-         and b.app_type in (1, 2)
-         and a.email not ilike '%moego.pet%'
-         and a.email not ilike '%mymoement.com%'`,
-    );
+  const appointmentDB = await initAppointmentConnection();
 
-    const { data: oldResults } = await postgres.from('book_by_slot_watch').select('business_id, company_id, owner_email, staff_availability_type, show_slot_location, show_slot_time');
+  // 将 oldResults 的数据类型改成和 newResults 一致
+  const { data: oldResults } = await postgres.from('book_by_slot_watch')
+  .select(`business_id, company_id, owner_email, staff_availability_type, show_slot_location, show_slot_time`);
 
-    // 遍历 newResults 和 oldResults，如果 newResults 中的 business_id 在 oldResults 中不存在，则将 newResults 中的数据插入到 book_by_slot_watch 表中
-    // 由于 oldResults 可能为 null，需要先判断
-    const results = [];
+  // 在每一个分页中执行下面所有的操作，将结果合并
+  while (true) {
+    try {
+      const newResults = await appointmentDB.query<{
+        business_id: number,
+        company_id: number,
+        owner_email: string,
+        staff_availability_type: number,
+        show_slot_location: number,
+        show_slot_time: number
+      }[]>(
+        `select b.id    as business_id,
+                c.id    as company_id,
+                a.email as owner_email,
+                b.staff_availability_type,
+                cal.show_slot_location,
+                cal.show_slot_time
+         from mysql_prod.moe_business.moe_business b
+                  left join mysql_prod.moe_business.moe_company c on b.company_id = c.id
+                  left join pg_moego_account_prod.public.account a on c.account_id = a.id
+                  left join moe_business.moe_calendar cal on cal.business_id = b.id
+         where b.company_id > 0
+           and c.level > 0
+           and b.app_type in (1, 2)
+--              and a.email not ilike '%moego.pet%'
+--              and a.email not ilike '%mymoement.com%'
+         order by b.id
+             limit ${limit}
+         offset ${offset}`,
+      );
 
-    if (Array.isArray(oldResults)) {
+      if (newResults.length === 0) {
+        console.log('No more data');
+        break;
+      }
+
+      // 遍历 newResults 和 oldResults，如果 newResults 中的 business_id 在 oldResults 中不存在，则将 newResults 中的数据插入到 book_by_slot_watch 表中
+      // 由于 oldResults 可能为 null，需要先判断
+      const results = [];
+
+      if (!oldResults) {
+        console.log('No old results');
+        break;
+      }
+
       for (const newResult of newResults) {
-        const oldResult = oldResults.find((result: any) => result.business_id === newResult.business_id);
+        const oldResult = oldResults.find((result: any) => Number(result.business_id) === Number(newResult.business_id));
         if (!oldResult) {
           await postgres.from('book_by_slot_watch').insert({
-            business_id: newResult.business_id,
-            company_id: newResult.company_id,
+            business_id: Number(newResult.business_id),
+            company_id:  Number(newResult.company_id),
             owner_email: newResult.owner_email,
-            staff_availability_type: newResult.staff_availability_type,
-            show_slot_location: newResult.show_slot_location,
-            show_slot_time: newResult.show_slot_time,
+            staff_availability_type: Number(newResult.staff_availability_type)  ,
+            show_slot_location: Number(newResult.show_slot_location),
+            show_slot_time: Number(newResult.show_slot_time),
           });
         }
       }
 
       // 遍历 oldResults 和 newResults，如果 staff_availability_type 或 show_slot_location 或 show_slot_time 有变化，则查询出来，记录变化前后的数据，并返回
       for (const oldResult of oldResults) {
-        const newResult = newResults.find((result: any) => result.business_id === oldResult.business_id);
-        if (newResult && (newResult.staff_availability_type !== oldResult.staff_availability_type || newResult.show_slot_location !== oldResult.show_slot_location || newResult.show_slot_time !== oldResult.show_slot_time)) {
+        const newResult = newResults.find((result: any) => Number(result.business_id) === Number(oldResult.business_id));
+        if (newResult && (Number(newResult.staff_availability_type) !== Number(oldResult.staff_availability_type) || Number(newResult.show_slot_location) !== Number(oldResult.show_slot_location) || Number(newResult.show_slot_time) !== Number(oldResult.show_slot_time))) {
           results.push({
             oldResult,
             newResult,
@@ -72,22 +92,24 @@ export async function queryMultiPet(): Promise<any[]> {
       // 遍历 results，更新 book_by_slot_watch 表中的数据
       for (const result of results) {
         await postgres.from('book_by_slot_watch').update({
-          staff_availability_type: result.newResult.staff_availability_type,
-          show_slot_location: result.newResult.show_slot_location,
-          show_slot_time: result.newResult.show_slot_time,
+          staff_availability_type: Number(result.newResult.staff_availability_type) ,
+          show_slot_location: Number(result.newResult.show_slot_location),
+          show_slot_time: Number(result.newResult.show_slot_time),
           update_time: new Date().toISOString(),
-        }).eq('business_id', result.oldResult.business_id);
+        }).eq('business_id', Number(result.oldResult.business_id));
       }
 
+      allResults.push(...results);
+      offset += limit;
 
+    } catch (error) {
+      console.error('查询失败:', error);
+      break;
     }
-    return results;
 
-  } catch (error) {
-    console.error('查询失败:', error);
-    throw error;
   }
 
+  return allResults;
 }
 
 async function getBusinessIdsFromMultiPet(): Promise<number[]> {

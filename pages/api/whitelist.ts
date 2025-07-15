@@ -24,16 +24,30 @@ function generateReportText(result: any[]): string {
   // 例如 staff_availability_type 从 1 变为 2，则拼装出：启用了 Shift Management by Slot 功能
   // 例如 show_slot_location 从 0 变为 1，则拼装出：启用了 Calendar Indicator 功能
   // 例如 show_slot_time 从 0 变为 1，则拼装出：启用了 Calendar Indicator 功能
-  let changeText = '';
+  let changeText = ':tada: *<https://growthbook.moego.pet/features/enable_multi_pet_by_slot|By Slot 白名单>监控报告*\n';
   for (const item of result) {
-    changeText += `\n${item.newResult.owner_email}(${item.newResult.business_id})：`;
-    if (Number(item.newResult.staff_availability_type) == 2) {
-      changeText += `启用了 Shift Management by Slot 功能`;
+    // 优化下面的逻辑，使用字符串拼接，而不是 if else 语句
+    const changes: string[] = [];
+    if (Number(item.oldResult.staff_availability_type) !== Number(item.newResult.staff_availability_type) && Number(item.newResult.staff_availability_type) === 2) {
+      changes.push('启用了 Shift Management by Slot 功能');
     }
-    if (Number(item.newResult.show_slot_location) == 1 || Number(item.newResult.show_slot_time) == 1) {
-      changeText += `启用了 Calendar Indicator 功能`;
+    // show_slot_location 或 show_slot_time 只要有一个从0变为1就算启用
+    if (
+      (Number(item.oldResult.show_slot_location) !== Number(item.newResult.show_slot_location) && Number(item.newResult.show_slot_location) === 1) ||
+      (Number(item.oldResult.show_slot_time) !== Number(item.newResult.show_slot_time) && Number(item.newResult.show_slot_time) === 1)
+    ) {
+      changes.push('启用了 Calendar Indicator 功能');
     }
-
+    // 如果 changes 为空，则不添加
+    if (changes.length <= 0) {
+      continue;
+    }
+    changeText += `${item.newResult.owner_email} (${item.newResult.business_id})：`;
+    if (changes.length > 1) {
+      changeText += changes.join('和') + '。\n';
+    } else {
+      changeText += changes[0] + '。\n';
+    }
   }
 
   return changeText;
@@ -52,6 +66,12 @@ export default async function handler(
 
   try {
     const result = await queryMultiPet();
+    if (!result || result.length === 0) {
+      return res.status(200).send({
+        text: `No data found.`,
+      });
+    }
+
     const reportText = generateReportText(result);
 
     // console.log("reportText:", reportText);
