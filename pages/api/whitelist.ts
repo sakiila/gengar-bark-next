@@ -77,8 +77,8 @@ export default async function handler(
     // console.log("reportText:", reportText);
 
     // #gr-usages-monitor
-    // await postToChannelId('C091YDUP3GU', res, reportText);
-    await postToChannelId('C067ENL1TLN', res, reportText);
+    await postToChannelId('C091YDUP3GU', res, reportText);
+    // await postToChannelId('C067ENL1TLN', res, reportText);
 
     res.status(200).json({ success: true });
   } catch (error) {
