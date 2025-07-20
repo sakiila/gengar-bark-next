@@ -1,6 +1,6 @@
 import { postToChannelId } from '@/lib/slack/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { queryMultiPet } from '@/lib/growthbook/multi-pet';
+import { queryMultiPet, queryMultiPetCount } from '@/lib/growthbook/multi-pet';
 
 /**
  * 计算百分比
@@ -49,6 +49,8 @@ function generateReportText(result: any[]): string {
     }
   }
 
+
+
   return changeText;
 }
 
@@ -71,7 +73,14 @@ export default async function handler(
       });
     }
 
-    const reportText = generateReportText(result);
+    let reportText = generateReportText(result);
+
+    const { totalCount, staffAvailabilityType2Count, staffAvailabilityType2Pct, showSlotLocation1Count, showSlotLocation1Pct } = await queryMultiPetCount();
+    reportText += `\n
+    商家总数: ${totalCount}\n
+    Shift Management by Slot 功能使用数据: ${staffAvailabilityType2Count} (${staffAvailabilityType2Pct}%)\n
+    Calendar Indicator 功能使用数据: ${showSlotLocation1Count} (${showSlotLocation1Pct}%)
+    `;
 
     // console.log("reportText:", reportText);
 

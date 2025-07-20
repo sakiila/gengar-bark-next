@@ -121,6 +121,46 @@ export async function queryMultiPet(): Promise<any[]> {
   return allResults;
 }
 
+export async function queryMultiPetCount(): Promise<{
+  totalCount: number;
+  staffAvailabilityType2Count: number;
+  staffAvailabilityType2Pct: number;
+  showSlotLocation1Count: number;
+  showSlotLocation1Pct: number;
+}> {
+  const { data: results } = await postgres.from('book_by_slot_watch')
+  .select(`business_id, company_id, owner_email, staff_availability_type, show_slot_location, show_slot_time`);
+
+  if (!results) {
+    console.log('No old results');
+    return {
+      totalCount: 0,
+      staffAvailabilityType2Count: 0,
+      staffAvailabilityType2Pct: 0,
+      showSlotLocation1Count: 0,
+      showSlotLocation1Pct: 0,
+    };
+  }
+
+  const totalCount = results.length;
+
+  // 计算 staff_availability_type 为 2 的百分比
+  const staffAvailabilityType2Count = results.filter((result: any) => Number(result.staff_availability_type) === 2).length;
+  const staffAvailabilityType2Pct = (staffAvailabilityType2Count / totalCount) * 100;
+
+  // 计算 show_slot_location 为 1 的百分比
+  const showSlotLocation1Count = results.filter((result: any) => Number(result.show_slot_location) === 1).length;
+  const showSlotLocation1Pct = (showSlotLocation1Count / totalCount) * 100; 
+
+  return {
+    totalCount,
+    staffAvailabilityType2Count,
+    staffAvailabilityType2Pct,
+    showSlotLocation1Count,
+    showSlotLocation1Pct,
+  };
+}
+
 async function getBusinessIdsFromMultiPet(): Promise<number[]> {
   const myHeaders = new Headers();
   myHeaders.append('Authorization', `Bearer ${GB_TOKEN}`);
