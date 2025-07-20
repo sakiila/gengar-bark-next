@@ -146,11 +146,11 @@ export async function queryMultiPetCount(): Promise<{
 
   // 计算 staff_availability_type 为 2 的百分比
   const staffAvailabilityType2Count = results.filter((result: any) => Number(result.staff_availability_type) === 2).length;
-  const staffAvailabilityType2Pct = (staffAvailabilityType2Count / totalCount) * 100;
+  const staffAvailabilityType2Pct = Number(((staffAvailabilityType2Count / totalCount) * 100).toFixed(2)) || 0;
 
-  // 计算 show_slot_location 为 1 的百分比
+  // 计算 show_slot_location 为 1 的百分比，保留两位小数
   const showSlotLocation1Count = results.filter((result: any) => Number(result.show_slot_location) === 1).length;
-  const showSlotLocation1Pct = (showSlotLocation1Count / totalCount) * 100; 
+  const showSlotLocation1Pct = Number(((showSlotLocation1Count / totalCount) * 100).toFixed(2)) || 0;
 
   return {
     totalCount,
