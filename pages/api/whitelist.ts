@@ -77,9 +77,9 @@ export default async function handler(
 
     const { totalCount, staffAvailabilityType2Count, staffAvailabilityType2Pct, showSlotLocation1Count, showSlotLocation1Pct } = await queryMultiPetCount();
     reportText += `\n
-    商家总数: ${totalCount}\n
-    Shift Management by Slot 功能使用数据: ${staffAvailabilityType2Count} (${staffAvailabilityType2Pct}%)\n
-    Calendar Indicator 功能使用数据: ${showSlotLocation1Count} (${showSlotLocation1Pct}%)
+    商家总数：${totalCount}\n
+    Shift Management by Slot 功能使用数据：${staffAvailabilityType2Count} (${staffAvailabilityType2Pct}%)\n
+    Calendar Indicator 功能使用数据：${showSlotLocation1Count} (${showSlotLocation1Pct}%)
     `;
 
     // console.log("reportText:", reportText);
