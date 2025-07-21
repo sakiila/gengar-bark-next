@@ -50,7 +50,6 @@ function generateReportText(result: any[]): string {
   }
 
 
-
   return changeText;
 }
 
@@ -75,12 +74,14 @@ export default async function handler(
 
     let reportText = generateReportText(result);
 
-    const { totalCount, staffAvailabilityType2Count, staffAvailabilityType2Pct, showSlotLocation1Count, showSlotLocation1Pct } = await queryMultiPetCount();
-    reportText += `\n
-    商家总数：${totalCount}\n
-    Shift Management by Slot 功能使用数：${staffAvailabilityType2Count}（${staffAvailabilityType2Pct}%）\n
-    Calendar Indicator 功能使用数：${showSlotLocation1Count}（${showSlotLocation1Pct}%）
-    `;
+    const {
+      totalCount,
+      staffAvailabilityType2Count,
+      staffAvailabilityType2Pct,
+      showSlotLocation1Count,
+      showSlotLocation1Pct,
+    } = await queryMultiPetCount();
+    reportText += `商家总数：${totalCount}\nShift Management by Slot 功能使用数：${staffAvailabilityType2Count}（${staffAvailabilityType2Pct}%）\nCalendar Indicator 功能使用数：${showSlotLocation1Count}（${showSlotLocation1Pct}%）\n`;
 
     // console.log("reportText:", reportText);
 
