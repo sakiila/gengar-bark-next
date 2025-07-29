@@ -60,7 +60,7 @@ export async function createIssue(text: string, channel: string, ts: string, use
   // ERP Bug -> Bug Online 10004 -> customfield_10052
   const nowProjectKey = projectKey.toUpperCase();
   let nowIssueType = capitalizeWords(issueType);
-  if (('MER' == nowProjectKey || 'FIN' == nowProjectKey || 'ERP' == nowProjectKey) && 'Bug' == nowIssueType) {
+  if (('MER' == nowProjectKey || 'FIN' == nowProjectKey || 'ERP' == nowProjectKey || 'GRM' == nowIssueType) && 'Bug' == nowIssueType) {
     nowIssueType = 'Bug Online';
   }
 
@@ -76,7 +76,7 @@ export async function createIssue(text: string, channel: string, ts: string, use
     },
   };
 
-  if ((('MER' == nowProjectKey || 'ERP' == nowProjectKey) && 'Bug Online' == nowIssueType)) {
+  if ((('MER' == nowProjectKey || 'ERP' == nowProjectKey || 'GRM' == nowIssueType) && 'Bug Online' == nowIssueType)) {
     requestBody.fields.description = `Reporter: ${userName}\n\nSlack Thread: ${threadLink}\n\nAI generated summary: ${result.description as string}\n\n
     *Reproduce Steps*\n\n*Actual Results*\n\n*Expected Results*\n\n*Causes & Reasons*\n\n*Solutions & Scopes*\n\n `;
   } else {
