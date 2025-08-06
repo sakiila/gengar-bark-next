@@ -126,7 +126,7 @@ export async function createIssue(text: string, channel: string, ts: string, use
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(`创建 Jira issue 失败: ${JSON.stringify(errorData)}`);
+    throw new Error(`${JSON.stringify(errorData)}`);
   }
 
   const data = await response.json();

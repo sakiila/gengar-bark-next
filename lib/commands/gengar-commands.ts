@@ -187,7 +187,7 @@ export class JiraCommand implements Command {
       await postMessage(
         this.channel,
         this.ts,
-        `:x: 创建 Jira issue 失败：${err instanceof Error ? err.message : '未知错误'}`,
+        `:x: Jira issue 创建失败：${err instanceof Error ? err.message : '未知错误'}`,
       );
     }
   }
