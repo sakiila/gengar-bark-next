@@ -118,6 +118,30 @@ export async function queryMultiPet(): Promise<any[]> {
 
   }
 
+  // 查询已删除的 business，并删除
+  const updateTime = new Date(
+    new Date().setMonth(
+      new Date().getMonth() - 1,
+    ),
+  ).getTime() / 1000;
+  const needDeleteResults = await appointmentDB.query<{
+    business_id: number,
+  }[]>(
+    `select b.id as business_id
+     from mysql_prod.moe_business.moe_business b
+              left join mysql_prod.moe_business.moe_company c on b.company_id = c.id
+              left join pg_moego_account_prod.public.account a on c.account_id = a.id
+     where (b.company_id <= 0 or c.level <= 0)
+       and b.app_type in (1, 2)
+       and a.email not ilike '%moego.pet%'
+           and a.email not ilike '%mymoement.com%'
+           and b.update_time > ${updateTime}
+    `,
+  );
+  let needDeleteBusinessIds = needDeleteResults.map((result: any) => Number(result.business_id));
+  console.log('needDeleteBusinessIds:', needDeleteBusinessIds);
+  await postgres.from('book_by_slot_watch').delete().in('business_id', needDeleteBusinessIds);
+
   return allResults;
 }
 
