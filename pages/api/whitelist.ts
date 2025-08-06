@@ -23,7 +23,7 @@ function generateReportText(result: any[]): string {
   // 例如 staff_availability_type 从 1 变为 2，则拼装出：启用了 Shift Management by Slot 功能
   // 例如 show_slot_location 从 0 变为 1，则拼装出：启用了 Calendar Indicator 功能
   // 例如 show_slot_time 从 0 变为 1，则拼装出：启用了 Calendar Indicator 功能
-  let changeText = ':tada: *<https://growthbook.moego.pet/features/enable_multi_pet_by_slot|By Slot 白名单>监控报告*\n';
+  let changeText = ':tada: *Book by Slot 监控报告*\n';
   for (const item of result) {
     // 优化下面的逻辑，使用字符串拼接，而不是 if else 语句
     const changes: string[] = [];
