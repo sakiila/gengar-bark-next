@@ -180,7 +180,7 @@ export class JiraCommand implements Command {
       await postMessage(
         this.channel,
         this.ts,
-        `:white_check_mark: Jira issue 创建成功！\n链接：https://moego.atlassian.net/browse/${issueKey}`,
+        `:white_check_mark: Jira issue 创建成功！<https://moego.atlassian.net/browse/${issueKey}|${issueKey}>`,
       );
     } catch (err) {
       console.error('Jira API Error:', err);
