@@ -15,7 +15,7 @@ export async function queryMultiPet(): Promise<any[]> {
 
   // 将 oldResults 的数据类型改成和 newResults 一致
   const { data: oldResults } = await postgres.from('book_by_slot_watch')
-  .select(`business_id, company_id, owner_email, staff_availability_type, show_slot_location, show_slot_time`);
+  .select(`business_id, company_id, owner_email, staff_availability_type, show_slot_location, show_slot_time, available_time_type`);
 
   // 在每一个分页中执行下面所有的操作，将结果合并
   while (true) {
@@ -26,18 +26,21 @@ export async function queryMultiPet(): Promise<any[]> {
         owner_email: string,
         staff_availability_type: number,
         show_slot_location: number,
-        show_slot_time: number
+        show_slot_time: number,
+        available_time_type: number,
       }[]>(
         `select b.id    as business_id,
                 c.id    as company_id,
                 a.email as owner_email,
                 b.staff_availability_type,
                 cal.show_slot_location,
-                cal.show_slot_time
+                cal.show_slot_time,
+                ob.available_time_type
          from mysql_prod.moe_business.moe_business b
                   left join mysql_prod.moe_business.moe_company c on b.company_id = c.id
                   left join pg_moego_account_prod.public.account a on c.account_id = a.id
-                  left join moe_business.moe_calendar cal on cal.business_id = b.id
+                  left join mysql_prod.moe_business.moe_calendar cal on cal.business_id = b.id
+                  left join mysql_prod.moe_grooming.moe_business_book_online ob on ob.business_id = b.id
          where b.company_id > 0
            and c.level > 0
            and b.app_type in (1, 2)
@@ -72,6 +75,7 @@ export async function queryMultiPet(): Promise<any[]> {
             staff_availability_type: Number(newResult.staff_availability_type),
             show_slot_location: Number(newResult.show_slot_location),
             show_slot_time: Number(newResult.show_slot_time),
+            available_time_type: Number(newResult.available_time_type),
           });
         }
       }
@@ -82,7 +86,8 @@ export async function queryMultiPet(): Promise<any[]> {
         if (
           (newResult && Number(newResult.staff_availability_type) !== Number(oldResult.staff_availability_type) && Number(newResult.staff_availability_type) === 2) ||
           (newResult && Number(newResult.show_slot_location) !== Number(oldResult.show_slot_location) && Number(newResult.show_slot_location) === 1) ||
-          (newResult && Number(newResult.show_slot_time) !== Number(oldResult.show_slot_time) && Number(newResult.show_slot_time) === 1)
+          (newResult && Number(newResult.show_slot_time) !== Number(oldResult.show_slot_time) && Number(newResult.show_slot_time) === 1) ||
+          (newResult && Number(newResult.available_time_type) !== Number(oldResult.available_time_type) && Number(newResult.available_time_type) === 1)
         ) {
           results.push({
             oldResult,
@@ -98,11 +103,12 @@ export async function queryMultiPet(): Promise<any[]> {
       // 遍历 oldResults 和 newResults，如果 staff_availability_type 或 show_slot_location 或 show_slot_time 有变化，更新 book_by_slot_watch 表中的数据
       for (const oldResult of oldResults) {
         const newResult = newResults.find((result: any) => Number(result.business_id) === Number(oldResult.business_id));
-        if (newResult && (Number(newResult.staff_availability_type) !== Number(oldResult.staff_availability_type) || Number(newResult.show_slot_location) !== Number(oldResult.show_slot_location) || Number(newResult.show_slot_time) !== Number(oldResult.show_slot_time))) {
+        if (newResult && (Number(newResult.staff_availability_type) !== Number(oldResult.staff_availability_type) || Number(newResult.show_slot_location) !== Number(oldResult.show_slot_location) || Number(newResult.show_slot_time) !== Number(oldResult.show_slot_time) || Number(newResult.available_time_type) !== Number(oldResult.available_time_type))) {
           await postgres.from('book_by_slot_watch').update({
             staff_availability_type: Number(newResult.staff_availability_type),
             show_slot_location: Number(newResult.show_slot_location),
             show_slot_time: Number(newResult.show_slot_time),
+            available_time_type: Number(newResult.available_time_type),
             update_time: new Date().toISOString(),
           }).eq('business_id', Number(oldResult.business_id));
         }
@@ -120,8 +126,8 @@ export async function queryMultiPet(): Promise<any[]> {
 
   // 查询已删除的 business，并删除
   const updateTime = new Date(
-    new Date().setMonth(
-      new Date().getMonth() - 1,
+    new Date().setDate(
+      new Date().getDate() - 7,
     ),
   ).getTime() / 1000;
   const needDeleteResults = await appointmentDB.query<{
@@ -151,9 +157,11 @@ export async function queryMultiPetCount(): Promise<{
   staffAvailabilityType2Pct: number;
   showSlotLocation1Count: number;
   showSlotLocation1Pct: number;
+  obBySlotCount: number;
+  obBySlotPct: number;
 }> {
   const { data: results } = await postgres.from('book_by_slot_watch')
-  .select(`business_id, company_id, owner_email, staff_availability_type, show_slot_location, show_slot_time`);
+  .select(`business_id, company_id, owner_email, staff_availability_type, show_slot_location, show_slot_time, available_time_type`);
 
   if (!results) {
     console.log('No old results');
@@ -163,6 +171,8 @@ export async function queryMultiPetCount(): Promise<{
       staffAvailabilityType2Pct: 0,
       showSlotLocation1Count: 0,
       showSlotLocation1Pct: 0,
+      obBySlotCount: 0,
+      obBySlotPct: 0,
     };
   }
 
@@ -176,12 +186,18 @@ export async function queryMultiPetCount(): Promise<{
   const showSlotLocation1Count = results.filter((result: any) => Number(result.show_slot_location) === 1).length;
   const showSlotLocation1Pct = Number(((showSlotLocation1Count / totalCount) * 100).toFixed(2)) || 0;
 
+  // 计算 available_time_type 为 1 的百分比，保留两位小数（OB by Slot）
+  const obBySlotCount = results.filter((result: any) => Number(result.available_time_type) === 1).length;
+  const obBySlotPct = Number(((obBySlotCount / totalCount) * 100).toFixed(2)) || 0;
+
   return {
     totalCount,
     staffAvailabilityType2Count,
     staffAvailabilityType2Pct,
     showSlotLocation1Count,
     showSlotLocation1Pct,
+    obBySlotCount,
+    obBySlotPct,
   };
 }
 

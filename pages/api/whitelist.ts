@@ -19,10 +19,11 @@ function calculatePercentage(count: number, total: number): string {
  */
 function generateReportText(result: any[]): string {
 
-  // 遍历 result，如果 staff_availability_type 或 show_slot_location 或 show_slot_time 有变化，则拼装变化前后的数据文本
+  // 遍历 result，如果 staff_availability_type、show_slot_location、show_slot_time 或 available_time_type 有变化，则拼装变化前后的数据文本
   // 例如 staff_availability_type 从 1 变为 2，则拼装出：启用了 Shift Management by Slot 功能
   // 例如 show_slot_location 从 0 变为 1，则拼装出：启用了 Calendar Indicator 功能
   // 例如 show_slot_time 从 0 变为 1，则拼装出：启用了 Calendar Indicator 功能
+  // 例如 available_time_type 从 1 变为 2，则拼装出：启用了 Available Time Type 功能
   let changeText = ':tada: *Book by Slot 监控报告*\n';
   for (const item of result) {
     // 优化下面的逻辑，使用字符串拼接，而不是 if else 语句
@@ -36,6 +37,12 @@ function generateReportText(result: any[]): string {
       (Number(item.oldResult.show_slot_time) !== Number(item.newResult.show_slot_time) && Number(item.newResult.show_slot_time) === 1)
     ) {
       changes.push('启用了 Calendar Indicator 功能');
+    }
+    if (
+      Number(item.oldResult.available_time_type) !== Number(item.newResult.available_time_type) &&
+      Number(item.newResult.available_time_type) === 2
+    ) {
+      changes.push('启用了 Available Time Type 功能');
     }
     // 如果 changes 为空，则不添加
     if (changes.length <= 0) {
@@ -80,8 +87,10 @@ export default async function handler(
       staffAvailabilityType2Pct,
       showSlotLocation1Count,
       showSlotLocation1Pct,
+      obBySlotCount,
+      obBySlotPct,
     } = await queryMultiPetCount();
-    reportText += `商家总数：${totalCount}\nShift Management by Slot 功能使用数：${staffAvailabilityType2Count}（${staffAvailabilityType2Pct}%）\nCalendar Indicator 功能使用数：${showSlotLocation1Count}（${showSlotLocation1Pct}%）\n`;
+    reportText += `商家总数：${totalCount}\nShift Management by Slot 功能使用数：${staffAvailabilityType2Count}（${staffAvailabilityType2Pct}%）\nCalendar Indicator 功能使用数：${showSlotLocation1Count}（${showSlotLocation1Pct}%）\nOB by Slot 功能使用数：${obBySlotCount}（${obBySlotPct}%）\n`;
 
     // console.log("reportText:", reportText);
 
