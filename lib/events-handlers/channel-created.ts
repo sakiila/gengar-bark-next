@@ -13,7 +13,7 @@ export default async function channelCreated(
     await postMessageProdByAnon( '', text);
 
     // if channel.name contains 'incident', send it to C08M838EYGL #team-grooming-epd
-    if (event.channel.name.toLowerCase().includes('incident')) {
+    if (event.channel.name.toLowerCase().includes('incident-')) {
       const text = `:rotating_light: A new incident channel created: <#${event.channel.id}> !`;
       await postMessage('C08M838EYGL', '', text);
     }
