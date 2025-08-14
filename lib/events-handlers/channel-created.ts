@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { postMessageProdByAnon } from '@/lib/slack/gengar-bolt';
+import { postMessage, postMessageProdByAnon } from '@/lib/slack/gengar-bolt';
 import { postToChannelId } from '@/lib/slack/slack';
 
 export default async function channelCreated(
@@ -15,7 +15,7 @@ export default async function channelCreated(
     // if channel.name contains 'incident', send it to C08M838EYGL #team-grooming-epd
     if (event.channel.name.toLowerCase().includes('incident')) {
       const text = `:rotating_light: A new incident channel created: <#${event.channel.id}> !`;
-      await postToChannelId('C08M838EYGL', res, text);
+      await postMessage('C08M838EYGL', '', text);
     }
 
   } catch (e) {
