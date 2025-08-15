@@ -38,12 +38,9 @@ function generateReportText(result: any[]): string {
     ) {
       changes.push('启用了 Calendar Indicator 功能');
     }
-    if (
-      Number(item.oldResult.available_time_type) !== Number(item.newResult.available_time_type) &&
-      Number(item.newResult.available_time_type) === 2
-    ) {
-      changes.push('启用了 Available Time Type 功能');
-    }
+    // if (Number(item.oldResult.available_time_type) !== Number(item.newResult.available_time_type) && Number(item.newResult.available_time_type) === 2) {
+    //   changes.push('启用了 Available Time Type 功能');
+    // }
     // 如果 changes 为空，则不添加
     if (changes.length <= 0) {
       continue;
@@ -55,7 +52,6 @@ function generateReportText(result: any[]): string {
       changeText += changes[0] + '。\n';
     }
   }
-
 
   return changeText;
 }

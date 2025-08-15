@@ -86,8 +86,7 @@ export async function queryMultiPet(): Promise<any[]> {
         if (
           (newResult && Number(newResult.staff_availability_type) !== Number(oldResult.staff_availability_type) && Number(newResult.staff_availability_type) === 2) ||
           (newResult && Number(newResult.show_slot_location) !== Number(oldResult.show_slot_location) && Number(newResult.show_slot_location) === 1) ||
-          (newResult && Number(newResult.show_slot_time) !== Number(oldResult.show_slot_time) && Number(newResult.show_slot_time) === 1) ||
-          (newResult && Number(newResult.available_time_type) !== Number(oldResult.available_time_type) && Number(newResult.available_time_type) === 1)
+          (newResult && Number(newResult.show_slot_time) !== Number(oldResult.show_slot_time) && Number(newResult.show_slot_time) === 1)
         ) {
           results.push({
             oldResult,
