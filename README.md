@@ -4,6 +4,7 @@
 [![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org/)
 [![Slack](https://img.shields.io/badge/Slack-Bot-4A154B)](https://api.slack.com/bot-users)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/sakiila/gengar-bark-next)
 
 Gengar Bark is an intelligent Slack bot that enhances team communication and productivity through AI-powered features. With advanced natural language processing capabilities, it helps teams better manage conversations and extract insights from their Slack workspace.
 
