@@ -33,12 +33,15 @@
     "recharts": "^2.14.1",
     "reflect-metadata": "^0.2.2",
     "sharp": "0.32.6",
-    "typeorm": "^0.3.20"
+    "three": "^0.169.0",
+    "typeorm": "^0.3.20",
+    "wordcloud": "^1.2.3"
   },
   "devDependencies": {
     "@types/lodash": "^4.17.13",
     "@types/node": "^20",
     "@types/react": "18.3.12",
+    "@types/three": "^0.171.0",
     "autoprefixer": "^10.4.20",
     "eslint": "^8",
     "eslint-config-next": "14.0.4",
