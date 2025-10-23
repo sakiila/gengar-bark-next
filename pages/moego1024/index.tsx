@@ -62,10 +62,21 @@ const MoeGo1024: NextPage = () => {
       return acc;
     }, {} as Record<string, number>);
 
-    // 转换为词云所需格式 [word, weight]
-    const wordList: [string, number][] = Object.entries(nameFrequency).map(
-      ([name, count]) => [name, count * 10]
-    );
+    // 为了填满形状，我们需要重复名字多次，并使用不同的权重
+    const wordList: [string, number][] = [];
+
+    // 每个名字重复 6 次，使用不同权重（大、中、小）来填充空隙
+    Object.entries(nameFrequency).forEach(([name, count], index) => {
+      // 添加大字号 1 个
+      wordList.push([name, 40]);
+      // 添加中字号 2 个
+      wordList.push([name, 25]);
+      wordList.push([name, 20]);
+      // 添加小字号 3 个（用于填充缝隙）
+      wordList.push([name, 12]);
+      wordList.push([name, 10]);
+      wordList.push([name, 8]);
+    });
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
@@ -86,22 +97,23 @@ const MoeGo1024: NextPage = () => {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    // 绘制 "MoeGo" 白色区域
-    const fontSize1 = Math.min(width, height) * 0.28;
+    // 绘制 "MoeGo" 白色区域 - 增大字体
+    const fontSize1 = Math.min(width, height) * 0.35; // 从 0.28 增加到 0.35
     ctx.font = `bold ${fontSize1}px Arial, sans-serif`;
     ctx.fillText('MoeGo', width / 2, height * 0.35);
 
-    // 绘制 "1024" 白色区域
-    const fontSize2 = Math.min(width, height) * 0.32;
+    // 绘制 "1024" 白色区域 - 增大字体
+    const fontSize2 = Math.min(width, height) * 0.4; // 从 0.32 增加到 0.4
     ctx.font = `bold ${fontSize2}px Arial, sans-serif`;
     ctx.fillText('1024', width / 2, height * 0.65);
 
     // 第三步：配置词云选项
     const options: WordCloudOptions = {
       list: wordList,
-      gridSize: 4,
+      gridSize: 2, // 从 3 减小到 2，提高填充精度
       weightFactor: (size) => {
-        return Math.pow(size, 0.6) * (canvas.width / 1600);
+        // 保持字体大小清晰
+        return Math.pow(size, 0.7) * (canvas.width / 1200);
       },
       fontFamily: 'Arial, sans-serif',
       color: () => {
@@ -120,9 +132,9 @@ const MoeGo1024: NextPage = () => {
         return colors[Math.floor(Math.random() * colors.length)];
       },
       backgroundColor: '#ffffff', // 与白色区域匹配
-      rotateRatio: 0.2,
-      minRotation: -Math.PI / 12,
-      maxRotation: Math.PI / 12,
+      rotateRatio: 0.5, // 增加旋转比例，让更多文字填充缝隙
+      minRotation: -Math.PI / 6,
+      maxRotation: Math.PI / 6,
       shuffle: true,
       clearCanvas: false, // 不清除画布，保留蒙版
       drawOutOfBound: false, // 不在边界外绘制
@@ -152,7 +164,7 @@ const MoeGo1024: NextPage = () => {
         }
 
         ctx.putImageData(imageData, 0, 0);
-      }, 500);
+      }, 1000); // 增加延迟，确保词云完全生成
     }, 100);
   }, [names]);
 
