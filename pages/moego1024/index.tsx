@@ -211,12 +211,6 @@ const MoeGo1024: NextPage = () => {
           <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-4">
             MoeGo 1024 Word Cloud
           </h1>
-          <p className="text-gray-600 text-lg">
-            Celebrating our amazing MoeGo team members
-          </p>
-          <p className="text-gray-500 mt-2">
-            Total members: <span className="font-bold text-purple-600">{names.length}</span>
-          </p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-2xl p-8 mb-8">
@@ -227,22 +221,6 @@ const MoeGo1024: NextPage = () => {
             className="w-full h-auto rounded-lg"
             style={{ maxWidth: '100%', height: 'auto' }}
           />
-        </div>
-
-        <div className="text-center">
-          <button
-            onClick={() => {
-              if (canvasRef.current) {
-                const link = document.createElement('a');
-                link.download = 'moego-1024-wordcloud.png';
-                link.href = canvasRef.current.toDataURL();
-                link.click();
-              }
-            }}
-            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-full font-semibold hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg"
-          >
-            Download Word Cloud
-          </button>
         </div>
 
         <div className="mt-12 bg-white rounded-xl shadow-lg p-6">
