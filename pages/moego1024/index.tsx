@@ -67,15 +67,15 @@ const MoeGo1024: NextPage = () => {
 
     // 每个名字重复 6 次，使用不同权重（大、中、小）来填充空隙
     Object.entries(nameFrequency).forEach(([name, count], index) => {
-      // 添加大字号 1 个
-      wordList.push([name, 40]);
-      // 添加中字号 2 个
-      wordList.push([name, 25]);
-      wordList.push([name, 20]);
-      // 添加小字号 3 个（用于填充缝隙）
-      wordList.push([name, 12]);
+      // 添加大字号 1 个 - 增大权重使文字更清晰
+      wordList.push([name, 50]);
+      // 添加中字号 2 个 - 增大权重使文字更清晰
+      wordList.push([name, 32]);
+      wordList.push([name, 26]);
+      // 添加小字号 3 个（用于填充缝隙）- 稍微增大最小字号
+      wordList.push([name, 16]);
+      wordList.push([name, 13]);
       wordList.push([name, 10]);
-      wordList.push([name, 8]);
     });
 
     const canvas = canvasRef.current;
@@ -97,23 +97,23 @@ const MoeGo1024: NextPage = () => {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    // 绘制 "MoeGo" 白色区域 - 增大字体
-    const fontSize1 = Math.min(width, height) * 0.35; // 从 0.28 增加到 0.35
+    // 绘制 "MoeGo" 白色区域 - 增大字体，上移位置
+    const fontSize1 = Math.min(width, height) * 0.42; // 从 0.35 增加到 0.42，使形状更大更清晰
     ctx.font = `bold ${fontSize1}px Arial, sans-serif`;
-    ctx.fillText('MoeGo', width / 2, height * 0.35);
+    ctx.fillText('MoeGo', width / 2, height * 0.30); // 从 0.35 调整到 0.30，上移
 
-    // 绘制 "1024" 白色区域 - 增大字体
-    const fontSize2 = Math.min(width, height) * 0.4; // 从 0.32 增加到 0.4
+    // 绘制 "1024" 白色区域 - 增大字体，下移位置
+    const fontSize2 = Math.min(width, height) * 0.48; // 从 0.4 增加到 0.48，使形状更大更清晰
     ctx.font = `bold ${fontSize2}px Arial, sans-serif`;
-    ctx.fillText('1024', width / 2, height * 0.65);
+    ctx.fillText('1024', width / 2, height * 0.70); // 从 0.65 调整到 0.70，下移
 
     // 第三步：配置词云选项
     const options: WordCloudOptions = {
       list: wordList,
       gridSize: 2, // 从 3 减小到 2，提高填充精度
       weightFactor: (size) => {
-        // 保持字体大小清晰
-        return Math.pow(size, 0.7) * (canvas.width / 1200);
+        // 增加权重系数，使文字更清晰
+        return Math.pow(size, 0.75) * (canvas.width / 1400);
       },
       fontFamily: 'Arial, sans-serif',
       color: () => {
@@ -216,8 +216,8 @@ const MoeGo1024: NextPage = () => {
         <div className="bg-white rounded-2xl shadow-2xl p-8 mb-8">
           <canvas
             ref={canvasRef}
-            width={1200}
-            height={800}
+            width={1600}
+            height={1000}
             className="w-full h-auto rounded-lg"
             style={{ maxWidth: '100%', height: 'auto' }}
           />
