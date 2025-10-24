@@ -27,6 +27,10 @@ export default async function handler(
       ?.map((user) => user.real_name_normalized)
       .filter((name) => name && name.trim() !== '');
 
+    // add new names to the list
+    names.push('Ethan');
+    names.push('Fiona Zhang');
+
     return res.status(200).json({ names });
   } catch (error) {
     console.error('Error:', error);
