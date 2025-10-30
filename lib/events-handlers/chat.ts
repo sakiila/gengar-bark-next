@@ -5,6 +5,7 @@ import { logger } from '@/lib/utils/logger';
 import {
   CiCommand,
   CreateAppointmentCommand,
+  FileCommand,
   GptCommand,
   HelpCommand,
   IdCommand,
@@ -47,6 +48,7 @@ export async function send_response(
     new JiraCommand(channel, ts, userId),
     new CiCommand(ts, userId, userName, channel, channelName),
     new CreateAppointmentCommand(channel, ts, userId),
+    new FileCommand(channel, ts), // 文件格式检测命令
     new GptCommand(channel, ts), // always the last command to avoid conflicts with other commands
   ];
 

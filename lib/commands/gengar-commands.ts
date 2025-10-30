@@ -6,6 +6,7 @@ import { generatePromptFromThread, getGPT4 } from '@/lib/ai/openai';
 import { getThreadReplies, postMessage } from '@/lib/slack/gengar-bolt';
 import { getUser, postgres } from '@/lib/database/supabase';
 import { createIssue } from '@/lib/jira/create-issue';
+import { detectFileTypeFromUrl, formatFileSize } from '@/lib/utils/file-utils';
 
 
 export class IdCommand implements Command {
@@ -101,7 +102,11 @@ export class HelpCommand implements Command {
    • 输入 \`jira <projectKey> <issueType> [summary]\` 创建 Jira issue（如 \`jira MER Task 修复登录问题\`）
    * 注意：projectKey 可用 MER|ERP|CRM|FIN，issueType 可用 Task|Bug，summary 选填。
 
-更新时间：2025-02-28。反馈建议：<#C08EXLMF5SQ|bot-feedback-fuel>。
+6. *文件分析*
+   • 输入 \`file "链接地址"\` 分析文件格式（如 \`file "https://example.com/document.pdf"\`）
+   * 功能：Detect file type and suggest possible file extensions
+
+更新时间：2025-10-30。反馈建议：<#C08EXLMF5SQ|bot-feedback-fuel>。
 `;
 
     await postMessage(this.channel, this.ts, helpText);
@@ -190,5 +195,194 @@ export class JiraCommand implements Command {
         `:x: Jira issue 创建失败：${err instanceof Error ? err.message : '未知错误'}`,
       );
     }
+  }
+}
+
+export class FileCommand implements Command {
+  constructor(
+    private channel: string,
+    private ts: string,
+  ) {
+  }
+
+  matches(text: string): boolean {
+    const pattern = new RegExp('^file\\s+"([^"]+)"\\s*$', 'i');
+    return pattern.test(text);
+  }
+
+  async execute(text: string): Promise<void> {
+    const pattern = new RegExp('^file\\s+"([^"]+)"\\s*$', 'i');
+    const match = text.match(pattern);
+
+    if (!match) {
+      await postMessage(this.channel, this.ts, ':x: Invalid command format. Use: `file "http://example.com/file.pdf"`');
+      return;
+    }
+
+    const url = match[1];
+
+    // 验证URL格式
+    try {
+      new URL(url);
+    } catch {
+      await postMessage(this.channel, this.ts, ':x: Invalid URL format');
+      return;
+    }
+
+    try {
+      await postMessage(this.channel, this.ts, ':mag: Analyzing file...');
+
+      const result = await detectFileTypeFromUrl(url);
+      
+      let responseText = '';
+      
+      if (result.fileType) {
+        // 如果检测到具体格式，显示扩展名
+        const extensions = this.getExtensionsFromFileType(result.fileType);
+        responseText = `🎯 Detected file format: **${extensions.join(', ')}**`;
+      } else {
+        // 基于Content-Type和URL扩展名推测格式
+        const suggestions = this.getSuggestionsFromContentType(result.contentType || '');
+        const urlExtension = result.urlExtension;
+        
+        const allSuggestions = [];
+        if (suggestions.length > 0) {
+          allSuggestions.push(...suggestions);
+        }
+        if (urlExtension && !allSuggestions.includes(urlExtension)) {
+          allSuggestions.push(urlExtension);
+        }
+        
+        if (allSuggestions.length > 0) {
+          responseText = `💡 Possible file formats: **${allSuggestions.join(', ')}**`;
+        } else {
+          responseText = '❓ Unable to determine file format';
+        }
+      }
+
+      await postMessage(this.channel, this.ts, responseText);
+
+    } catch (error) {
+      console.error('File analysis error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      await postMessage(this.channel, this.ts, `:x: File analysis failed: ${errorMessage}`);
+    }
+  }
+
+  private getSuggestionsFromContentType(contentType: string): string[] {
+    const suggestions: string[] = [];
+    
+    // 转换为小写便于匹配
+    const lowerContentType = contentType.toLowerCase();
+    
+    // 文本类型
+    if (lowerContentType.startsWith('text/')) {
+      if (lowerContentType.includes('html')) suggestions.push('.html');
+      else if (lowerContentType.includes('css')) suggestions.push('.css');
+      else if (lowerContentType.includes('javascript')) suggestions.push('.js');
+      else if (lowerContentType.includes('json')) suggestions.push('.json');
+      else if (lowerContentType.includes('xml')) suggestions.push('.xml');
+      else if (lowerContentType.includes('csv')) suggestions.push('.csv');
+      else if (lowerContentType.includes('markdown')) suggestions.push('.md');
+      else suggestions.push('.txt');
+    } 
+    // 图片类型
+    else if (lowerContentType.startsWith('image/')) {
+      if (lowerContentType.includes('jpeg') || lowerContentType.includes('jpg')) suggestions.push('.jpg');
+      else if (lowerContentType.includes('png')) suggestions.push('.png');
+      else if (lowerContentType.includes('gif')) suggestions.push('.gif');
+      else if (lowerContentType.includes('webp')) suggestions.push('.webp');
+      else if (lowerContentType.includes('svg')) suggestions.push('.svg');
+      else if (lowerContentType.includes('bmp')) suggestions.push('.bmp');
+      else if (lowerContentType.includes('tiff')) suggestions.push('.tiff');
+      else if (lowerContentType.includes('ico')) suggestions.push('.ico');
+    } 
+    // 应用程序类型
+    else if (lowerContentType.startsWith('application/')) {
+      if (lowerContentType.includes('pdf')) suggestions.push('.pdf');
+      else if (lowerContentType.includes('zip')) suggestions.push('.zip');
+      else if (lowerContentType.includes('json')) suggestions.push('.json');
+      else if (lowerContentType.includes('xml')) suggestions.push('.xml');
+      else if (lowerContentType.includes('octet-stream')) suggestions.push('.bin');
+      
+      // Microsoft Office 传统格式
+      else if (lowerContentType.includes('msword')) suggestions.push('.doc');
+      else if (lowerContentType.includes('vnd.ms-excel')) suggestions.push('.xls');
+      else if (lowerContentType.includes('vnd.ms-powerpoint')) suggestions.push('.ppt');
+      
+      // Microsoft Office 新格式 (OpenXML)
+      else if (lowerContentType.includes('vnd.openxmlformats-officedocument.wordprocessingml.document')) suggestions.push('.docx');
+      else if (lowerContentType.includes('vnd.openxmlformats-officedocument.spreadsheetml.sheet')) suggestions.push('.xlsx');
+      else if (lowerContentType.includes('vnd.openxmlformats-officedocument.presentationml.presentation')) suggestions.push('.pptx');
+      else if (lowerContentType.includes('vnd.openxmlformats')) suggestions.push('.docx', '.xlsx', '.pptx');
+      
+      // 压缩格式
+      else if (lowerContentType.includes('x-rar')) suggestions.push('.rar');
+      else if (lowerContentType.includes('gzip')) suggestions.push('.gz');
+      else if (lowerContentType.includes('x-7z')) suggestions.push('.7z');
+      else if (lowerContentType.includes('x-tar')) suggestions.push('.tar');
+      
+      // 其他常见格式
+      else if (lowerContentType.includes('javascript')) suggestions.push('.js');
+      else if (lowerContentType.includes('rtf')) suggestions.push('.rtf');
+      else if (lowerContentType.includes('postscript')) suggestions.push('.ps');
+    } 
+    // 视频类型
+    else if (lowerContentType.startsWith('video/')) {
+      if (lowerContentType.includes('mp4')) suggestions.push('.mp4');
+      else if (lowerContentType.includes('webm')) suggestions.push('.webm');
+      else if (lowerContentType.includes('avi')) suggestions.push('.avi');
+      else if (lowerContentType.includes('quicktime')) suggestions.push('.mov');
+      else if (lowerContentType.includes('x-msvideo')) suggestions.push('.avi');
+      else if (lowerContentType.includes('mpeg')) suggestions.push('.mpg');
+      else if (lowerContentType.includes('x-flv')) suggestions.push('.flv');
+      else if (lowerContentType.includes('3gpp')) suggestions.push('.3gp');
+    } 
+    // 音频类型
+    else if (lowerContentType.startsWith('audio/')) {
+      if (lowerContentType.includes('mpeg') || lowerContentType.includes('mp3')) suggestions.push('.mp3');
+      else if (lowerContentType.includes('wav')) suggestions.push('.wav');
+      else if (lowerContentType.includes('ogg')) suggestions.push('.ogg');
+      else if (lowerContentType.includes('aac')) suggestions.push('.aac');
+      else if (lowerContentType.includes('flac')) suggestions.push('.flac');
+      else if (lowerContentType.includes('x-ms-wma')) suggestions.push('.wma');
+    }
+    
+    return suggestions;
+  }
+
+  private getExtensionsFromFileType(fileType: any): string[] {
+    // 基于 Go 语言映射中的多扩展名处理
+    const description = fileType.description.toLowerCase();
+    const extension = fileType.extension;
+    
+    // 根据描述和检测到的格式返回可能的扩展名
+    if (description.includes('zip') && description.includes('office')) {
+      return ['.zip', '.docx', '.xlsx', '.pptx', '.epub'];
+    }
+    if (description.includes('tiff')) {
+      return ['.tif', '.tiff'];
+    }
+    if (description.includes('jpeg')) {
+      return ['.jpg', '.jpeg'];
+    }
+    if (description.includes('mp4') && description.includes('mov')) {
+      return ['.mp4', '.mov', '.m4v'];
+    }
+    if (description.includes('riff')) {
+      return ['.wav', '.avi', '.webp'];
+    }
+    if (description.includes('xml')) {
+      return ['.xml', '.svg'];
+    }
+    if (description.includes('html')) {
+      return ['.html', '.htm'];
+    }
+    if (description.includes('windows pe')) {
+      return ['.exe', '.dll'];
+    }
+    
+    // 默认返回单一扩展名
+    return [extension];
   }
 }
