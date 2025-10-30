@@ -213,25 +213,42 @@ export class FileCommand implements Command {
   async execute(text: string): Promise<void> {
     const pattern = new RegExp('^file\\s+"([^"]+)"\\s*$', 'i');
     const match = text.match(pattern);
-
     if (!match) {
       await postMessage(this.channel, this.ts, ':x: Invalid command format. Use: `file "http://example.com/file.pdf"`');
       return;
     }
 
-    const url = match[1];
-
-    // 验证URL格式
+    let url = match[1];
+    
+    // Slack 会对 URL 进行编码，需要先解码
     try {
-      new URL(url);
-    } catch {
-      await postMessage(this.channel, this.ts, ':x: Invalid URL format');
+      // 处理 Slack 的 URL 编码
+      url = decodeURIComponent(url);
+      console.log('Original URL from Slack:', JSON.stringify(match[1]));
+      console.log('Decoded URL:', JSON.stringify(url));
+    } catch (decodeError) {
+      console.log('URL decode failed, using original:', decodeError);
+      // 如果解码失败，使用原始 URL
+    }
+
+    // 验证解码后的 URL
+    try {
+      const urlObj = new URL(url);
+      // 检查协议是否为 http 或 https
+      if (!['http:', 'https:'].includes(urlObj.protocol)) {
+        throw new Error('Only HTTP and HTTPS URLs are supported');
+      }
+    } catch (error) {
+      console.log('FileCommand execute called with text:', JSON.stringify(text));
+      console.log('Pattern match result:', match);
+      console.log('Final URL used:', JSON.stringify(url));
+      console.error('URL validation error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown URL error';
+      await postMessage(this.channel, this.ts, `:x: Invalid URL format: ${errorMessage}`);
       return;
     }
 
     try {
-      await postMessage(this.channel, this.ts, ':mag: Analyzing file...');
-
       const result = await detectFileTypeFromUrl(url);
       
       let responseText = '';
