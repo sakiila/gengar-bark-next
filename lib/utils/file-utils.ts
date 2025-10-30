@@ -237,7 +237,10 @@ export async function detectFileTypeFromUrl(url: string): Promise<{
     if (rangeResponse.ok) {
       const arrayBuffer = await rangeResponse.arrayBuffer();
       const buffer = new Uint8Array(arrayBuffer);
+      console.log('buffer = ', buffer);
       fileType = detectFileType(buffer);
+    }else{
+        console.log('Range request failed with msg = ', await rangeResponse.text());
     }
 
     return {

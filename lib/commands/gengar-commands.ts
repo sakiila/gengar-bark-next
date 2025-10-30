@@ -103,7 +103,7 @@ export class HelpCommand implements Command {
    * 注意：projectKey 可用 MER|ERP|CRM|FIN，issueType 可用 Task|Bug，summary 选填。
 
 6. *文件分析*
-   • 输入 \`file "链接地址"\` 分析文件格式（如 \`file "https://example.com/document.pdf"\`）
+   • 输入 \`file <链接地址>\` 分析文件格式（如 \`file https://example.com/document.pdf\`）
    * 功能：Detect file type and suggest possible file extensions
 
 更新时间：2025-10-30。反馈建议：<#C08EXLMF5SQ|bot-feedback-fuel>。
@@ -206,15 +206,17 @@ export class FileCommand implements Command {
   }
 
   matches(text: string): boolean {
-    const pattern = new RegExp('^file\\s+"([^"]+)"\\s*$', 'i');
+    // 匹配 file + 空格 + URL（只到第一个空格）
+    const pattern = new RegExp('^file\\s+(\\S+)', 'i');
     return pattern.test(text);
   }
 
   async execute(text: string): Promise<void> {
-    const pattern = new RegExp('^file\\s+"([^"]+)"\\s*$', 'i');
+    // 匹配 file + 空格 + URL（只到第一个空格）
+    const pattern = new RegExp('^file\\s+(\\S+)', 'i');
     const match = text.match(pattern);
     if (!match) {
-      await postMessage(this.channel, this.ts, ':x: Invalid command format. Use: `file "http://example.com/file.pdf"`');
+      await postMessage(this.channel, this.ts, ':x: Invalid command format. Use: `file <URL>`');
       return;
     }
 
