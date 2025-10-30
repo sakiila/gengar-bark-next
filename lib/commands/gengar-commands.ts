@@ -220,15 +220,19 @@ export class FileCommand implements Command {
 
     let url = match[1];
     
+    // 清理 URL：去除前后的引号和 Slack 添加的 <> 包装
+    url = this.cleanUrl(url);
+    console.log('Original URL from Slack:', JSON.stringify(match[1]));
+    console.log('Cleaned URL:', JSON.stringify(url));
+    
     // Slack 会对 URL 进行编码，需要先解码
     try {
       // 处理 Slack 的 URL 编码
       url = decodeURIComponent(url);
-      console.log('Original URL from Slack:', JSON.stringify(match[1]));
       console.log('Decoded URL:', JSON.stringify(url));
     } catch (decodeError) {
-      console.log('URL decode failed, using original:', decodeError);
-      // 如果解码失败，使用原始 URL
+      console.log('URL decode failed, using cleaned URL:', decodeError);
+      // 如果解码失败，使用清理后的 URL
     }
 
     // 验证解码后的 URL
@@ -401,5 +405,24 @@ export class FileCommand implements Command {
     
     // 默认返回单一扩展名
     return [extension];
+  }
+
+  private cleanUrl(url: string): string {
+    // 去除前后的空白字符
+    url = url.trim();
+    
+    // 去除前后的引号 " "
+    if ((url.startsWith('"') && url.endsWith('"')) || 
+        (url.startsWith("'") && url.endsWith("'"))) {
+      url = url.slice(1, -1);
+    }
+    
+    // 去除前后的尖括号 < > (Slack 经常会添加这些)
+    if (url.startsWith('<') && url.endsWith('>')) {
+      url = url.slice(1, -1);
+    }
+    
+    // 再次去除空白字符
+    return url.trim();
   }
 }
