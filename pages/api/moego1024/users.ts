@@ -11,12 +11,12 @@ export default async function handler(
 
   try {
     const { data, error } = await postgres
-      .from('user')
-      .select('real_name_normalized')
-      .eq('deleted', false)
-      .eq('is_bot', false)
-      .eq('team_id', 'T011CF3CMJN')
-     .ilike('email', '%@moego.pet%');
+    .from('user')
+    .select('real_name_normalized')
+    .eq('deleted', false)
+    .eq('is_bot', false)
+    .eq('team_id', 'T011CF3CMJN')
+    .or('email.ilike.%@moego.pet%,email.ilike.%@mymoement.com%');
 
     if (error) {
       console.error('Error fetching users:', error);
@@ -26,10 +26,6 @@ export default async function handler(
     const names = data
       ?.map((user) => user.real_name_normalized)
       .filter((name) => name && name.trim() !== '');
-
-    // add new names to the list
-    names.push('Ethan');
-    names.push('Fiona Zhang');
 
     return res.status(200).json({ names });
   } catch (error) {
