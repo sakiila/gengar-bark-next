@@ -92,17 +92,16 @@ export async function createIssue(text: string, channel: string, ts: string, use
     };
   }
 
-  // 只有当 issueKey 存在时才添加关联
-  if (result.issueKey) {
+  // 只有当 issueKey 存在且格式正确时才添加关联
+  if (result.issueKey && /^[A-Z]+-\d+$/i.test(result.issueKey)) {
     requestBody.update = {
       issuelinks: [
         {
           add: {
             type: {
               name: 'Relates',
-              inward: 'relates to',
             },
-            inwardIssue: {
+            outwardIssue: {
               key: result.issueKey.toUpperCase(),
             },
           },
