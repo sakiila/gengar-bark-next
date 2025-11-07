@@ -59,6 +59,7 @@ export async function createIssue(text: string, channel: string, ts: string, use
   // FIN Bug -> Bug Online 10004 -> description
   // ERP Bug -> Bug Online 10004 -> customfield_10052
   // GRM Bug -> Bug Online 10004 -> description
+  // ENT Bug -> Bug 10045 ->  description
   const nowProjectKey = projectKey.toUpperCase();
   let nowIssueType = capitalizeWords(issueType);
   if (('MER' == nowProjectKey || 'FIN' == nowProjectKey || 'ERP' == nowProjectKey || 'GRM' == nowProjectKey) && 'Bug' == nowIssueType) {

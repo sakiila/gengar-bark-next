@@ -96,11 +96,11 @@ export class HelpCommand implements Command {
    • 输入 \`create <语义化文本>\` 创建新预约（如 \`create an appointment today at 10am\`）
    
 4. *CI 相关*
-   • 输入 \`ci <repository> <branch>\` 订阅 CI 状态
+   • 输入 \`ci <repository> <branch>\` 订阅 CI 状态（如 ci moego-svc-task feature-update）
 
 5. *Jira 相关*
    • 输入 \`jira <projectKey> <issueType> [summary]\` 创建 Jira issue（如 \`jira MER Task 修复登录问题\`）
-   * 注意：projectKey 可用 MER|ERP|CRM|FIN，issueType 可用 Task|Bug，summary 选填。
+   * 注意：projectKey 可用 MER|ERP|CRM|FIN|GRM|ENT，issueType 可用 task|bug，summary 选填。大小写皆可。
 
 6. *文件分析*
    • 输入 \`file <链接地址>\` 分析文件格式（如 \`file https://example.com/document.pdf\`）
