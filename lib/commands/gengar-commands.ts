@@ -106,7 +106,7 @@ export class HelpCommand implements Command {
    • 输入 \`file <链接地址>\` 分析文件格式（如 \`file https://example.com/document.pdf\`）
    * 功能：Detect file type and suggest possible file extensions
 
-更新时间：2025-10-30。反馈建议：<#C08EXLMF5SQ|bot-feedback-fuel>。
+更新时间：2025-11-07。反馈建议：<#C08EXLMF5SQ|bot-feedback-fuel>。
 `;
 
     await postMessage(this.channel, this.ts, helpText);
