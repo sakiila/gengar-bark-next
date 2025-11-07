@@ -17,23 +17,23 @@ export async function getDALLE3(prompt: string) {
   });
 }
 
-export async function getGPT4(messages: ChatCompletionMessageParam[]) {
+export async function getGPT(messages: ChatCompletionMessageParam[]) {
   return openai.chat.completions.create({
-    model: 'gpt-4o',
+    model: 'gpt-5-chat-latest',
     messages,
   });
 }
 
-export async function getGPT4mini(messages: ChatCompletionMessageParam[]) {
+export async function getGPTmini(messages: ChatCompletionMessageParam[]) {
   return openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: 'gpt-5-mini',
     messages,
   });
 }
 
 export async function translateToChinese(text: string) {
   return openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: 'gpt-5-mini',
     messages: [
       {
         role: 'system',
@@ -50,7 +50,7 @@ export async function translateToChinese(text: string) {
 export async function getThird(messages: ChatCompletionMessageParam[]) {
   const params = {
     messages: messages,
-    model: 'gpt-4o-mini',
+    model: 'gpt-5-mini',
   };
 
   const headers = {

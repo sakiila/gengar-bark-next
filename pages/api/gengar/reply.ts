@@ -1,7 +1,7 @@
 import { responseUrl } from '@/lib/slack/slack';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { ChatCompletionMessageParam } from 'openai/resources';
-import { getGPT4 } from '@/lib/ai/openai';
+import { getGPT } from '@/lib/ai/openai';
 
 export default async function handler(
   req: NextApiRequest,
@@ -54,7 +54,7 @@ export default async function handler(
       break;
   }
 
-  const gptResponse = await getGPT4(prompts);
+  const gptResponse = await getGPT(prompts);
 
   console.log('gptResponse:', `${gptResponse.choices[0].message.content}`);
 

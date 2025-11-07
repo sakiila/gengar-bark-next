@@ -1,4 +1,4 @@
-import { generatePromptForMoeGo, getGPT4mini } from '@/lib/ai/openai';
+import { generatePromptForMoeGo, getGPTmini } from '@/lib/ai/openai';
 import { GPTResponse } from '@/lib/moego/types';
 import { postgres } from '@/lib/database/supabase';
 import compositeCreateAppointment from './composite';
@@ -86,7 +86,7 @@ export async function execute_moego(channel: string, ts: string, text: string, u
   }
 
   const prompts = await generatePromptForMoeGo(text);
-  const gptResponse = await getGPT4mini(prompts);
+  const gptResponse = await getGPTmini(prompts);
 
   console.log('gptResponse:', gptResponse);
 

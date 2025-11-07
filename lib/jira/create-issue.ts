@@ -1,4 +1,4 @@
-import { generatePromptForJira, getGPT4 } from '@/lib/ai/openai';
+import { generatePromptForJira, getGPT } from '@/lib/ai/openai';
 import { capitalizeWords } from '@/lib/utils/string-utils';
 import { getThreadReplies } from '@/lib/slack/gengar-bolt';
 
@@ -6,7 +6,7 @@ async function aiSummary(channel: string, ts: string) {
   const thread = await getThreadReplies(channel, ts);
   const prompts = await generatePromptForJira(thread);
   console.log('prompts: ', prompts);
-  const gptResponse = await getGPT4(prompts);
+  const gptResponse = await getGPT(prompts);
   console.log('gptResponse.choices[0].message.content: ', gptResponse.choices[0].message.content);
   const result = JSON.parse(gptResponse.choices[0].message.content as string);
   console.info('aiSummary result:', result);

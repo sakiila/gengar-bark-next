@@ -1,7 +1,7 @@
 import { queryByAppointmentId, queryByOrderId } from './one-page';
 import { postBlockMessage } from '@/lib/slack/gengar-bolt';
 import { formatDateToCustomString } from '@/lib/utils/time-utils';
-import { getGPT4mini } from '@/lib/ai/openai';
+import { getGPTmini } from '@/lib/ai/openai';
 import { ChatCompletionMessageParam } from 'openai/resources';
 
 /**
@@ -497,7 +497,7 @@ async function getAiMessage(appointmentData: any) {
     },
   ];
 
-  const gptResponse = await getGPT4mini(messages);
+  const gptResponse = await getGPTmini(messages);
   const analysis = gptResponse.choices[0].message.content;
 
   // 添加 GPT 分析结果

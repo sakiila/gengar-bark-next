@@ -2,7 +2,7 @@ import { Command } from './command';
 import { extractId, IdType } from '@/lib/utils/id-utils';
 import { sendAppointmentToSlack, sendOrderToSlack } from '@/lib/database/services/appointment-slack';
 import { execute_moego } from '@/lib/moego/moego';
-import { generatePromptFromThread, getGPT4 } from '@/lib/ai/openai';
+import { generatePromptFromThread, getGPT } from '@/lib/ai/openai';
 import { getThreadReplies, postMessage } from '@/lib/slack/gengar-bolt';
 import { getUser, postgres } from '@/lib/database/supabase';
 import { createIssue } from '@/lib/jira/create-issue';
@@ -64,7 +64,7 @@ export class GptCommand implements Command {
   async execute(text: string): Promise<void> {
     const thread = await getThreadReplies(this.channel, this.ts);
     const prompts = await generatePromptFromThread(thread);
-    const gptResponse = await getGPT4(prompts);
+    const gptResponse = await getGPT(prompts);
 
     await postMessage(this.channel, this.ts, `${gptResponse.choices[0].message.content}`);
   }
