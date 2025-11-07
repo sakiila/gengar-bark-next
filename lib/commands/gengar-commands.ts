@@ -100,7 +100,7 @@ export class HelpCommand implements Command {
 
 5. *Jira 相关*
    • 输入 \`jira <projectKey> <issueType> [summary]\` 创建 Jira issue（如 \`jira MER Task 修复登录问题\`）
-   * 注意：projectKey 可用 MER|ERP|CRM|FIN|GRM|ENT，issueType 可用 task|bug，summary 选填。大小写皆可。
+   * 注意：projectKey 可用 MER|ERP|CRM|FIN|GRM|ENT，issueType 可用 task|bug|story|epic，summary 选填。大小写皆可。
 
 6. *文件分析*
    • 输入 \`file <链接地址>\` 分析文件格式（如 \`file https://example.com/document.pdf\`）
