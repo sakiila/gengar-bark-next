@@ -75,7 +75,7 @@ export async function createIssue(text: string, channel: string, ts: string, use
   const match = text.match(pattern);
 
   if (!match) {
-    throw new Error('命令格式错误，请使用: jira <projectKey> <issueType> [summary]');
+    throw new Error('命令格式错误，请使用: jira <projectKey> <issueType> [summary] 或 jira <issueType> <projectKey> [summary]');
   }
 
   const threadLink = await getThreadLink(channel, ts);
@@ -96,7 +96,27 @@ export async function createIssue(text: string, channel: string, ts: string, use
     };
   }
 
-  const [_, projectKey, issueType, summary = result.summary as string] = match;
+  let [_, param1, param2, summary = result.summary as string] = match;
+
+  // 智能识别 projectKey 和 issueType
+  // projectKey 通常是全大写的缩写（如 FIN、MER、ERP、CRM、GRM、ENT）
+  const knownProjectKeys = ['MER', 'CRM', 'FIN', 'ERP', 'GRM', 'ENT'];
+
+  let projectKey: string;
+  let issueType: string;
+
+  // 判断 projectKey 在哪个位置
+  if (knownProjectKeys.includes(param2.toUpperCase())) {
+    // param2 是 projectKey，交换顺序
+    projectKey = param2;
+    issueType = param1;
+  } else {
+    // 默认 param1 是 projectKey
+    projectKey = param1;
+    issueType = param2;
+  }
+
+  console.log(`解析结果: projectKey=${projectKey}, issueType=${issueType}`);
 
   // 较正
   // MER Bug -> Bug Online 10004 -> customfield_10052
