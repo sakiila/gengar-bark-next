@@ -4,7 +4,7 @@ import { postMessage } from '@/lib/slack/gengar-bolt';
 import { translateToChinese } from '@/lib/ai/openai';
 
 // cto
-const TARGET_USER_ID = ['U078XGHJUUA'];
+const TARGET_USER_ID = [''];
 // bulletin-ears
 const TARGET_CHANNEL_ID = 'C091FDM1M62';
 
