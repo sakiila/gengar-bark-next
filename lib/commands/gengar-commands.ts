@@ -175,13 +175,15 @@ export class JiraCommand implements Command {
 
   async execute(text: string): Promise<void> {
     let name = this.userId;
+    let email = null;
     const user = await getUser(this.userId);
     if (user) {
       name = user[0].real_name_normalized;
+      email = user[0].email;
     }
 
     try {
-      const issueKey = await createIssue(text, this.channel, this.ts, name);
+      const issueKey = await createIssue(text, this.channel, this.ts, name, email);
       await postMessage(
         this.channel,
         this.ts,

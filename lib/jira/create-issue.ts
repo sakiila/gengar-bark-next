@@ -25,7 +25,52 @@ async function getThreadLink(channelId: string, threadTs: string): Promise<strin
   return `https://moegoworkspace.slack.com/archives/${channelId}/p${formattedTs}`;
 }
 
-export async function createIssue(text: string, channel: string, ts: string, userName: string) {
+/**
+ * 根据邮箱查询 Jira 用户的 account ID
+ * @param email 用户邮箱
+ * @returns account ID，如果未找到则返回 null
+ */
+async function getUserAccountIdByEmail(email: string): Promise<string | null> {
+  try {
+    // Jira API 文档: https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-user-search/#api-rest-api-2-user-search-get
+    const response = await fetch(`https://moego.atlassian.net/rest/api/2/user/search?query=${encodeURIComponent(email)}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Basic ${Buffer.from(`${process.env.JIRA_EMAIL}:${process.env.JIRA_API_TOKEN}`).toString('base64')}`,
+      },
+    });
+
+    if (!response.ok) {
+      console.error(`查询 Jira 用户失败: ${response.status} ${response.statusText}`);
+      return null;
+    }
+
+    const users = await response.json();
+    
+    // 查找完全匹配邮箱的用户
+    const matchedUser = users.find((user: any) => user.emailAddress?.toLowerCase() === email.toLowerCase());
+    
+    if (matchedUser && matchedUser.accountId) {
+      console.log(`找到用户 ${email} 的 account ID: ${matchedUser.accountId}`);
+      return matchedUser.accountId;
+    }
+
+    console.warn(`未找到邮箱为 ${email} 的 Jira 用户`);
+    return null;
+  } catch (error) {
+    console.error('查询 Jira 用户时发生错误:', error);
+    return null;
+  }
+}
+
+export async function createIssue(text: string, channel: string, ts: string, userName: string, email?: string) {
+  // 如果提供了邮箱，查询对应的 Jira account ID
+  let reporterAccountId: string | null = null;
+  if (email) {
+    reporterAccountId = await getUserAccountIdByEmail(email);
+  }
+
   const pattern = new RegExp('^jira\\s+(\\S+)\\s+(\\S+)(?:\\s+(.+))?$', 'i');
   const match = text.match(pattern);
 
@@ -77,6 +122,13 @@ export async function createIssue(text: string, channel: string, ts: string, use
       },
     },
   };
+
+  // 如果查询到了 reporter 的 account ID，则设置 reporter 字段
+  if (reporterAccountId) {
+    requestBody.fields.reporter = {
+      id: reporterAccountId,
+    };
+  }
 
   if ((('MER' == nowProjectKey || 'ERP' == nowProjectKey || 'GRM' == nowProjectKey) && 'Bug Online' == nowIssueType)) {
     requestBody.fields.description = `Reporter: ${userName}\n\nSlack Thread: ${threadLink}\n\nAI generated summary: ${result.description as string}\n\n
