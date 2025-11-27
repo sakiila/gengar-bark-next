@@ -47,10 +47,10 @@ async function getUserAccountIdByEmail(email: string): Promise<string | null> {
     }
 
     const users = await response.json();
-    
+
     // 查找完全匹配邮箱的用户
     const matchedUser = users.find((user: any) => user.emailAddress?.toLowerCase() === email.toLowerCase());
-    
+
     if (matchedUser && matchedUser.accountId) {
       console.log(`找到用户 ${email} 的 account ID: ${matchedUser.accountId}`);
       return matchedUser.accountId;
@@ -60,6 +60,45 @@ async function getUserAccountIdByEmail(email: string): Promise<string | null> {
     return null;
   } catch (error) {
     console.error('查询 Jira 用户时发生错误:', error);
+    return null;
+  }
+}
+
+/**
+ * 根据 issue key 获取 issue 的 Priority 字段
+ * @param issueKey issue key (如 MER-123)
+ * @returns Priority 对象，如果未找到或发生错误则返回 null
+ */
+async function getIssuePriority(issueKey: string): Promise<{ id: string; name: string } | null> {
+  try {
+    // Jira API 文档: https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-issues/#api-rest-api-2-issue-issueidorkey-get
+    const response = await fetch(`https://moego.atlassian.net/rest/api/2/issue/${issueKey}?fields=priority`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Basic ${Buffer.from(`${process.env.JIRA_EMAIL}:${process.env.JIRA_API_TOKEN}`).toString('base64')}`,
+      },
+    });
+
+    if (!response.ok) {
+      console.error(`查询 Jira issue ${issueKey} 失败: ${response.status} ${response.statusText}`);
+      return null;
+    }
+
+    const issue = await response.json();
+
+    if (issue.fields?.priority) {
+      console.log(`找到 issue ${issueKey} 的 Priority: ${issue.fields.priority.name} (ID: ${issue.fields.priority.id})`);
+      return {
+        id: issue.fields.priority.id,
+        name: issue.fields.priority.name,
+      };
+    }
+
+    console.warn(`Issue ${issueKey} 没有 Priority 字段`);
+    return null;
+  } catch (error) {
+    console.error(`查询 issue ${issueKey} 的 Priority 时发生错误:`, error);
     return null;
   }
 }
@@ -94,6 +133,12 @@ export async function createIssue(text: string, channel: string, ts: string, use
       description: '',
       issueKey: null
     };
+  }
+
+  // 如果存在关联的 CS 单，获取其 Priority 字段
+  let csIssuePriority: { id: string; name: string } | null = null;
+  if (result.issueKey && /^[A-Z]+-\d+$/i.test(result.issueKey)) {
+    csIssuePriority = await getIssuePriority(result.issueKey.toUpperCase());
   }
 
   let [_, param1, param2, summary = result.summary as string] = match;
@@ -147,6 +192,13 @@ export async function createIssue(text: string, channel: string, ts: string, use
   if (reporterAccountId) {
     requestBody.fields.reporter = {
       id: reporterAccountId,
+    };
+  }
+
+  // 如果关联的 CS 单有 Priority 字段，则在新创建的单也使用这个字段的值
+  if (csIssuePriority) {
+    requestBody.fields.priority = {
+      id: csIssuePriority.id,
     };
   }
 
