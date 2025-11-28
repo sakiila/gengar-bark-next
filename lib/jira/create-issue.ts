@@ -65,14 +65,15 @@ async function getUserAccountIdByEmail(email: string): Promise<string | null> {
 }
 
 /**
- * 根据 issue key 获取 issue 的 Priority 字段
+ * 根据 issue key 获取 issue 的指定字段
  * @param issueKey issue key (如 MER-123)
- * @returns Priority 对象，如果未找到或发生错误则返回 null
+ * @param fieldName 要获取的字段名称 (如 'priority', 'status', 'assignee')
+ * @returns 字段值，如果未找到或发生错误则返回 null
  */
-async function getIssuePriority(issueKey: string): Promise<{ id: string; name: string } | null> {
+async function getIssueField(issueKey: string, fieldName: string): Promise<unknown> {
   try {
     // Jira API 文档: https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-issues/#api-rest-api-2-issue-issueidorkey-get
-    const response = await fetch(`https://moego.atlassian.net/rest/api/2/issue/${issueKey}?fields=priority`, {
+    const response = await fetch(`https://moego.atlassian.net/rest/api/2/issue/${issueKey}?fields=${fieldName}`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -87,18 +88,15 @@ async function getIssuePriority(issueKey: string): Promise<{ id: string; name: s
 
     const issue = await response.json();
 
-    if (issue.fields?.priority) {
-      console.log(`找到 issue ${issueKey} 的 Priority: ${issue.fields.priority.name} (ID: ${issue.fields.priority.id})`);
-      return {
-        id: issue.fields.priority.id,
-        name: issue.fields.priority.name,
-      };
+    if (issue.fields?.[fieldName]) {
+      console.log(`找到 issue ${issueKey} 的 ${fieldName} 字段值:`, issue.fields[fieldName]);
+      return issue.fields[fieldName];
     }
 
-    console.warn(`Issue ${issueKey} 没有 Priority 字段`);
+    console.warn(`Issue ${issueKey} 没有 ${fieldName} 字段`);
     return null;
   } catch (error) {
-    console.error(`查询 issue ${issueKey} 的 Priority 时发生错误:`, error);
+    console.error(`查询 issue ${issueKey} 的 ${fieldName} 字段时发生错误:`, error);
     return null;
   }
 }
@@ -138,7 +136,13 @@ export async function createIssue(text: string, channel: string, ts: string, use
   // 如果存在关联的 CS 单，获取其 Priority 字段
   let csIssuePriority: { id: string; name: string } | null = null;
   if (result.issueKey && /^[A-Z]+-\d+$/i.test(result.issueKey)) {
-    csIssuePriority = await getIssuePriority(result.issueKey.toUpperCase());
+    csIssuePriority = await getIssueField(result.issueKey.toUpperCase(), 'priority') as { id: string; name: string } | null;
+  }
+
+  // 如果存在关联的 CS 单，获取其 customfield_10049 字段
+  let csIssueCustomField10049: { id: string; name: string } | null = null;
+  if (result.issueKey && /^[A-Z]+-\d+$/i.test(result.issueKey)) {
+    csIssueCustomField10049 = await getIssueField(result.issueKey.toUpperCase(), 'customfield_10049')  as { id: string; name: string } | null;
   }
 
   let [_, param1, param2, summary = result.summary as string] = match;
@@ -200,6 +204,12 @@ export async function createIssue(text: string, channel: string, ts: string, use
     requestBody.fields.priority = {
       id: csIssuePriority.id,
     };
+  }
+
+  if (nowIssueType == 'Bug Online' && csIssueCustomField10049) {
+    requestBody.fields.customfield_10049 = {
+      id: csIssueCustomField10049.id,
+    }
   }
 
   if ((('MER' == nowProjectKey || 'ERP' == nowProjectKey || 'GRM' == nowProjectKey) && 'Bug Online' == nowIssueType)) {
