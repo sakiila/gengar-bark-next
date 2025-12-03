@@ -199,12 +199,12 @@ export async function createIssue(text: string, channel: string, ts: string, use
   // 如果关联的 CS 单有 Issue Priority 字段，则在新创建的单关联到 Priority 字段
   if (nowIssueType === 'Bug Online' && csIssueCustomField10049) {
     const PRIORITY_MAP: Record<string, string> = {
-      '10058': '0',
-      '10059': '1',
-      '10060': '2',
-      '10061': '3',
+      '10058': '1', // P0
+      '10059': '2', // P1
+      '10060': '3', // P2
+      '10061': '4', // P3
     };
-    const mappedPriority = PRIORITY_MAP[csIssueCustomField10049.id] ?? '4';
+    const mappedPriority = PRIORITY_MAP[csIssueCustomField10049.id] ?? '10004';
     requestBody.fields.priority = { id: mappedPriority };
   }
 
