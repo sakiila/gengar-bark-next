@@ -129,20 +129,23 @@ export async function createIssue(text: string, channel: string, ts: string, use
     result = {
       summary: '',
       description: '',
-      issueKey: null
+      issueKey: null,
     };
   }
 
-  // 如果存在关联的 CS 单，获取其 Priority 字段
-  let csIssuePriority: { id: string; name: string } | null = null;
-  if (result.issueKey && /^[A-Z]+-\d+$/i.test(result.issueKey)) {
-    csIssuePriority = await getIssueField(result.issueKey.toUpperCase(), 'priority') as { id: string; name: string } | null;
-  }
+  // // 如果存在关联的 CS 单，获取其 Priority 字段
+  // let csIssuePriority: { id: string; name: string } | null = null;
+  // if (result.issueKey && /^[A-Z]+-\d+$/i.test(result.issueKey)) {
+  //   csIssuePriority = await getIssueField(result.issueKey.toUpperCase(), 'priority') as { id: string; name: string } | null;
+  // }
 
   // 如果存在关联的 CS 单，获取其 customfield_10049 字段
   let csIssueCustomField10049: { id: string; name: string } | null = null;
   if (result.issueKey && /^[A-Z]+-\d+$/i.test(result.issueKey)) {
-    csIssueCustomField10049 = await getIssueField(result.issueKey.toUpperCase(), 'customfield_10049')  as { id: string; name: string } | null;
+    csIssueCustomField10049 = await getIssueField(result.issueKey.toUpperCase(), 'customfield_10049') as {
+      id: string;
+      name: string
+    } | null;
   }
 
   let [_, param1, param2, summary = result.summary as string] = match;
@@ -199,17 +202,30 @@ export async function createIssue(text: string, channel: string, ts: string, use
     };
   }
 
-  // 如果关联的 CS 单有 Priority 字段，则在新创建的单也使用这个字段的值
-  if (csIssuePriority) {
-    requestBody.fields.priority = {
-      id: csIssuePriority.id,
-    };
-  }
-
+  // 如果关联的 CS 单有 Issue Priority 字段，则在新创建的单关联到 Priority 字段
   if (nowIssueType == 'Bug Online' && csIssueCustomField10049) {
-    requestBody.fields.customfield_10049 = {
-      id: csIssueCustomField10049.id,
+
+    var priority;
+    switch (csIssueCustomField10049.id) {
+      case '10058':
+        priority = '0';
+        break;
+      case '10059':
+        priority = '1';
+        break;
+      case '10060':
+        priority = '2';
+        break;
+        case '10061':
+          priority = '3';
+          break;
+      default:
+        priority = '4';
     }
+
+    requestBody.fields.priority = {
+      id: priority,
+    };
   }
 
   if ((('MER' == nowProjectKey || 'ERP' == nowProjectKey || 'GRM' == nowProjectKey) && 'Bug Online' == nowIssueType)) {
