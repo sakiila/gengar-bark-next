@@ -14,14 +14,8 @@ async function aiSummary(channel: string, ts: string) {
 }
 
 async function getThreadLink(channelId: string, threadTs: string): Promise<string> {
-  // 统一处理 threadTs 格式
-  let formattedTs = threadTs;
-
-  // 如果包含小数点，说明是 1740041242.568629 格式
-  if (threadTs.includes('.')) {
-    formattedTs = threadTs.replace('.', '');
-  }
-
+  // 统一处理 threadTs 格式：移除小数点以匹配 Slack 链接格式
+  const formattedTs = threadTs.replace('.', '');
   return `https://moegoworkspace.slack.com/archives/${channelId}/p${formattedTs}`;
 }
 
@@ -108,7 +102,7 @@ export async function createIssue(text: string, channel: string, ts: string, use
     reporterAccountId = await getUserAccountIdByEmail(email);
   }
 
-  const pattern = new RegExp('^jira\\s+(\\S+)\\s+(\\S+)(?:\\s+(.+))?$', 'i');
+  const pattern = /^jira\s+(\S+)\s+(\S+)(?:\s+(.+))?$/i;
   const match = text.match(pattern);
 
   if (!match) {
@@ -133,16 +127,15 @@ export async function createIssue(text: string, channel: string, ts: string, use
     };
   }
 
-  // // 如果存在关联的 CS 单，获取其 Priority 字段
-  // let csIssuePriority: { id: string; name: string } | null = null;
-  // if (result.issueKey && /^[A-Z]+-\d+$/i.test(result.issueKey)) {
-  //   csIssuePriority = await getIssueField(result.issueKey.toUpperCase(), 'priority') as { id: string; name: string } | null;
-  // }
+  // 预处理并规范化 AI 返回的 issueKey（如有）
+  const normalizedIssueKey = typeof result.issueKey === 'string' && /^[A-Z]+-\d+$/i.test(result.issueKey)
+    ? result.issueKey.toUpperCase()
+    : null;
 
   // 如果存在关联的 CS 单，获取其 customfield_10049 字段
   let csIssueCustomField10049: { id: string; name: string } | null = null;
-  if (result.issueKey && /^[A-Z]+-\d+$/i.test(result.issueKey)) {
-    csIssueCustomField10049 = await getIssueField(result.issueKey.toUpperCase(), 'customfield_10049') as {
+  if (normalizedIssueKey) {
+    csIssueCustomField10049 = await getIssueField(normalizedIssueKey, 'customfield_10049') as {
       id: string;
       name: string
     } | null;
@@ -179,7 +172,8 @@ export async function createIssue(text: string, channel: string, ts: string, use
   // ENT Bug -> Bug 10045 ->  description
   const nowProjectKey = projectKey.toUpperCase();
   let nowIssueType = capitalizeWords(issueType);
-  if (('MER' == nowProjectKey || 'FIN' == nowProjectKey || 'ERP' == nowProjectKey || 'GRM' == nowProjectKey) && 'Bug' == nowIssueType) {
+  const bugOnlineProjects = new Set(['MER', 'FIN', 'ERP', 'GRM']);
+  if (bugOnlineProjects.has(nowProjectKey) && nowIssueType === 'Bug') {
     nowIssueType = 'Bug Online';
   }
 
@@ -203,38 +197,24 @@ export async function createIssue(text: string, channel: string, ts: string, use
   }
 
   // 如果关联的 CS 单有 Issue Priority 字段，则在新创建的单关联到 Priority 字段
-  if (nowIssueType == 'Bug Online' && csIssueCustomField10049) {
-
-    var priority;
-    switch (csIssueCustomField10049.id) {
-      case '10058':
-        priority = '0';
-        break;
-      case '10059':
-        priority = '1';
-        break;
-      case '10060':
-        priority = '2';
-        break;
-        case '10061':
-          priority = '3';
-          break;
-      default:
-        priority = '4';
-    }
-
-    requestBody.fields.priority = {
-      id: priority,
+  if (nowIssueType === 'Bug Online' && csIssueCustomField10049) {
+    const PRIORITY_MAP: Record<string, string> = {
+      '10058': '0',
+      '10059': '1',
+      '10060': '2',
+      '10061': '3',
     };
+    const mappedPriority = PRIORITY_MAP[csIssueCustomField10049.id] ?? '4';
+    requestBody.fields.priority = { id: mappedPriority };
   }
 
-  if ((('MER' == nowProjectKey || 'ERP' == nowProjectKey || 'GRM' == nowProjectKey) && 'Bug Online' == nowIssueType)) {
-    requestBody.fields.description = `Reporter: ${userName}\n\nSlack Thread: ${threadLink}\n\nAI generated summary: ${result.description as string}\n\n
-    *Reproduce Steps*\n\n*Actual Results*\n\n*Expected Results*\n\n*Causes & Reasons*\n\n*Solutions & Scopes*\n\n `;
-  } else {
-    requestBody.fields.description = `Reporter: ${userName}\n\nSlack Thread: ${threadLink}\n\nAI generated summary: ${result.description as string}\n\n
-    *Reproduce Steps*\n\n*Actual Results*\n\n*Expected Results*\n\n*Causes & Reasons*\n\n*Solutions & Scopes*\n\n`;
-  }
+  // 构建统一的描述内容
+  const descriptionSections = [
+    `Reporter: ${userName}`,
+    `Slack Thread: ${threadLink}`,
+    `AI generated summary: ${result.description as string}`
+  ];
+  requestBody.fields.description = descriptionSections.join('\n\n');
 
   // 只有当 projectKey 为 MER 时才添加父 issue
   if ('MER' == nowProjectKey) {
@@ -244,7 +224,7 @@ export async function createIssue(text: string, channel: string, ts: string, use
   }
 
   // 只有当 issueKey 存在且格式正确时才添加关联
-  if (result.issueKey && /^[A-Z]+-\d+$/i.test(result.issueKey)) {
+  if (normalizedIssueKey) {
     requestBody.update = {
       issuelinks: [
         {
@@ -253,7 +233,7 @@ export async function createIssue(text: string, channel: string, ts: string, use
               name: 'Relates',
             },
             outwardIssue: {
-              key: result.issueKey.toUpperCase(),
+              key: normalizedIssueKey,
             },
           },
         },
