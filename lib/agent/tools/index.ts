@@ -4,17 +4,16 @@
  * Requirements: 3.5, 6.2
  */
 
-// Jira Tool
-export { JiraTool, createJiraTool } from './jira-tool';
+import { JiraTool, createJiraTool } from './jira-tool';
+import { AppointmentTool, createAppointmentTool } from './appointment-tool';
+import { CITool, createCITool } from './ci-tool';
+import { QATool, createQATool } from './qa-tool';
 
-// Appointment Tool
-export { AppointmentTool, createAppointmentTool } from './appointment-tool';
-
-// CI Tool
-export { CITool, createCITool } from './ci-tool';
-
-// Q&A Tool
-export { QATool, createQATool } from './qa-tool';
+// Re-export tools and factory functions
+export { JiraTool, createJiraTool };
+export { AppointmentTool, createAppointmentTool };
+export { CITool, createCITool };
+export { QATool, createQATool };
 
 // Re-export types for convenience
 export type { Tool, ToolResult, AgentContext } from '../types';
@@ -27,9 +26,9 @@ export type { Tool, ToolResult, AgentContext } from '../types';
 export function createAllTools() {
   return [
     createJiraTool(),
-    // createAppointmentTool(),
+    createAppointmentTool(),
     // createCITool(),
-    // createQATool(),
+    createQATool(),
   ];
 }
 
