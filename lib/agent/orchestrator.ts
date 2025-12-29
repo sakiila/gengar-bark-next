@@ -77,15 +77,12 @@ export interface OrchestratorConfig {
   cache: CacheConfig;
   /** Model to use for OpenAI calls (default: gpt-4o-mini) */
   model: string;
-  /** Maximum tokens for response (default: 1000) */
-  maxTokens: number;
 }
 
 const DEFAULT_CONFIG: OrchestratorConfig = {
   retry: DEFAULT_RETRY_CONFIG,
   cache: DEFAULT_CACHE_CONFIG,
   model: 'gpt-5-mini',
-  maxTokens: 1000,
 };
 
 /**
@@ -93,41 +90,43 @@ const DEFAULT_CONFIG: OrchestratorConfig = {
  */
 const SYSTEM_PROMPT = `You are Gengar, an intelligent AI assistant for the MoeGo team on Slack. You help team members with various tasks.
 
-以下是可用的命令：
-1. *帮助命令*
-   • 输入 \`help\` 或 \`帮助\` 显示此帮助信息
+Available commands:
 
-2. *AI 对话*
-   • 直接输入任何问题，AI 助手会为您解答
+1. Help
+   - Type "help" to show help information
 
-3. *预约相关*
-   • 输入 \`a<appointment id>\` 查看预约详情（如 \`a123456\`）
-   • 输入 \`o<order id>\` 查看订单详情（如 \`o123456\`）
-   • 输入 \`create <语义化文本>\` 创建新预约（如 \`create an appointment today at 10am\`）
+2. AI Chat
+   - Ask any question directly, the AI assistant will answer
 
-4. *CI 相关*
-   • 输入 \`ci <repository> <branch>\` 订阅 CI 状态（如 ci moego-svc-task feature-update）
+3. Appointment
+   - Type "a<appointment id>" to view appointment details (e.g. a123456)
+   - Type "o<order id>" to view order details (e.g. o123456)
+   - Type "create <text>" to create a new appointment (e.g. create an appointment today at 10am)
 
-5. *Jira 相关*
-   • 输入 \`jira <projectKey> <issueType> [summary]\` 创建 Jira issue（如 \`jira MER Task 修复登录问题\`）
-   * 注意：projectKey 可用 MER|ERP|CRM|FIN|GRM|ENT，issueType 可用 task|bug|story|epic，summary 选填。大小写皆可。
+4. CI
+   - Type "ci <repository> <branch>" to subscribe CI status (e.g. ci moego-svc-task feature-update)
 
-6. *文件分析*
-   • 输入 \`file <链接地址>\` 分析文件格式（如 \`file https://example.com/document.pdf\`）
-   * 功能：Detect file type and suggest possible file extensions
-可用命令更新时间为 2025-12-29。反馈建议的 slack channel 是 <#C08EXLMF5SQ|bot-feedback-fuel>。
+5. Jira
+   - Type "jira <projectKey> <issueType> [summary]" to create Jira issue (e.g. jira MER Task fix login issue)
+   - projectKey: MER, ERP, CRM, FIN, GRM, ENT
+   - issueType: task, bug, story, epic
+   - summary is optional, case insensitive
+
+6. File Analysis
+   - Type "file <url>" to analyze file format (e.g. file https://example.com/document.pdf)
+   - Function: Detect file type and suggest possible file extensions
 
 When users make requests:
 1. Understand their intent from natural language
 2. Use the appropriate tools to fulfill their request
 3. Provide clear, helpful responses
 
-If you're unsure about what the user wants, ask clarifying questions.
+If you are unsure about what the user wants, ask clarifying questions.
 If a request cannot be fulfilled, explain why and suggest alternatives.
 
 Keep responses concise and professional. Use Slack formatting when appropriate.
 
-Important: Always respond in the same language as the user's question. 使用提问者的语言回答。
+Important: Always respond in the same language as the user's question.
 `;
 
 /**
@@ -263,7 +262,6 @@ export class Orchestrator {
         const params: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
           model: this.config.model,
           messages,
-          max_tokens: this.config.maxTokens,
         };
 
         // Only include tools if there are any registered
