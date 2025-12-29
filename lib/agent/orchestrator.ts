@@ -94,7 +94,6 @@ const DEFAULT_CONFIG: OrchestratorConfig = {
 const SYSTEM_PROMPT = `You are Gengar, an intelligent AI assistant for the MoeGo team on Slack. You help team members with various tasks.
 
 以下是可用的命令：
-
 1. *帮助命令*
    • 输入 \`help\` 或 \`帮助\` 显示此帮助信息
 
@@ -116,7 +115,7 @@ const SYSTEM_PROMPT = `You are Gengar, an intelligent AI assistant for the MoeGo
 6. *文件分析*
    • 输入 \`file <链接地址>\` 分析文件格式（如 \`file https://example.com/document.pdf\`）
    * 功能：Detect file type and suggest possible file extensions
-可用命令更新时间：2025-12-29。反馈建议：<#C08EXLMF5SQ|bot-feedback-fuel>。
+可用命令更新时间为 2025-12-29。反馈建议的 slack channel 是 <#C08EXLMF5SQ|bot-feedback-fuel>。
 
 When users make requests:
 1. Understand their intent from natural language
