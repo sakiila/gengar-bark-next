@@ -16,7 +16,7 @@ concurrency:
 env:
   IMAGE_NAME: docker-registry.baobo.me/gengar-bark
   CONTAINER_NAME: gengar-bark-beta
-  HOST_PORT: 3002
+  HOST_PORT: 3003
   NODE_VERSION: '18'
   DOCKER_BUILDKIT: 1
   COMPOSE_DOCKER_CLI_BUILD: 1
