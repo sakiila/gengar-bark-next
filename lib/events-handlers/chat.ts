@@ -6,16 +6,21 @@ import {
   CiCommand,
   CreateAppointmentCommand,
   FileCommand,
-  GptCommand,
   HelpCommand,
   IdCommand,
   JiraCommand,
 } from '../commands/gengar-commands';
 import { setDefaultSuggestedPrompts } from '@/lib/slack/gengar-bolt';
+import { createAgentCommand, ensureToolsInitialized } from '@/lib/agent';
 
 /**
  * Send GPT response to the channel
  * Do not support 'message' event type because it will be triggered by every message
+ * 
+ * Updated to use AgentCommand as the default handler instead of GptCommand.
+ * The AgentCommand provides AI agent capabilities with tool orchestration.
+ * Requirements: 1.1, 5.1
+ * 
  * @param req
  * @param res
  */
@@ -33,15 +38,20 @@ export async function send_response(
   // 只移除消息最前面的 Slack 用户 ID（例如 <@U0666R94C83>）
   text = text.replace(/^<@[A-Z0-9]+>\s*/, '');
 
-  // check if the text has been sent in the last 2 minutes
+  // Requirement 5.1: Check if the text has been sent in the last 2 minutes
+  // This is the first rate limiting check before any processing
   const key = `${userId}-${channel}-${ts}-${text}`;
   const hasSentText = await existsCacheThanSet(key);
   if (hasSentText) {
     logger.info('Already sent same text in 2 minutes:', { text });
-    // await postMessage(channel, ts, 'Please wait for 2 minutes and try again.');
     return res.status(200).send('Already sent same text in 2 minutes.');
   }
 
+  // Ensure agent tools are initialized before processing
+  ensureToolsInitialized();
+
+  // Build command list with existing commands for backward compatibility
+  // AgentCommand replaces GptCommand as the default handler (always last)
   const commands = [
     new HelpCommand(channel, ts),
     new IdCommand(channel, ts, userId),
@@ -49,7 +59,9 @@ export async function send_response(
     new CiCommand(ts, userId, userName, channel, channelName),
     new CreateAppointmentCommand(channel, ts, userId),
     new FileCommand(channel, ts), // 文件格式检测命令
-    new GptCommand(channel, ts), // always the last command to avoid conflicts with other commands
+    // AgentCommand as default handler - replaces GptCommand
+    // Provides AI agent with natural language understanding and tool orchestration
+    createAgentCommand(channel, ts, userId, userName),
   ];
 
   try {
