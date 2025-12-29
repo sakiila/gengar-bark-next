@@ -2,7 +2,7 @@
 
 ## Overview
 
-创建 GitHub Actions workflow 文件实现 beta 分支的独立 Docker 容器部署，使用端口 3002 与生产环境（端口 3001）隔离。
+创建 GitHub Actions workflow 文件实现 beta 分支的独立 Docker 容器部署，使用端口 3003 与生产环境（端口 3001）隔离。
 
 ## Tasks
 
@@ -11,13 +11,13 @@
     - 基于现有 `deploy.yml` 结构
     - 修改触发分支为 `beta`
     - 设置容器名称为 `gengar-bark-beta`
-    - 设置主机端口为 `3002`
+    - 设置主机端口为 `3003`
     - 设置镜像标签为 `beta-latest` 和 `beta-{VERSION}`
     - _Requirements: 1.1, 1.2, 1.3, 2.1, 3.2, 6.1, 6.2_
 
   - [x] 1.2 配置部署脚本
     - 添加停止和删除现有 beta 容器的逻辑
-    - 配置健康检查使用端口 3002
+    - 配置健康检查使用端口 3003
     - 添加 beta 特定的部署标签
     - 配置内存限制与生产环境一致
     - _Requirements: 2.3, 4.2, 4.3, 5.1, 5.2, 5.3_

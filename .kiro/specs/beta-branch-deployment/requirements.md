@@ -41,7 +41,7 @@
 #### Acceptance Criteria
 
 1. THE Production_Container SHALL continue to use port 3001 (mapped from internal 3000)
-2. THE Beta_Container SHALL use port 3002 (mapped from internal 3000)
+2. THE Beta_Container SHALL use port 3003 (mapped from internal 3000)
 3. THE Beta_Container SHALL bind to 127.0.0.1 for security, same as production
 
 ### Requirement 4: 环境配置
@@ -61,7 +61,7 @@
 #### Acceptance Criteria
 
 1. THE Beta_Container SHALL have health check configured on port 3000 (internal)
-2. WHEN beta deployment completes, THE Deploy_Workflow SHALL verify health via port 3002
+2. WHEN beta deployment completes, THE Deploy_Workflow SHALL verify health via port 3003
 3. IF health check fails after maximum retries, THEN THE Deploy_Workflow SHALL output container logs and fail the deployment
 
 ### Requirement 6: 镜像标签管理

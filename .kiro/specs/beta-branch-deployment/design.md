@@ -2,7 +2,7 @@
 
 ## Overview
 
-本设计实现 beta 分支的独立 Docker 容器部署功能。通过创建一个新的 GitHub Actions workflow 文件，当代码推送到 beta 分支时，自动构建 Docker 镜像并部署到独立的容器中，使用不同的端口（3002）与生产环境（3001）隔离。
+本设计实现 beta 分支的独立 Docker 容器部署功能。通过创建一个新的 GitHub Actions workflow 文件，当代码推送到 beta 分支时，自动构建 Docker 镜像并部署到独立的容器中，使用不同的端口（3003）与生产环境（3001）隔离。
 
 ## Architecture
 
@@ -22,7 +22,7 @@ graph TB
     subgraph "Server"
         G[SSH Deploy]
         H[gengar-bark<br/>Port: 3001<br/>Production]
-        I[gengar-bark-beta<br/>Port: 3002<br/>Beta]
+        I[gengar-bark-beta<br/>Port: 3003<br/>Beta]
     end
     
     E --> G
@@ -45,19 +45,19 @@ on:
 env:
   IMAGE_NAME: docker-registry.baobo.me/gengar-bark
   CONTAINER_NAME: gengar-bark-beta
-  HOST_PORT: 3002
+  HOST_PORT: 3003
 ```
 
 ### 2. 容器配置对比
 
-| 配置项 | Production | Beta |
-|--------|------------|------|
-| 容器名称 | gengar-bark | gengar-bark-beta |
-| 主机端口 | 3001 | 3002 |
+| 配置项 | Production | Beta                        |
+|--------|------------|-----------------------------|
+| 容器名称 | gengar-bark | gengar-bark-beta            |
+| 主机端口 | 3001 | 3003                        |
 | 镜像标签 | latest, {VERSION} | beta-latest, beta-{VERSION} |
-| 环境变量 | ENV_PROD | ENV_PROD |
-| 内存限制 | 1g | 1g |
-| 内存预留 | 512m | 512m |
+| 环境变量 | ENV_PROD | ENV_PROD                    |
+| 内存限制 | 1g | 1g                          |
+| 内存预留 | 512m | 512m                        |
 
 ### 3. 部署脚本逻辑
 
@@ -65,7 +65,7 @@ env:
 # Beta 容器部署流程
 1. 停止并删除现有 gengar-bark-beta 容器
 2. 拉取新的 beta 镜像
-3. 启动新容器，映射端口 3002:3000
+3. 启动新容器，映射端口 3003:3000
 4. 等待健康检查通过
 5. 验证部署成功
 6. 清理旧镜像
@@ -79,7 +79,7 @@ env:
 env:
   IMAGE_NAME: docker-registry.baobo.me/gengar-bark
   CONTAINER_NAME: gengar-bark-beta
-  HOST_PORT: 3002
+  HOST_PORT: 3003
   NODE_VERSION: '18'
   DOCKER_BUILDKIT: 1
   COMPOSE_DOCKER_CLI_BUILD: 1
@@ -102,7 +102,7 @@ labels:
 
 ### Property 1: 端口配置唯一性
 
-*For any* deployment configuration, the beta container port (3002) SHALL be different from the production container port (3001).
+*For any* deployment configuration, the beta container port (3003) SHALL be different from the production container port (3001).
 
 **Validates: Requirements 3.1, 3.2**
 
