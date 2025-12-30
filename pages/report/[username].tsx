@@ -974,7 +974,7 @@ const Footer = () => (
   >
     <div className="max-w-4xl mx-auto text-center space-y-3">
       <div className="text-sm space-y-1">
-        <p>© 2025 Gengar Bark. All rights reserved.</p>
+        <p>© 2026 Gengar Bark. All rights reserved.</p>
         <p>
           Powered by{' '}
           <a

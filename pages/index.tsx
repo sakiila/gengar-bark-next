@@ -278,7 +278,7 @@ const Home: NextPage = () => {
       </main>
 
       <footer className={styles.footer}>
-        <p>© 2025 Gengar Bark. All rights reserved.</p>
+        <p>© 2026 Gengar Bark. All rights reserved.</p>
       </footer>
     </div>
   );
