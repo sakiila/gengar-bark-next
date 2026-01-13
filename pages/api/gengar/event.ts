@@ -61,24 +61,24 @@ export default async function handler(
 
       try {
         switch (event_type) {
-          // case 'emoji_changed':
-          //   await emojiChanged(req);
-          //   break;
-          // case 'team_join':
-          //   await teamJoin(req, res);
-          //   break;
-          // case 'user_status_changed':
-          //   await userStatusChanged(req, res);
-          //   break;
-          // case 'user_change':
-          //   await userChange(req, res);
-          //   break;
-          // case 'channel_created':
-          //   await channelCreated(req, res);
-          //   break;
-          // case 'channel_archive':
-          //   await channelArchive(req, res);
-          //   break;
+          case 'emoji_changed':
+            await emojiChanged(req);
+            break;
+          case 'team_join':
+            await teamJoin(req, res);
+            break;
+          case 'user_status_changed':
+            await userStatusChanged(req, res);
+            break;
+          case 'user_change':
+            await userChange(req, res);
+            break;
+          case 'channel_created':
+            await channelCreated(req, res);
+            break;
+          case 'channel_archive':
+            await channelArchive(req, res);
+            break;
           case 'app_mention':
             await send_response(req, res);
             break;
