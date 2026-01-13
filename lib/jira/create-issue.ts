@@ -223,7 +223,7 @@ export async function createIssue(text: string, channel: string, ts: string, use
     };
   }
 
-  // 只有当 projectKey 为 CRM 时才添加 customfield_11580
+  // 只有当 projectKey 为 CRM 时才添加 customfield_11580 (Feature Domains)
   if ('CRM' == nowProjectKey) {
     requestBody.fields.customfield_11580 = {
       id: '12127', // Clients & pets
