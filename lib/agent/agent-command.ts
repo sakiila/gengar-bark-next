@@ -6,13 +6,13 @@
 
 import { randomBytes } from 'crypto';
 import { Command } from '../commands/command';
-import { AgentContext } from './types';
+import { AgentContext, ConversationMessage } from './types';
 import { ToolRegistry, getToolRegistry } from './tool-registry';
 import { ContextManager, getContextManager } from './context-manager';
 import { RateLimiter, getRateLimiter } from './rate-limiter';
 import { Orchestrator, getOrchestrator } from './orchestrator';
 import { ResponseGenerator, getResponseGenerator } from './response-generator';
-import { postMessage, postBlockMessage } from '../slack/gengar-bolt';
+import { postMessage, postBlockMessage, getThreadReplies } from '../slack/gengar-bolt';
 import { createAllTools } from './tools';
 import { RateLimitError } from './errors';
 
@@ -142,13 +142,31 @@ export class AgentCommand implements Command {
   /**
    * Build the agent context with conversation history.
    * Requirement 2.2: Incorporate previous messages as context.
+   * Fetches thread replies from Slack similar to GptCommand.
    */
   private async buildContext(_text: string): Promise<AgentContext> {
-    // Retrieve conversation history from context manager
-    const conversationHistory = await this.contextManager.getContext(
+    // Fetch thread replies from Slack (similar to GptCommand)
+    const threadReplies = await getThreadReplies(this.channel, this.ts);
+    
+    // Convert Slack thread messages to ConversationMessage format
+    let threadMessages: ConversationMessage[] = [];
+    if (Array.isArray(threadReplies) && threadReplies.length > 0) {
+      threadMessages = threadReplies.map((msg: any) => ({
+        role: msg.bot_id ? 'assistant' : 'user',
+        content: msg.text || '',
+        timestamp: new Date(parseFloat(msg.ts) * 1000),
+      }));
+    }
+
+    // Retrieve cached conversation history from context manager
+    const cachedHistory = await this.contextManager.getContext(
       this.channel,
       this.ts
     );
+
+    // Merge thread messages with cached history, preferring fresh thread data
+    // If we have thread messages, use them; otherwise fall back to cached history
+    const conversationHistory = threadMessages.length > 0 ? threadMessages : cachedHistory;
 
     // Summarize if needed (>20 messages)
     const processedHistory = await this.contextManager.summarizeIfNeeded(
