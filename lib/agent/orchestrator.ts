@@ -7,6 +7,8 @@
 import OpenAI from 'openai';
 import { ChatCompletionMessageParam, ChatCompletionTool } from 'openai/resources';
 import { Redis } from '@upstash/redis';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import {
   AgentContext,
   AgentResponse,
@@ -86,48 +88,32 @@ const DEFAULT_CONFIG: OrchestratorConfig = {
 };
 
 /**
- * System prompt for the AI agent.
+ * Load system prompt from file.
+ * This allows easy management and version control of the prompt.
  */
-const SYSTEM_PROMPT = `You are Gengar, an intelligent AI assistant for the MoeGo team on Slack. You help team members with various tasks.
+function loadSystemPrompt(): string {
+  try {
+    const promptPath = join(process.cwd(), 'lib', 'agent', 'prompts', 'system-prompt.txt');
+    return readFileSync(promptPath, 'utf-8');
+  } catch (error) {
+    console.error('Failed to load system prompt from file, using fallback:', error);
+    // Fallback prompt in case file loading fails
+    return `You are Gengar, an intelligent AI assistant for the MoeGo team on Slack. You help team members with various tasks.
 
-Available commands:
+IMPORTANT - When to use tools vs direct response:
+- For TEXT PROCESSING tasks (translate, summarize, rewrite, explain, analyze text, etc.), respond DIRECTLY without using tools
+- For ACTIONS that modify external systems (create appointments, create Jira issues, subscribe to CI, etc.), use the appropriate tools
+- If unsure, prefer direct response for read-only or text manipulation tasks
 
-1. Help
-   - Type "help" to show help information
+Keep responses concise and professional. Always respond in the same language as the user's question unless they explicitly ask for translation.`;
+  }
+}
 
-2. AI Chat
-   - Ask any question directly, the AI assistant will answer
-
-3. Appointment
-   - Type "a<appointment id>" to view appointment details (e.g. a123456)
-   - Type "o<order id>" to view order details (e.g. o123456)
-   - Type "create <text>" to create a new appointment (e.g. create an appointment today at 10am)
-
-4. CI
-   - Type "ci <repository> <branch>" to subscribe CI status (e.g. ci moego-svc-task feature-update)
-
-5. Jira
-   - Type "jira <projectKey> <issueType> [summary]" to create Jira issue (e.g. jira MER Task fix login issue)
-   - projectKey: MER, ERP, CRM, FIN, GRM, ENT
-   - issueType: task, bug, story, epic
-   - summary is optional, case insensitive
-
-6. File Analysis
-   - Type "file <url>" to analyze file format (e.g. file https://example.com/document.pdf)
-   - Function: Detect file type and suggest possible file extensions
-
-When users make requests:
-1. Understand their intent from natural language
-2. Use the appropriate tools to fulfill their request
-3. Provide clear, helpful responses
-
-If you are unsure about what the user wants, ask clarifying questions.
-If a request cannot be fulfilled, explain why and suggest alternatives.
-
-Keep responses concise and professional. Use Slack formatting when appropriate.
-
-Important: Always respond in the same language as the user's question.
-`;
+/**
+ * System prompt for the AI agent.
+ * Loaded from external file for easier management.
+ */
+const SYSTEM_PROMPT = loadSystemPrompt();
 
 /**
  * Orchestrator class coordinates the AI agent's processing pipeline.
