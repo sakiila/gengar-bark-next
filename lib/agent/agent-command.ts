@@ -15,6 +15,7 @@ import { ResponseGenerator, getResponseGenerator } from './response-generator';
 import { postMessage, postBlockMessage, getThreadReplies } from '../slack/gengar-bolt';
 import { createAllTools } from './tools';
 import { RateLimitError } from './errors';
+import { cleanText } from '../ai/openai';
 
 /**
  * Generate a unique request ID using crypto.
@@ -142,20 +143,37 @@ export class AgentCommand implements Command {
   /**
    * Build the agent context with conversation history.
    * Requirement 2.2: Incorporate previous messages as context.
-   * Fetches thread replies from Slack similar to GptCommand.
+   * Fetches thread replies from Slack and applies text cleaning similar to GptCommand.
    */
   private async buildContext(_text: string): Promise<AgentContext> {
     // Fetch thread replies from Slack (similar to GptCommand)
     const threadReplies = await getThreadReplies(this.channel, this.ts);
     
+    // Bot ID for identifying bot messages and removing @mentions
+    const botID = 'U0666R94C83';
+    
     // Convert Slack thread messages to ConversationMessage format
+    // Apply the same text cleaning logic as GptCommand for consistency
     let threadMessages: ConversationMessage[] = [];
     if (Array.isArray(threadReplies) && threadReplies.length > 0) {
-      threadMessages = threadReplies.map((msg: any) => ({
-        role: msg.bot_id ? 'assistant' : 'user',
-        content: msg.text || '',
-        timestamp: new Date(parseFloat(msg.ts) * 1000),
-      }));
+      threadMessages = threadReplies
+        .filter((msg: any) => msg && msg.text && msg.subtype !== 'assistant_app_thread')
+        .map((msg: any) => {
+          const isBot = !!msg.bot_id && !msg.client_msg_id;
+          
+          // Clean text and remove @mentions (same as GptCommand)
+          let content = cleanText(msg.text || '');
+          if (!isBot) {
+            // Remove bot @mention from user messages
+            content = content.replace(`<@${botID}> `, '').replace(`<@${botID}>`, '');
+          }
+          
+          return {
+            role: isBot ? 'assistant' : 'user',
+            content,
+            timestamp: new Date(parseFloat(msg.ts) * 1000),
+          };
+        });
     }
 
     // Retrieve cached conversation history from context manager

@@ -124,7 +124,7 @@ export async function generatePromptForMoeGo(text: string) {
   ] as ChatCompletionMessageParam[];
 }
 
-function cleanText(text: string) {
+export function cleanText(text: string) {
   // 清理文本中的特殊字符
   return text
     .replace(/[\r\n]+/g, ' ')    // 替换换行符为空格
