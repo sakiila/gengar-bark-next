@@ -16,6 +16,8 @@ import { postMessage, postBlockMessage, getThreadReplies } from '../slack/gengar
 import { createAllTools } from './tools';
 import { RateLimitError } from './errors';
 import { cleanText } from '../ai/openai';
+import { initializeMCPForUser, cleanupMCPConnections, MCPIntegrationResult } from '../mcp/mcp-integration';
+import { logger } from '../utils/logger';
 
 /**
  * Generate a unique request ID using crypto.
@@ -79,29 +81,61 @@ export class AgentCommand implements Command {
    * 
    * Pipeline:
    * 1. Check rate limits (duplicate detection, user throttling)
-   * 2. Retrieve conversation context
-   * 3. Process through orchestrator (intent detection, tool execution)
-   * 4. Send response to Slack
+   * 2. Initialize MCP connections for user
+   * 3. Retrieve conversation context
+   * 4. Process through orchestrator (intent detection, tool execution)
+   * 5. Send response to Slack
+   * 6. Cleanup MCP connections
    * 
    * @param text - The user's message text
    * @param _userId - User ID (unused, we use the constructor value)
+   * 
+   * Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.7, 6.8
    */
   async execute(text: string, _userId?: string): Promise<void> {
+    let mcpIntegration: MCPIntegrationResult | null = null;
+
+    console.log(`[AgentCommand] Starting execute for user: ${this.userId}, text: ${text.substring(0, 50)}...`);
+
     try {
       // Step 1: Check rate limits
+      console.log(`[AgentCommand] Step 1: Checking rate limits...`);
       await this.checkRateLimits(text);
 
-      // Step 2: Build agent context with conversation history
-      const context = await this.buildContext(text);
+      // Step 2: Initialize MCP connections for the user
+      // Requirements: 6.1, 6.2, 6.4, 6.5
+      console.log(`[AgentCommand] Step 2: Initializing MCP for user ${this.userId}...`);
+      try {
+        mcpIntegration = await initializeMCPForUser(this.userId);
+        console.log(`[AgentCommand] MCP initialization result: ${mcpIntegration.connectedCount} connected, ${mcpIntegration.failedCount} failed`);
+        
+        if (mcpIntegration.connectedCount > 0) {
+          logger.info(`MCP integration: ${mcpIntegration.connectedCount} servers connected for user ${this.userId}`);
+        }
+      } catch (mcpError) {
+        // Log error but continue without MCP - don't fail the entire request
+        console.error(`[AgentCommand] MCP initialization error:`, mcpError);
+        logger.error('Failed to initialize MCP for user:', mcpError instanceof Error ? mcpError : { error: String(mcpError) });
+      }
 
-      // Step 3: Process through orchestrator
+      // Step 3: Build agent context with conversation history and MCP context
+      console.log(`[AgentCommand] Step 3: Building context...`);
+      const context = await this.buildContext(text, mcpIntegration);
+
+      // Step 4: Process through orchestrator
       const response = await this.orchestrator.process(text, context);
 
-      // Step 4: Send response to Slack
+      // Step 5: Send response to Slack
       await this.sendResponse(response.text, response.blocks);
 
     } catch (error) {
       await this.handleError(error);
+    } finally {
+      // Step 6: Always cleanup MCP connections
+      // Requirement 6.8: Ensure cleanup happens even if errors occur
+      if (mcpIntegration && mcpIntegration.manager) {
+        await cleanupMCPConnections(mcpIntegration.manager);
+      }
     }
   }
 
@@ -141,11 +175,18 @@ export class AgentCommand implements Command {
   }
 
   /**
-   * Build the agent context with conversation history.
+   * Build the agent context with conversation history and MCP context.
    * Requirement 2.2: Incorporate previous messages as context.
+   * Requirement 6.7: Include MCP tools and resources in context.
    * Fetches thread replies from Slack and applies text cleaning similar to GptCommand.
+   * 
+   * @param _text - The user's message text
+   * @param mcpIntegration - Optional MCP integration result with context
    */
-  private async buildContext(_text: string): Promise<AgentContext> {
+  private async buildContext(
+    _text: string,
+    mcpIntegration?: MCPIntegrationResult | null
+  ): Promise<AgentContext> {
     // Fetch thread replies from Slack (similar to GptCommand)
     const threadReplies = await getThreadReplies(this.channel, this.ts);
     
@@ -191,7 +232,8 @@ export class AgentCommand implements Command {
       conversationHistory
     );
 
-    return {
+    // Build the context object
+    const context: AgentContext = {
       channel: this.channel,
       threadTs: this.ts,
       userId: this.userId,
@@ -200,6 +242,17 @@ export class AgentCommand implements Command {
       requestId: generateRequestId(),
       timestamp: new Date(),
     };
+
+    // Add MCP context if available
+    // Requirement 6.7: Pass MCP context to AI model
+    if (mcpIntegration && Object.keys(mcpIntegration.context).length > 0) {
+      (context as any).mcpContext = mcpIntegration.context;
+      // Also pass the manager for tool execution
+      (context as any).mcpManager = mcpIntegration.manager;
+      logger.info(`Added MCP context with ${Object.keys(mcpIntegration.context).length} servers to agent context`);
+    }
+
+    return context;
   }
 
   /**

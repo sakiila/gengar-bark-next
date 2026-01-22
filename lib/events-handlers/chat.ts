@@ -65,8 +65,13 @@ export async function send_response(
   ];
 
   try {
+    console.log(`[chat.ts] Processing commands for text: "${text.substring(0, 50)}..."`);
     for (const command of commands) {
-      if (command.matches(text)) {
+      const commandName = command.constructor.name;
+      const matches = command.matches(text);
+      console.log(`[chat.ts] Command ${commandName} matches: ${matches}`);
+      if (matches) {
+        console.log(`[chat.ts] Executing command: ${commandName}`);
         await command.execute(text);
         break;
       }
@@ -126,9 +131,7 @@ export async function response_container(
   const channelId = req.body.event.channel;
   const threadTs = req.body.event.thread_ts ?? req.body.event.ts;
 
-  // console.log("channelId:", channelId);
-  // console.log("threadTs:", threadTs);
-  // console.log("text:", text);
+  console.log(`[response_container] Called with channelId=${channelId}, threadTs=${threadTs}`);
 
   try {
     await setStatus(res, channelId, threadTs);
@@ -136,5 +139,7 @@ export async function response_container(
     logger.error('send_response', error instanceof Error ? error : new Error('Unknown error'));
   }
 
+  console.log(`[response_container] Calling send_response...`);
   await send_response(req, res);
+  console.log(`[response_container] send_response completed`);
 }

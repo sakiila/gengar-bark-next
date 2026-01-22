@@ -7,7 +7,9 @@
     "build": "NODE_NO_WARNINGS=1 next build",
     "start": "NODE_NO_WARNINGS=1 next start",
     "lint": "next lint",
-    "test": "echo \"No tests specified\" && exit 0"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.600.0",
@@ -38,6 +40,7 @@
     "wordcloud": "^1.2.3"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/lodash": "^4.17.13",
     "@types/node": "^20",
     "@types/react": "18.3.12",
@@ -45,8 +48,12 @@
     "autoprefixer": "^10.4.20",
     "eslint": "^8",
     "eslint-config-next": "14.0.4",
+    "jest": "^30.2.0",
     "postcss": "^8.4.49",
+    "supabase": "^2.72.8",
     "tailwindcss": "^3.4.16",
+    "ts-jest": "^29.4.6",
+    "ts-node": "^10.9.2",
     "typescript": "^5"
   }
 }

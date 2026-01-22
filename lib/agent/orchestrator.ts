@@ -169,8 +169,23 @@ export class Orchestrator {
       // Build messages array with conversation history
       const messages = await this.buildMessages(userMessage, context);
 
-      // Get tool definitions for function calling
-      const tools = this.getToolsForOpenAI();
+      // Get tool definitions for function calling, including MCP tools
+      const mcpContext = (context as any).mcpContext;
+      const tools = this.getToolsForOpenAI(mcpContext);
+      
+      // Debug: Log the tools being sent to OpenAI
+      console.log(`[Orchestrator] Total tools for OpenAI: ${tools.length}`);
+      console.log(`[Orchestrator] Tool names: ${tools.map(t => t.function.name).join(', ')}`);
+      if (mcpContext) {
+        console.log(`[Orchestrator] MCP context keys: ${Object.keys(mcpContext).join(', ')}`);
+        for (const [configId, ctx] of Object.entries(mcpContext)) {
+          const serverCtx = ctx as { serverName: string; tools: any[]; resources: any[] };
+          console.log(`[Orchestrator] MCP server ${serverCtx.serverName}: ${serverCtx.tools?.length || 0} tools`);
+          if (serverCtx.tools?.length > 0) {
+            console.log(`[Orchestrator] MCP tools: ${serverCtx.tools.map((t: any) => t.name).join(', ')}`);
+          }
+        }
+      }
 
       // Call OpenAI with function calling
       const response = await this.callOpenAIWithRetry(messages, tools);
@@ -189,8 +204,9 @@ export class Orchestrator {
 
 
   /**
-   * Build the messages array for OpenAI, including conversation history.
+   * Build the messages array for OpenAI, including conversation history and MCP context.
    * Requirement 2.2: Incorporate previous messages as context.
+   * Requirement 6.7: Include MCP tools and resources in AI prompt.
    */
   private async buildMessages(
     userMessage: string,
@@ -199,6 +215,20 @@ export class Orchestrator {
     const messages: ChatCompletionMessageParam[] = [
       { role: 'system', content: SYSTEM_PROMPT },
     ];
+
+    // Add MCP context to system prompt if available
+    // Requirement 6.7: Pass user-specific MCP context to the AI model
+    if ((context as any).mcpContext) {
+      const { formatMCPContextForPrompt } = await import('../mcp/mcp-integration');
+      const mcpContextStr = formatMCPContextForPrompt((context as any).mcpContext);
+      
+      if (mcpContextStr) {
+        messages.push({
+          role: 'system',
+          content: mcpContextStr,
+        });
+      }
+    }
 
     // Add conversation history from context
     if (context.conversationHistory && context.conversationHistory.length > 0) {
@@ -222,10 +252,11 @@ export class Orchestrator {
 
   /**
    * Get tool definitions in OpenAI format.
+   * Optionally includes MCP tools from context.
    */
-  private getToolsForOpenAI(): ChatCompletionTool[] {
+  private getToolsForOpenAI(mcpContext?: any): ChatCompletionTool[] {
     const toolDefinitions = this.toolRegistry.getToolDefinitions();
-    return toolDefinitions.map((def) => ({
+    const tools: ChatCompletionTool[] = toolDefinitions.map((def) => ({
       type: 'function' as const,
       function: {
         name: def.function.name,
@@ -233,6 +264,30 @@ export class Orchestrator {
         parameters: def.function.parameters as unknown as Record<string, unknown>,
       },
     }));
+
+    // Add MCP tools if available
+    // Requirement 6.7: Include MCP tools in function calling
+    if (mcpContext && typeof mcpContext === 'object') {
+      for (const [configId, serverContext] of Object.entries(mcpContext)) {
+        const ctx = serverContext as { serverName: string; tools: any[]; resources: any[] };
+        if (ctx.tools && Array.isArray(ctx.tools)) {
+          for (const mcpTool of ctx.tools) {
+            // Create a namespaced tool name to avoid conflicts: mcp_<configId>_<toolName>
+            const namespacedName = `mcp_${configId}_${mcpTool.name}`;
+            tools.push({
+              type: 'function' as const,
+              function: {
+                name: namespacedName,
+                description: `[MCP: ${ctx.serverName}] ${mcpTool.description || mcpTool.name}`,
+                parameters: mcpTool.inputSchema || { type: 'object', properties: {} },
+              },
+            });
+          }
+        }
+      }
+    }
+
+    return tools;
   }
 
   /**
@@ -346,12 +401,18 @@ export class Orchestrator {
    * Execute a tool with caching support.
    * Requirement 5.3: Cache tool results with configurable TTL.
    * Requirement 6.4: Log tool executions with timing.
+   * Requirement 6.3: Execute MCP tool calls via MCPClientManager.
    */
   private async executeToolWithCache(
     toolName: string,
     params: Record<string, unknown>,
     context: AgentContext
   ): Promise<ToolResult> {
+    // Check if this is an MCP tool (format: mcp_<configId>_<toolName>)
+    if (toolName.startsWith('mcp_')) {
+      return this.executeMCPTool(toolName, params, context);
+    }
+
     const tool = this.toolRegistry.get(toolName);
     
     if (!tool) {
@@ -479,6 +540,151 @@ export class Orchestrator {
     }
   }
 
+  /**
+   * Execute an MCP tool call.
+   * MCP tool names are formatted as: mcp_<configId>_<toolName>
+   * 
+   * Requirement 6.3: Execute MCP tool calls via MCPClientManager.
+   * Requirement 6.4: Log tool executions with timing.
+   */
+  private async executeMCPTool(
+    namespacedToolName: string,
+    params: Record<string, unknown>,
+    context: AgentContext
+  ): Promise<ToolResult> {
+    // Parse the namespaced tool name: mcp_<configId>_<toolName>
+    const parts = namespacedToolName.split('_');
+    if (parts.length < 3 || parts[0] !== 'mcp') {
+      return {
+        success: false,
+        error: `Invalid MCP tool name format: ${namespacedToolName}`,
+        displayText: `Invalid MCP tool name format.`,
+      };
+    }
+
+    // Extract configId and toolName (toolName may contain underscores)
+    const configId = parts[1];
+    const toolName = parts.slice(2).join('_');
+
+    // Get the MCP manager from context
+    const mcpContext = (context as any).mcpContext;
+    if (!mcpContext || !mcpContext[configId]) {
+      return {
+        success: false,
+        error: `MCP server "${configId}" not found in context`,
+        displayText: `MCP server not available. Please check your MCP configuration.`,
+      };
+    }
+
+    const serverContext = mcpContext[configId];
+    const startTime = Date.now();
+
+    try {
+      // Import MCPClientManager dynamically to avoid circular dependencies
+      const { MCPClientManager } = await import('../mcp/client-manager');
+      
+      // We need to get the manager from the agent context
+      // The manager should be passed through context for MCP tool execution
+      const manager = (context as any).mcpManager as MCPClientManager | undefined;
+      
+      if (!manager) {
+        return {
+          success: false,
+          error: 'MCP client manager not available',
+          displayText: `MCP connection not available. Please try again.`,
+        };
+      }
+
+      // Execute the tool call
+      const result = await manager.executeToolCall(configId, toolName, params as Record<string, any>);
+      const executionTimeMs = Date.now() - startTime;
+
+      // Format the result - handle MCP content format
+      // MCP returns: { content: [{ type: "text", text: "..." }], isError: boolean }
+      let displayText: string;
+      if (result && result.content && Array.isArray(result.content)) {
+        // Extract text from MCP content array
+        displayText = result.content
+          .filter((item: any) => item.type === 'text' && item.text)
+          .map((item: any) => item.text)
+          .join('\n');
+        
+        // Convert HTML img tags to Slack-friendly format
+        // <img src="URL" alt="ALT"> -> [ALT](URL) or just remove if no useful info
+        displayText = this.convertHtmlImagesToSlackFormat(displayText);
+      } else if (typeof result === 'string') {
+        displayText = result;
+      } else {
+        displayText = JSON.stringify(result, null, 2);
+      }
+
+      const toolResult: ToolResult = {
+        success: !result?.isError,
+        data: result,
+        displayText,
+      };
+
+      // Log the execution
+      await this.logToolExecution(namespacedToolName, params, toolResult, context, executionTimeMs, false);
+
+      return toolResult;
+    } catch (error) {
+      const executionTimeMs = Date.now() - startTime;
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      const toolResult: ToolResult = {
+        success: false,
+        error: errorMessage,
+        displayText: `Failed to execute MCP tool "${toolName}" on server "${serverContext.serverName}": ${errorMessage}`,
+      };
+
+      // Log the failed execution
+      await this.logToolExecution(namespacedToolName, params, toolResult, context, executionTimeMs, false);
+
+      return toolResult;
+    }
+  }
+
+  /**
+   * Convert HTML img tags to Slack-friendly format.
+   * Slack doesn't support HTML, so we convert:
+   * - <img src="URL" alt="ALT"> -> 📷 ALT: URL
+   * - Or just show the image URL as a clickable link
+   * 
+   * @param text - Text containing HTML img tags
+   * @returns Text with img tags converted to Slack format
+   */
+  private convertHtmlImagesToSlackFormat(text: string): string {
+    // Match <img> tags with src and optional alt attributes
+    // Handles various attribute orders and quote styles
+    const imgRegex = /<img\s+[^>]*src=["']([^"']+)["'][^>]*(?:alt=["']([^"']*)["'])?[^>]*>/gi;
+    const imgRegexAltFirst = /<img\s+[^>]*alt=["']([^"']*)["'][^>]*src=["']([^"']+)["'][^>]*>/gi;
+    
+    let result = text;
+    
+    // Replace img tags where src comes first
+    result = result.replace(imgRegex, (match, src, alt) => {
+      if (alt && alt.trim()) {
+        return `📷 ${alt.trim()}: ${src}`;
+      }
+      return `📷 图片: ${src}`;
+    });
+    
+    // Replace img tags where alt comes first
+    result = result.replace(imgRegexAltFirst, (match, alt, src) => {
+      if (alt && alt.trim()) {
+        return `📷 ${alt.trim()}: ${src}`;
+      }
+      return `📷 图片: ${src}`;
+    });
+    
+    // Clean up any remaining HTML-like artifacts
+    // Remove empty lines that might be left after img removal
+    result = result.replace(/\n{3,}/g, '\n\n');
+    
+    return result;
+  }
+
 
   /**
    * Combine multiple tool results into a single response.
@@ -497,11 +703,18 @@ export class Orchestrator {
 
     if (results.length === 1) {
       const { toolName, result } = results[0];
+      const displayText = result.displayText || (result.success ? 'Operation completed.' : result.error || 'Operation failed.');
+      
+      // For MCP tools (which have content array in data), just use displayText
+      // Don't try to format the raw MCP response as Slack blocks
+      const isMCPResult = result.data && result.data.content && Array.isArray(result.data.content);
+      
       return {
-        text: this.responseGenerator.formatTextResponse(
-          result.displayText || (result.success ? 'Operation completed.' : result.error || 'Operation failed.')
-        ),
-        blocks: result.data ? this.responseGenerator.formatStructuredResponse(result.data, 'generic') : undefined,
+        text: this.responseGenerator.formatTextResponse(displayText),
+        // Only format as structured response for non-MCP tools with simple data
+        blocks: (!isMCPResult && result.data && typeof result.data !== 'object') 
+          ? this.responseGenerator.formatStructuredResponse(result.data, 'generic') 
+          : undefined,
         toolsUsed,
         success: result.success,
       };

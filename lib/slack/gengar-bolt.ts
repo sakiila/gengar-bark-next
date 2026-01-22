@@ -486,4 +486,84 @@ export async function getConversationsInfo(channel: string) {
   }
 }
 
+/**
+ * Publish a view to App Home
+ * @param userId - User ID
+ * @param view - View object
+ */
+export async function publishView(userId: string, view: any) {
+  try {
+    return await botClient.views.publish({
+      user_id: userId,
+      view,
+    });
+  } catch (error) {
+    console.error('Error publishing view:', error);
+    throw error;
+  }
+}
+
+/**
+ * Open a modal view
+ * @param triggerId - Trigger ID from interaction
+ * @param view - View object
+ */
+export async function openView(triggerId: string, view: any) {
+  try {
+    return await botClient.views.open({
+      trigger_id: triggerId,
+      view,
+    });
+  } catch (error) {
+    console.error('Error opening view:', error);
+    throw error;
+  }
+}
+
+/**
+ * Update a modal view
+ * @param viewId - View ID to update
+ * @param view - New view object
+ */
+export async function updateView(viewId: string, view: any) {
+  try {
+    return await botClient.views.update({
+      view_id: viewId,
+      view,
+    });
+  } catch (error) {
+    console.error('Error updating view:', error);
+    throw error;
+  }
+}
+
+/**
+ * Send an ephemeral message (only visible to the specified user)
+ * @param channel - Channel ID or user ID for DM
+ * @param userId - User ID who will see the message
+ * @param text - Message text
+ * @param blocks - Optional message blocks
+ */
+export async function postEphemeralMessage(
+  channel: string,
+  userId: string,
+  text: string,
+  blocks?: any[]
+) {
+  try {
+    const params: any = {
+      channel,
+      user: userId,
+      text,
+    };
+    if (blocks) {
+      params.blocks = blocks;
+    }
+    return await botClient.chat.postEphemeral(params);
+  } catch (error) {
+    console.error('Error sending ephemeral message:', error);
+    throw error;
+  }
+}
+
 

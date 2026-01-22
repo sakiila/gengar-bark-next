@@ -9,6 +9,7 @@ import { logger } from '@/lib/utils/logger';
 import { teamJoin } from '@/lib/events-handlers/team-join';
 import { userChange } from '@/lib/events-handlers/user-change';
 import { monitorUserMessages } from '@/lib/events-handlers/message-monitor';
+import mcpAppHomeOpened from '@/lib/events-handlers/mcp-app-home-opened';
 
 // Create a request-scoped logger with context
 const createRequestLogger = (req: NextApiRequest) => {
@@ -82,15 +83,23 @@ export default async function handler(
           case 'app_mention':
             await send_response(req, res);
             break;
+          case 'app_home_opened':
+            await mcpAppHomeOpened(req, res);
+            break;
           case 'assistant_thread_started':
             await set_suggested_prompts(req, res);
             break;
           case 'message':
             const { channel_type, hidden, bot_profile } = req.body.event;
+            console.log(`[event.ts] Message event: channel_type=${channel_type}, hidden=${hidden}, bot_profile=${!!bot_profile}`);
             if (channel_type === 'im' && !hidden && !bot_profile) {
+              console.log(`[event.ts] Routing to response_container`);
               await response_container(req, res);
             } else if (channel_type === 'channel' || channel_type === 'group') {
+              console.log(`[event.ts] Routing to monitorUserMessages`);
               await monitorUserMessages(req, res);
+            } else {
+              console.log(`[event.ts] Message not routed: channel_type=${channel_type}, hidden=${hidden}, bot_profile=${!!bot_profile}`);
             }
             break;
           default:
