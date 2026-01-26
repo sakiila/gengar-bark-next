@@ -9,7 +9,7 @@ interface UserMCPConfigurationRow {
   id: string;
   user_id: string;
   server_name: string;
-  transport_type: 'sse' | 'websocket' | 'streamablehttp';
+  transport_type: 'http';
   url: string;
   encrypted_auth_token: string | null;
   enabled: boolean;
@@ -25,7 +25,7 @@ interface UserMCPConfigurationRow {
  */
 export interface MCPConfigInput {
   serverName: string;
-  transportType: 'sse' | 'websocket' | 'streamablehttp';
+  transportType: 'http';
   url: string;
   authToken?: string;
   skipVerification?: boolean;
@@ -37,7 +37,7 @@ export interface MCPConfigInput {
 export interface MCPConfigOutput {
   id: string;
   serverName: string;
-  transportType: 'sse' | 'websocket' | 'streamablehttp';
+  transportType: 'http';
   url: string;
   authToken?: string;
   enabled: boolean;
@@ -87,8 +87,8 @@ export class MCPConfigurationService {
   }
 
   private validateTransportType(transportType: string): void {
-    if (transportType !== 'sse' && transportType !== 'websocket' && transportType !== 'streamablehttp') {
-      throw new Error(`Invalid transport type: ${transportType}. Must be 'sse', 'websocket', or 'streamablehttp'`);
+    if (transportType !== 'http') {
+      throw new Error(`Invalid transport type: ${transportType}. Must be 'http'`);
     }
   }
 
@@ -290,7 +290,32 @@ export class MCPConfigurationService {
       if (updates.authToken !== undefined) {
         updateData.encrypted_auth_token = updates.authToken ? this.encryptToken(updates.authToken) : null;
       }
-      if (updates.skipVerification) updateData.verification_status = 'unverified';
+
+      // Verify connection if URL or transport type changed (unless skipVerification is set)
+      const connectionChanged = updates.url !== undefined || updates.transportType !== undefined || updates.authToken !== undefined;
+      if (connectionChanged && !updates.skipVerification) {
+        // Build config for verification using updated values or existing values
+        const verifyConfig: MCPConfigInput = {
+          serverName: updates.serverName || existing.server_name,
+          transportType: updates.transportType || existing.transport_type,
+          url: updates.url || existing.url,
+          authToken: updates.authToken !== undefined 
+            ? updates.authToken 
+            : (existing.encrypted_auth_token ? this.decryptToken(existing.encrypted_auth_token) : undefined),
+        };
+
+        const result = await this.verifyConnection(verifyConfig);
+        if (result.success) {
+          updateData.verification_status = 'verified';
+          updateData.capabilities = result.capabilities || null;
+          updateData.verification_error = null;
+        } else {
+          updateData.verification_status = 'failed';
+          updateData.verification_error = result.error || 'Connection verification failed';
+        }
+      } else if (updates.skipVerification) {
+        updateData.verification_status = 'unverified';
+      }
 
       const { data, error } = await postgres
         .from(TABLE_NAME)

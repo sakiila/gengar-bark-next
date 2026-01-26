@@ -74,9 +74,6 @@ export class MCPAppHomeHandler {
     // Add "Add MCP Server" button
     blocks.push(
       {
-        type: 'divider',
-      },
-      {
         type: 'actions',
         elements: [
           {
@@ -147,11 +144,7 @@ export class MCPAppHomeHandler {
       }
 
       // Transport type badge
-      const transportBadge = config.transportType === 'sse' 
-        ? '📡 SSE' 
-        : config.transportType === 'websocket' 
-          ? '🔌 WebSocket' 
-          : '🌐 Streamable HTTP';
+      const transportBadge = '🌐 HTTP';
 
       // Build configuration text
       let configText = `*${config.serverName}* ${statusEmoji}\n`;
@@ -291,7 +284,7 @@ export class MCPAppHomeHandler {
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: '*What are MCP Servers?*\n\nMCP (Model Context Protocol) servers provide your AI assistant with access to external data sources and tools. For example:\n\n• 📁 *GitHub* - Access your repositories and issues\n• 📋 *Linear* - Manage your project tasks\n• 🗄️ *PostgreSQL* - Query your databases\n• 📂 *Google Drive* - Access your documents',
+          text: '*What are MCP Servers?*\n\nMCP (Model Context Protocol) servers provide your AI assistant with access to external data sources and tools.',
         },
       },
     ];

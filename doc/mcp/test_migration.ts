@@ -84,7 +84,7 @@ async function testMigration() {
       INSERT INTO user_mcp_configurations 
         (user_id, server_name, transport_type, url, verification_status)
       VALUES 
-        ('U12345', 'test-server', 'sse', 'https://example.com/mcp', 'verified');
+        ('U12345', 'test-server', 'http', 'https://example.com/mcp', 'verified');
     `);
     console.log('✓ Test data inserted');
 
@@ -95,7 +95,7 @@ async function testMigration() {
         INSERT INTO user_mcp_configurations 
           (user_id, server_name, transport_type, url, verification_status)
         VALUES 
-          ('U12345', 'test-server', 'sse', 'https://example.com/mcp2', 'verified');
+          ('U12345', 'test-server', 'http', 'https://example.com/mcp2', 'verified');
       `);
       throw new Error('Unique constraint did not work');
     } catch (error: any) {
@@ -131,7 +131,7 @@ async function testMigration() {
         INSERT INTO user_mcp_configurations 
           (user_id, server_name, transport_type, url, verification_status)
         VALUES 
-          ('U12345', 'test-server-3', 'sse', 'https://example.com/mcp', 'invalid_status');
+          ('U12345', 'test-server-3', 'http', 'https://example.com/mcp', 'invalid_status');
       `);
       throw new Error('Verification status check constraint did not work');
     } catch (error: any) {

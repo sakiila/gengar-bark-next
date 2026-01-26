@@ -22,7 +22,7 @@ export class UserMCPConfiguration {
   server_name!: string;
 
   @Column({ type: 'varchar', length: 20 })
-  transport_type!: 'sse' | 'websocket' | 'streamablehttp';
+  transport_type!: 'http';
 
   @Column({ type: 'text' })
   url!: string;

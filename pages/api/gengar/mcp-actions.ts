@@ -131,7 +131,12 @@ async function handleBlockActions(payload: any, res: NextApiResponse) {
         const selectedTemplateId = action.selected_option?.value;
         const viewId = payload.view.id;
         
-        if (selectedTemplateId && selectedTemplateId !== 'manual') {
+        if (selectedTemplateId === 'manual') {
+          // Clear form values when Manual Configuration is selected
+          const modalHandler = new MCPModalHandler();
+          const manualView = modalHandler.buildManualConfigModal();
+          await updateView(viewId, manualView);
+        } else if (selectedTemplateId) {
           const template = getTemplateById(selectedTemplateId);
           if (template) {
             // Update the modal with template values
@@ -162,12 +167,53 @@ async function handleBlockActions(payload: any, res: NextApiResponse) {
 
 /**
  * Handle view submissions (modal submissions)
+ * 
+ * IMPORTANT: Slack requires a response within 3 seconds for view_submission.
+ * We respond immediately with 'clear' to close the modal, then process
+ * the submission asynchronously.
  */
 async function handleViewSubmission(payload: any, res: NextApiResponse) {
   const callbackId = payload.view.callback_id;
   const userId = payload.user.id;
   const values = payload.view.state.values;
+  const privateMetadata = payload.view.private_metadata;
 
+  // Validate required fields synchronously before closing modal
+  const serverName = values.server_name_block?.server_name_input?.value;
+  const url = values.url_block?.url_input?.value;
+  
+  // Parse template defaults for fallback
+  let templateDefaults: any = {};
+  if (privateMetadata && callbackId === 'mcp_add_modal') {
+    try {
+      templateDefaults = JSON.parse(privateMetadata);
+    } catch {
+      // Ignore parse errors
+    }
+  }
+  
+  const finalServerName = serverName || templateDefaults.defaultServerName;
+  const finalUrl = url || templateDefaults.defaultUrl;
+  
+  // Quick validation - return errors immediately if basic fields are missing
+  if (!finalServerName && callbackId === 'mcp_add_modal') {
+    return res.status(200).json({
+      response_action: 'errors',
+      errors: { server_name_block: 'Server name is required' },
+    });
+  }
+  
+  if (!finalUrl && callbackId === 'mcp_add_modal') {
+    return res.status(200).json({
+      response_action: 'errors',
+      errors: { url_block: 'Server URL is required' },
+    });
+  }
+
+  // Close modal immediately - Slack requires response within 3 seconds
+  res.status(200).json({ response_action: 'clear' });
+
+  // Process submission asynchronously
   const modalHandler = new MCPModalHandler();
   const appHomeHandler = new MCPAppHomeHandler();
 
@@ -175,41 +221,31 @@ async function handleViewSubmission(payload: any, res: NextApiResponse) {
     let result;
 
     if (callbackId === 'mcp_add_modal') {
-      // Handle add modal submission
-      result = await modalHandler.handleModalSubmission(userId, values, false);
+      result = await modalHandler.handleModalSubmission(userId, values, false, undefined, privateMetadata);
     } else if (callbackId === 'mcp_edit_modal') {
-      // Handle edit modal submission
-      const configId = payload.view.private_metadata;
+      const configId = privateMetadata;
       result = await modalHandler.handleModalSubmission(userId, values, true, configId);
     } else {
       console.warn('Unhandled callback_id:', callbackId);
-      return res.status(200).json({});
+      return;
     }
 
-    if (!result.success) {
-      // Return validation errors
-      return res.status(200).json({
-        response_action: 'errors',
-        errors: result.errors,
-      });
-    }
-
-    // Success - refresh App Home
+    // Refresh App Home to show new/updated configuration
     const view = await appHomeHandler.renderHome(userId);
     await publishView(userId, view);
 
-    return res.status(200).json({
-      response_action: 'clear',
-    });
+    // If there was an error, notify user via ephemeral message
+    if (!result.success) {
+      const errorMessage = result.errors?.general || Object.values(result.errors || {}).join(', ') || 'An error occurred';
+      await postEphemeralMessage(userId, userId, `❌ Failed to save MCP configuration: ${errorMessage}`);
+    }
   } catch (error) {
     console.error('Error handling view submission:', error);
-    
-    // Return error to user
-    return res.status(200).json({
-      response_action: 'errors',
-      errors: {
-        general: error instanceof Error ? error.message : 'An error occurred',
-      },
-    });
+    // Notify user of error via ephemeral message
+    await postEphemeralMessage(
+      userId,
+      userId,
+      `❌ Error saving MCP configuration: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 }

@@ -49,15 +49,8 @@ export class MCPClientManager {
     const executionTimeout = options.executionTimeout ?? 30000;
 
     try {
-      // Create client based on transport type
-      let client: any;
-      if (options.transport === 'streamablehttp') {
-        client = this.createStreamableHttpClient(options);
-      } else if (options.transport === 'sse') {
-        client = this.createSSEClient(options);
-      } else {
-        client = this.createWebSocketClient(options);
-      }
+      // Create HTTP client
+      const client = this.createHttpClient(options);
 
       // Perform MCP Initialize handshake with timeout
       const capabilities = await this.withTimeout(
@@ -330,14 +323,14 @@ export class MCPClientManager {
   }
 
   /**
-   * Creates a Streamable HTTP client for MCP
-   * This implements the MCP Streamable HTTP transport protocol
+   * Creates an HTTP client for MCP
+   * This implements the MCP HTTP transport protocol
    * 
    * @param options - Connection options
    * @returns MCP client instance
    * @private
    */
-  private createStreamableHttpClient(options: MCPClientOptions): any {
+  private createHttpClient(options: MCPClientOptions): any {
     const baseUrl = options.url;
     const authToken = options.authToken;
     const headers: Record<string, string> = {
@@ -351,13 +344,13 @@ export class MCPClientManager {
     }
 
     return {
-      type: 'streamablehttp',
+      type: 'http',
       url: baseUrl,
       authToken: authToken,
       headers: headers,
       connected: false,
       
-      // Connect method - for streamable HTTP, we just mark as ready
+      // Connect method - for HTTP, we just mark as ready
       connect: async () => {
         return { success: true };
       },
@@ -369,7 +362,7 @@ export class MCPClientManager {
       
       // Send method - makes actual HTTP requests to the MCP server
       send: async (message: any) => {
-        console.log(`[StreamableHTTP] Sending request to ${baseUrl}:`, JSON.stringify(message));
+        console.log(`[HTTP] Sending request to ${baseUrl}:`, JSON.stringify(message));
         try {
           const response = await fetch(baseUrl, {
             method: 'POST',
@@ -377,16 +370,16 @@ export class MCPClientManager {
             body: JSON.stringify(message),
           });
 
-          console.log(`[StreamableHTTP] Response status: ${response.status} ${response.statusText}`);
+          console.log(`[HTTP] Response status: ${response.status} ${response.statusText}`);
 
           if (!response.ok) {
             const errorText = await response.text();
-            console.log(`[StreamableHTTP] Error response body:`, errorText);
+            console.log(`[HTTP] Error response body:`, errorText);
             throw new Error(`HTTP error: ${response.status} ${response.statusText}`);
           }
 
           const result = await response.json();
-          console.log(`[StreamableHTTP] Response body:`, JSON.stringify(result, null, 2));
+          console.log(`[HTTP] Response body:`, JSON.stringify(result, null, 2));
           
           // Handle JSON-RPC response format
           if (result.error) {
@@ -401,136 +394,6 @@ export class MCPClientManager {
           }
           throw new Error('Failed to communicate with MCP server');
         }
-      }
-    };
-  }
-
-  /**
-   * Creates an SSE (Server-Sent Events) client
-   * 
-   * @param options - Connection options
-   * @returns MCP client instance
-   * @private
-   */
-  private createSSEClient(options: MCPClientOptions): any {
-    // Mock/placeholder implementation
-    // In a real implementation, this would use an actual MCP SDK
-    // For now, we create a mock client that simulates SSE behavior
-    
-    return {
-      type: 'sse',
-      url: options.url,
-      authToken: options.authToken,
-      connected: false,
-      
-      // Mock connect method
-      connect: async () => {
-        // Simulate connection delay
-        await new Promise(resolve => setTimeout(resolve, 100));
-        return { success: true };
-      },
-      
-      // Mock close method
-      close: async () => {
-        return { success: true };
-      },
-      
-      // Mock send method
-      send: async (message: any) => {
-        // Handle different MCP protocol methods
-        if (message.method === 'tools/list') {
-          return {
-            success: true,
-            tools: [
-              {
-                name: 'example-tool',
-                description: 'An example tool',
-                inputSchema: {
-                  type: 'object',
-                  properties: {}
-                }
-              }
-            ]
-          };
-        } else if (message.method === 'resources/list') {
-          return {
-            success: true,
-            resources: [
-              {
-                uri: 'example://resource',
-                name: 'Example Resource',
-                description: 'An example resource',
-                mimeType: 'text/plain'
-              }
-            ]
-          };
-        }
-        return { success: true, response: {} };
-      }
-    };
-  }
-
-  /**
-   * Creates a WebSocket client
-   * 
-   * @param options - Connection options
-   * @returns MCP client instance
-   * @private
-   */
-  private createWebSocketClient(options: MCPClientOptions): any {
-    // Mock/placeholder implementation
-    // In a real implementation, this would use an actual MCP SDK
-    // For now, we create a mock client that simulates WebSocket behavior
-    
-    return {
-      type: 'websocket',
-      url: options.url,
-      authToken: options.authToken,
-      connected: false,
-      
-      // Mock connect method
-      connect: async () => {
-        // Simulate connection delay
-        await new Promise(resolve => setTimeout(resolve, 100));
-        return { success: true };
-      },
-      
-      // Mock close method
-      close: async () => {
-        return { success: true };
-      },
-      
-      // Mock send method
-      send: async (message: any) => {
-        // Handle different MCP protocol methods
-        if (message.method === 'tools/list') {
-          return {
-            success: true,
-            tools: [
-              {
-                name: 'example-tool',
-                description: 'An example tool',
-                inputSchema: {
-                  type: 'object',
-                  properties: {}
-                }
-              }
-            ]
-          };
-        } else if (message.method === 'resources/list') {
-          return {
-            success: true,
-            resources: [
-              {
-                uri: 'example://resource',
-                name: 'Example Resource',
-                description: 'An example resource',
-                mimeType: 'text/plain'
-              }
-            ]
-          };
-        }
-        return { success: true, response: {} };
       }
     };
   }

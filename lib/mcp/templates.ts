@@ -20,7 +20,7 @@ export interface MCPTemplate {
   description: string;
   
   /** Transport protocol type */
-  transportType: 'sse' | 'websocket' | 'streamablehttp';
+  transportType: 'http';
   
   /** URL pattern for the server endpoint */
   urlPattern: string;
@@ -40,24 +40,24 @@ export interface MCPTemplate {
  */
 export const MCP_TEMPLATES: MCPTemplate[] = [
   {
-    id: 'github',
-    name: 'GitHub',
-    description: 'Access GitHub repositories, issues, and pull requests',
-    transportType: 'sse',
-    urlPattern: 'https://api.github.com/mcp',
-    requiredFields: ['authToken'],
-    optionalFields: ['repository'],
-    documentation: 'https://docs.github.com/mcp',
-  },
-  {
     id: 'mcd',
-    name: 'McDonald',
-    description: 'Access McDonald',
-    transportType: 'streamablehttp',
+    name: 'McDonald\'s',
+    description: 'Access McDonald\'s event calendar and coupon redemption',
+    transportType: 'http',
     urlPattern: 'https://mcp.mcd.cn/mcp-servers/mcd-mcp',
     requiredFields: ['authToken'],
     optionalFields: [],
     documentation: 'https://open.mcd.cn/mcp/doc',
+  },
+  {
+    id: 'github',
+    name: 'GitHub [Not Supported Now]',
+    description: 'Access GitHub repositories, issues, and pull requests',
+    transportType: 'http',
+    urlPattern: 'https://api.githubcopilot.com/mcp',
+    requiredFields: ['authToken'],
+    optionalFields: ['repository'],
+    documentation: 'https://github.com/github/github-mcp-server',
   }
 ];
 
@@ -86,7 +86,7 @@ export interface AppliedTemplate {
   serverName: string;
   
   /** Transport type */
-  transportType: 'sse' | 'websocket' | 'streamablehttp';
+  transportType: 'http';
   
   /** Server URL */
   url: string;

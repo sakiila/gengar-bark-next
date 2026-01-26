@@ -111,48 +111,15 @@ export class MCPModalHandler {
             text: 'Server Name',
           },
         },
-        // Transport type
+        // Transport type (hidden - always HTTP)
         {
-          type: 'input',
-          block_id: 'transport_type_block',
-          element: {
-            type: 'static_select',
-            action_id: 'transport_type_select',
-            initial_option: {
-              text: {
-                type: 'plain_text',
-                text: 'Streamable HTTP Requests',
-              },
-              value: 'streamablehttp',
+          type: 'context',
+          elements: [
+            {
+              type: 'mrkdwn',
+              text: '🌐 Transport: HTTP',
             },
-            options: [
-              {
-                text: {
-                  type: 'plain_text',
-                  text: 'Streamable HTTP Requests',
-                },
-                value: 'streamablehttp',
-              },
-              {
-                text: {
-                  type: 'plain_text',
-                  text: 'SSE (Server-Sent Events)',
-                },
-                value: 'sse',
-              },
-              {
-                text: {
-                  type: 'plain_text',
-                  text: 'WebSocket',
-                },
-                value: 'websocket',
-              },
-            ],
-          },
-          label: {
-            type: 'plain_text',
-            text: 'Transport Type',
-          },
+          ],
         },
         // URL
         {
@@ -276,52 +243,15 @@ export class MCPModalHandler {
             text: 'Server Name',
           },
         },
-        // Transport type
+        // Transport type (hidden - always HTTP)
         {
-          type: 'input',
-          block_id: 'transport_type_block',
-          element: {
-            type: 'static_select',
-            action_id: 'transport_type_select',
-            initial_option: {
-              text: {
-                type: 'plain_text',
-                text: config.transportType === 'sse' 
-                  ? 'SSE (Server-Sent Events)' 
-                  : config.transportType === 'websocket' 
-                    ? 'WebSocket' 
-                    : 'Streamable HTTP Requests',
-              },
-              value: config.transportType,
+          type: 'context',
+          elements: [
+            {
+              type: 'mrkdwn',
+              text: '🌐 Transport: HTTP',
             },
-            options: [
-              {
-                text: {
-                  type: 'plain_text',
-                  text: 'Streamable HTTP Requests',
-                },
-                value: 'streamablehttp',
-              },
-              {
-                text: {
-                  type: 'plain_text',
-                  text: 'SSE (Server-Sent Events)',
-                },
-                value: 'sse',
-              },
-              {
-                text: {
-                  type: 'plain_text',
-                  text: 'WebSocket',
-                },
-                value: 'websocket',
-              },
-            ],
-          },
-          label: {
-            type: 'plain_text',
-            text: 'Transport Type',
-          },
+          ],
         },
         // URL
         {
@@ -384,15 +314,32 @@ export class MCPModalHandler {
     userId: string,
     values: Record<string, any>,
     isEdit: boolean,
-    configId?: string
+    configId?: string,
+    privateMetadata?: string
   ): Promise<{ success: boolean; errors?: Record<string, string> }> {
     const service = await this.initService();
 
     try {
-      // Extract values from the modal
-      const serverName = values.server_name_block?.server_name_input?.value;
-      const transportType = values.transport_type_block?.transport_type_select?.selected_option?.value;
-      const url = values.url_block?.url_input?.value;
+      // Parse template defaults from private_metadata (if available)
+      let templateDefaults: {
+        defaultServerName?: string;
+        defaultTransportType?: string;
+        defaultUrl?: string;
+      } = {};
+      
+      if (privateMetadata) {
+        try {
+          templateDefaults = JSON.parse(privateMetadata);
+        } catch {
+          // Ignore parse errors - privateMetadata might be a config ID for edit modal
+        }
+      }
+
+      // Extract values from the modal, falling back to template defaults
+      // This handles the case where user selects a template but doesn't modify the pre-filled fields
+      const serverName = values.server_name_block?.server_name_input?.value || templateDefaults.defaultServerName;
+      const transportType = 'http'; // Always use HTTP transport
+      const url = values.url_block?.url_input?.value || templateDefaults.defaultUrl;
       const authToken = values.auth_token_block?.auth_token_input?.value;
       const skipVerification = values.skip_verification_block?.skip_verification_checkbox?.selected_options?.length > 0;
 
@@ -465,10 +412,6 @@ export class MCPModalHandler {
       errors.server_name_block = 'Server name is required';
     }
 
-    if (!values.transportType) {
-      errors.transport_type_block = 'Transport type is required';
-    }
-
     if (!values.url || values.url.trim() === '') {
       errors.url_block = 'Server URL is required';
     }
@@ -489,9 +432,17 @@ export class MCPModalHandler {
   buildAddModalWithTemplate(template: MCPTemplate): any {
     const templates = getTemplates();
 
+    // Store template defaults in private_metadata as fallback for untouched fields
+    const privateMetadata = JSON.stringify({
+      templateId: template.id,
+      defaultServerName: template.name,
+      defaultUrl: template.urlPattern,
+    });
+
     return {
       type: 'modal',
       callback_id: 'mcp_add_modal',
+      private_metadata: privateMetadata,
       title: {
         type: 'plain_text',
         text: 'Add MCP Server',
@@ -571,52 +522,15 @@ export class MCPModalHandler {
             text: 'Server Name',
           },
         },
-        // Transport type (pre-filled from template)
+        // Transport type (hidden - always HTTP)
         {
-          type: 'input',
-          block_id: 'transport_type_block',
-          element: {
-            type: 'static_select',
-            action_id: 'transport_type_select',
-            initial_option: {
-              text: {
-                type: 'plain_text',
-                text: template.transportType === 'sse' 
-                  ? 'SSE (Server-Sent Events)' 
-                  : template.transportType === 'websocket' 
-                    ? 'WebSocket' 
-                    : 'Streamable HTTP Requests',
-              },
-              value: template.transportType,
+          type: 'context',
+          elements: [
+            {
+              type: 'mrkdwn',
+              text: '🌐 Transport: HTTP',
             },
-            options: [
-              {
-                text: {
-                  type: 'plain_text',
-                  text: 'Streamable HTTP Requests',
-                },
-                value: 'streamablehttp',
-              },
-              {
-                text: {
-                  type: 'plain_text',
-                  text: 'SSE (Server-Sent Events)',
-                },
-                value: 'sse',
-              },
-              {
-                text: {
-                  type: 'plain_text',
-                  text: 'WebSocket',
-                },
-                value: 'websocket',
-              },
-            ],
-          },
-          label: {
-            type: 'plain_text',
-            text: 'Transport Type',
-          },
+          ],
         },
         // URL (pre-filled from template)
         {
@@ -698,6 +612,175 @@ export class MCPModalHandler {
               text: `📚 <${template.documentation}|View ${template.name} documentation>`,
             },
           ],
+        },
+      ],
+    };
+  }
+
+  /**
+   * Build modal view for manual configuration (clears template values)
+   * 
+   * @returns Modal view object for updating
+   */
+  buildManualConfigModal(): any {
+    const templates = getTemplates();
+
+    return {
+      type: 'modal',
+      callback_id: 'mcp_add_modal',
+      title: {
+        type: 'plain_text',
+        text: 'Add MCP Server',
+      },
+      submit: {
+        type: 'plain_text',
+        text: 'Add Server',
+      },
+      close: {
+        type: 'plain_text',
+        text: 'Cancel',
+      },
+      blocks: [
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: 'Configure a new MCP server connection. You can start with a template or configure manually.',
+          },
+        },
+        {
+          type: 'divider',
+        },
+        // Template selector (with Manual selected)
+        {
+          type: 'input',
+          block_id: 'template_block',
+          optional: true,
+          dispatch_action: true,
+          element: {
+            type: 'static_select',
+            action_id: 'template_select',
+            initial_option: {
+              text: {
+                type: 'plain_text',
+                text: '📝 Manual Configuration',
+              },
+              value: 'manual',
+            },
+            options: [
+              {
+                text: {
+                  type: 'plain_text',
+                  text: '📝 Manual Configuration',
+                },
+                value: 'manual',
+              },
+              ...templates.map((t) => ({
+                text: {
+                  type: 'plain_text',
+                  text: t.name,
+                },
+                value: t.id,
+              })),
+            ],
+          },
+          label: {
+            type: 'plain_text',
+            text: 'Template',
+          },
+        },
+        // Server name (empty)
+        {
+          type: 'input',
+          block_id: 'server_name_block',
+          element: {
+            type: 'plain_text_input',
+            action_id: 'server_name_input',
+            placeholder: {
+              type: 'plain_text',
+              text: 'e.g., My GitHub Server',
+            },
+          },
+          label: {
+            type: 'plain_text',
+            text: 'Server Name',
+          },
+        },
+        // Transport type (hidden - always HTTP)
+        {
+          type: 'context',
+          elements: [
+            {
+              type: 'mrkdwn',
+              text: '🌐 Transport: HTTP',
+            },
+          ],
+        },
+        // URL (empty)
+        {
+          type: 'input',
+          block_id: 'url_block',
+          element: {
+            type: 'plain_text_input',
+            action_id: 'url_input',
+            placeholder: {
+              type: 'plain_text',
+              text: 'https://api.example.com/mcp',
+            },
+          },
+          label: {
+            type: 'plain_text',
+            text: 'Server URL',
+          },
+          hint: {
+            type: 'plain_text',
+            text: 'Must be HTTPS. Private network addresses are not allowed.',
+          },
+        },
+        // Auth token (empty)
+        {
+          type: 'input',
+          block_id: 'auth_token_block',
+          optional: true,
+          element: {
+            type: 'plain_text_input',
+            action_id: 'auth_token_input',
+            placeholder: {
+              type: 'plain_text',
+              text: 'Optional authentication token',
+            },
+          },
+          label: {
+            type: 'plain_text',
+            text: 'Authentication Token',
+          },
+          hint: {
+            type: 'plain_text',
+            text: 'Optional. Will be encrypted before storage.',
+          },
+        },
+        // Skip verification checkbox
+        {
+          type: 'input',
+          block_id: 'skip_verification_block',
+          optional: true,
+          element: {
+            type: 'checkboxes',
+            action_id: 'skip_verification_checkbox',
+            options: [
+              {
+                text: {
+                  type: 'plain_text',
+                  text: 'Skip connection verification (not recommended)',
+                },
+                value: 'skip',
+              },
+            ],
+          },
+          label: {
+            type: 'plain_text',
+            text: 'Verification Options',
+          },
         },
       ],
     };

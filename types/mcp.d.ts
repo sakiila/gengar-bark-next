@@ -7,7 +7,7 @@
 /**
  * Transport type for MCP connections
  */
-export type MCPTransportType = 'sse' | 'websocket' | 'streamablehttp';
+export type MCPTransportType = 'http';
 
 /**
  * Verification status for MCP configurations

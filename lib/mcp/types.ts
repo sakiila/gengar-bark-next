@@ -10,12 +10,12 @@ export interface MCPClientOptions {
   url: string;
   
   /** Transport protocol type */
-  transport: 'sse' | 'websocket' | 'streamablehttp';
+  transport: 'http';
   
   /** Optional authentication token */
   authToken?: string;
   
-  /** Optional custom headers for HTTP-based transports */
+  /** Optional custom headers for HTTP transport */
   headers?: Record<string, string>;
   
   /** Connection timeout in milliseconds (default: 5000ms) */
@@ -33,7 +33,7 @@ export interface MCPConnection {
   configId: string;
   
   /** Transport protocol type */
-  transport: 'sse' | 'websocket' | 'streamablehttp';
+  transport: 'http';
   
   /** MCP client instance (placeholder for actual MCP client) */
   client: any; // TODO: Replace with actual MCP client type when SDK is integrated
