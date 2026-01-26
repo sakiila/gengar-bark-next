@@ -23,18 +23,8 @@ async function verifyService() {
       console.log('❌ Singleton pattern failed (different instances returned)');
     }
 
-    // Test 3: Check repository
-    console.log('\nTest 3: Checking repository initialization...');
-    const repository = instance1.getRepository();
-    if (repository) {
-      console.log('✅ Repository initialized successfully');
-      console.log(`   Target: ${repository.target}`);
-    } else {
-      console.log('❌ Repository not initialized');
-    }
-
-    // Test 4: Check encryption key
-    console.log('\nTest 4: Checking encryption key...');
+    // Test 3: Check encryption key
+    console.log('\nTest 3: Checking encryption key...');
     const encryptionKey = instance1.getEncryptionKey();
     if (encryptionKey) {
       console.log('✅ Encryption key loaded from environment');

@@ -252,9 +252,9 @@ export class MCPClientManager {
 
       // Extract tools array from response
       // MCP protocol returns tools in result.tools
-      if (result && result.tools && Array.isArray(result.tools)) {
-        console.log(`[MCPClientManager] Found ${result.tools.length} tools from ${configId}`);
-        return result.tools;
+      if (result && (result as any).tools && Array.isArray((result as any).tools)) {
+        console.log(`[MCPClientManager] Found ${(result as any).tools.length} tools from ${configId}`);
+        return (result as any).tools;
       }
 
       console.log(`[MCPClientManager] No tools found in response from ${configId}`);
@@ -311,8 +311,8 @@ export class MCPClientManager {
 
       // Extract resources array from response
       // MCP protocol returns resources in result.resources
-      if (result && result.resources && Array.isArray(result.resources)) {
-        return result.resources;
+      if (result && (result as any).resources && Array.isArray((result as any).resources)) {
+        return (result as any).resources;
       }
 
       // Return empty array if no resources found
