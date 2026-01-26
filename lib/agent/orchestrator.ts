@@ -585,7 +585,7 @@ export class Orchestrator {
       
       // We need to get the manager from the agent context
       // The manager should be passed through context for MCP tool execution
-      const manager = (context as any).mcpManager as MCPClientManager | undefined;
+      const manager = (context as any).mcpManager as InstanceType<typeof MCPClientManager> | undefined;
       
       if (!manager) {
         return {
@@ -707,7 +707,7 @@ export class Orchestrator {
       
       // For MCP tools (which have content array in data), just use displayText
       // Don't try to format the raw MCP response as Slack blocks
-      const isMCPResult = result.data && result.data.content && Array.isArray(result.data.content);
+      const isMCPResult = result.data && (result.data as any).content && Array.isArray((result.data as any).content);
       
       return {
         text: this.responseGenerator.formatTextResponse(displayText),
