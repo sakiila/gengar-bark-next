@@ -157,3 +157,90 @@ export async function generatePromptForJira(messages: any) {
 
   return [assistantBackground, ...result] as ChatCompletionMessageParam[];
 }
+
+export async function generateJiraDescriptionFromThread(messages: any): Promise<string> {
+  const assistantBackground: ChatCompletionMessageParam = {
+    role: 'system',
+    content: `You are a technical writer. Analyze the conversation and generate a Jira ticket description using the following template. Fill in each section based on the conversation content. Keep descriptions simple and clear. Use English only. If information for a section is not mentioned in the conversation, leave that section empty (just the bold title with no content).
+
+Template:
+**Root Cause**
+Explain what caused the issue, in simple terms. If cannot find the root cause, explain what we have tried.
+
+**Issue Status**
+Confirm that the issue/incorrect data has been fixed. If not, provide alternative methods to resolve the issue.
+
+**Root Cause Status**
+Confirm whether we fully fixed the root cause. If not, explain our plan to fix the root cause.
+
+**Scope of The Fix**
+Explain whether the issue/data has been fixed on all accounts or only certain accounts.
+
+**User Action Required**
+What does the user need to do to resolve the issue (e.g., refreshing the page, changing the setting, manually editing the appt). If the issue is not reproducible, ask the user to collect evidence.
+
+**Solution**
+What we did to fix the issue.
+
+**Activity log**
+Post the activity log, if required.
+
+Return ONLY the filled template as plain text. Do not add any extra text or formatting outside the template.`,
+  };
+
+  const result = messages
+    .map((message: any) => {
+      if (!message || !message.text || message.subtype === 'assistant_app_thread') {
+        return null;
+      }
+      return {
+        role: 'user',
+        content: cleanText(message.text),
+      };
+    })
+    .filter(Boolean);
+
+  const prompts = [assistantBackground, ...result] as ChatCompletionMessageParam[];
+  const gptResponse = await getGPT(prompts);
+  return gptResponse.choices[0].message.content || '';
+}
+
+export async function generateJiraDescriptionFromText(text: string): Promise<string> {
+  const prompts: ChatCompletionMessageParam[] = [
+    {
+      role: 'system',
+      content: `You are a technical writer. Analyze the input and generate a Jira ticket description using the following template. Fill in each section based on the content. Keep descriptions simple and clear. Use English only. If information for a section is not available, leave that section empty (just the bold title with no content).
+
+Template:
+**Root Cause**
+Explain what caused the issue, in simple terms. If cannot find the root cause, explain what we have tried.
+
+**Issue Status**
+Confirm that the issue/incorrect data has been fixed. If not, provide alternative methods to resolve the issue.
+
+**Root Cause Status**
+Confirm whether we fully fixed the root cause. If not, explain our plan to fix the root cause.
+
+**Scope of The Fix**
+Explain whether the issue/data has been fixed on all accounts or only certain accounts.
+
+**User Action Required**
+What does the user need to do to resolve the issue (e.g., refreshing the page, changing the setting, manually editing the appt). If the issue is not reproducible, ask the user to collect evidence.
+
+**Solution**
+What we did to fix the issue.
+
+**Activity log**
+Post the activity log, if required.
+
+Return ONLY the filled template as plain text. Do not add any extra text or formatting outside the template.`,
+    },
+    {
+      role: 'user',
+      content: cleanText(text),
+    },
+  ];
+
+  const gptResponse = await getGPT(prompts);
+  return gptResponse.choices[0].message.content || '';
+}

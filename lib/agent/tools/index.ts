@@ -5,12 +5,14 @@
  */
 
 import { JiraTool, createJiraTool } from './jira-tool';
+import { JiraSummaryTool, createJiraSummaryTool } from './jira-summary-tool';
 import { AppointmentTool, createAppointmentTool } from './appointment-tool';
 import { CITool, createCITool } from './ci-tool';
 import { QATool, createQATool } from './qa-tool';
 
 // Re-export tools and factory functions
 export { JiraTool, createJiraTool };
+export { JiraSummaryTool, createJiraSummaryTool };
 export { AppointmentTool, createAppointmentTool };
 export { CITool, createCITool };
 export { QATool, createQATool };
@@ -26,6 +28,7 @@ export type { Tool, ToolResult, AgentContext } from '../types';
 export function createAllTools() {
   return [
     createJiraTool(),
+    createJiraSummaryTool(),
     createAppointmentTool(),
     // createCITool(),
     createQATool(),
@@ -39,6 +42,7 @@ export function createAllTools() {
 export function getAvailableToolNames(): string[] {
   return [
     'create_jira_issue',
+    'summarize_for_jira',
     'lookup_appointment',
     'manage_ci_subscription',
     'ask_question',
