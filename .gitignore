@@ -36,3 +36,5 @@ next-env.d.ts
 
 # environment variables
 .env
+
+.config.kiro
