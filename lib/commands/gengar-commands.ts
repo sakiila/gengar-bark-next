@@ -7,6 +7,7 @@ import { getThreadReplies, postMessage } from '@/lib/slack/gengar-bolt';
 import { getUser, postgres } from '@/lib/database/supabase';
 import { createIssue } from '@/lib/jira/create-issue';
 import { detectFileTypeFromUrl, formatFileSize } from '@/lib/utils/file-utils';
+import { parseGitHubCommand, createGitHubIssue } from '@/lib/github/create-issue';
 
 
 export class IdCommand implements Command {
@@ -102,11 +103,18 @@ export class HelpCommand implements Command {
    • 输入 \`jira <projectKey> <issueType> [summary]\` 创建 Jira issue（如 \`jira MER Task 修复登录问题\`）
    * 注意：projectKey 可用 MER|ERP|CRM|FIN|GRM|ENT，issueType 可用 task|bug|story|epic，summary 选填。大小写皆可。
 
-6. *文件分析*
+6. *GitHub Issue 相关*
+   • 输入 \`gh <repo> [label] [title]\` 或 \`github <repo> [label] [title]\` 创建 GitHub Issue
+   • 示例：\`gh gengar-bark bug 修复登录问题\`、\`gh gengar-bark feat 新增功能\`
+   • label 选填，推荐值：bug、feat、fix、ci、perf、docs、style、refactor、test、chore（也支持自定义）
+   • title 选填，未提供时 AI 将从线程上下文自动生成
+   • 支持关联 Jira ticket：\`gh gengar-bark bug 修复登录 MER-123\`
+
+7. *文件分析*
    • 输入 \`file <链接地址>\` 分析文件格式（如 \`file https://example.com/document.pdf \`）
    * 功能：Detect file type and suggest possible file extensions
 
-更新时间：2025-12-29。反馈建议：<#C08EXLMF5SQ|bot-feedback-fuel>。
+更新时间：2025-03-04。反馈建议：<#C08EXLMF5SQ|bot-feedback-fuel>。
 `;
 
     await postMessage(this.channel, this.ts, helpText);
@@ -195,6 +203,62 @@ export class JiraCommand implements Command {
         this.channel,
         this.ts,
         `:x: Jira issue 创建失败：${err instanceof Error ? err.message : '未知错误'}`,
+      );
+    }
+  }
+}
+
+/** GitHub Issue 创建命令，匹配 gh/github 前缀 */
+export class GitHubCommand implements Command {
+  constructor(
+    private channel: string,
+    private ts: string,
+    private userId: string,
+  ) {
+  }
+
+  matches(text: string): boolean {
+    return /^(gh|github)\s+\S+/i.test(text);
+  }
+
+  async execute(text: string): Promise<void> {
+    const parsed = parseGitHubCommand(text);
+    if (!parsed) {
+      await postMessage(
+        this.channel,
+        this.ts,
+        ':x: 命令格式错误，请使用: `gh <repo> [label] [title]`',
+      );
+      return;
+    }
+
+    let userName = this.userId;
+    const user = await getUser(this.userId);
+    if (user) {
+      userName = user[0].real_name_normalized;
+    }
+
+    const result = await createGitHubIssue({
+      repoName: parsed.repo,
+      label: parsed.label,
+      title: parsed.title,
+      channel: this.channel,
+      threadTs: this.ts,
+      userName,
+      jiraTickets: parsed.jiraTickets,
+    });
+
+    if (result.success) {
+      await postMessage(
+        this.channel,
+        this.ts,
+        `:white_check_mark: GitHub issue 创建成功！<${result.issueUrl}|#${result.issueNumber}>`,
+      );
+    } else {
+      await postMessage(
+        this.channel,
+        this.ts,
+        `:x: GitHub issue 创建失败：${result.error}`,
       );
     }
   }

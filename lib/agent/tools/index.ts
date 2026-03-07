@@ -10,6 +10,7 @@ import { AppointmentTool, createAppointmentTool } from './appointment-tool';
 import { CITool, createCITool } from './ci-tool';
 import { QATool, createQATool } from './qa-tool';
 import { GitHubReviewTool, createGitHubReviewTool } from './github-review-tool';
+import { GitHubIssueTool, createGitHubIssueTool } from './github-issue-tool';
 
 // Re-export tools and factory functions
 export { JiraTool, createJiraTool };
@@ -18,6 +19,7 @@ export { AppointmentTool, createAppointmentTool };
 export { CITool, createCITool };
 export { QATool, createQATool };
 export { GitHubReviewTool, createGitHubReviewTool };
+export { GitHubIssueTool, createGitHubIssueTool };
 
 // Re-export types for convenience
 export type { Tool, ToolResult, AgentContext } from '../types';
@@ -35,6 +37,7 @@ export function createAllTools() {
     // createCITool(),
     createQATool(),
     createGitHubReviewTool(),
+    createGitHubIssueTool(),
   ];
 }
 
@@ -50,5 +53,6 @@ export function getAvailableToolNames(): string[] {
     'manage_ci_subscription',
     'ask_question',
     'github_review',
+    'create_github_issue',
   ];
 }
