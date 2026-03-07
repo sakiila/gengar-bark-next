@@ -172,6 +172,14 @@ const Home: NextPage = () => {
             User Guide
           </Link>
           <a
+            href="https://pearl.baobo.me"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.githubLink}
+          >
+            GitHub
+          </a>
+          <a
             href="https://slack.com/app_redirect?app=A06697P9VTN&team=T011CF3CMJN"
             target="_blank"
             rel="noopener noreferrer"
