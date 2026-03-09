@@ -6,6 +6,7 @@ import {
   CiCommand,
   CreateAppointmentCommand,
   FileCommand,
+  GitHubCommand,
   HelpCommand,
   IdCommand,
   JiraCommand,
@@ -56,6 +57,7 @@ export async function send_response(
     new HelpCommand(channel, ts),
     new IdCommand(channel, ts, userId),
     new JiraCommand(channel, ts, userId),
+    new GitHubCommand(channel, ts, userId),
     new CiCommand(ts, userId, userName, channel, channelName),
     new CreateAppointmentCommand(channel, ts, userId),
     new FileCommand(channel, ts), // 文件格式检测命令

@@ -22,6 +22,7 @@ module.exports = {
       tsconfig: {
         esModuleInterop: true,
         allowSyntheticDefaultImports: true,
+        downlevelIteration: true,
       },
     },
   },
