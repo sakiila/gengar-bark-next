@@ -1,4 +1,8 @@
 import type { Tool } from '../../types';
+import { createGetEnvironmentsTool, createGetProjectsTool } from './catalog-tools';
+import { createFeatureTools } from './feature-tools';
+import { createExperimentTools } from './experiment-tools';
+import { createMetricTools } from './metric-tools';
 
 export const GROWTHBOOK_TOOL_NAMES: readonly string[] = [
   'growthbook_get_environments',
@@ -17,10 +21,12 @@ export const GROWTHBOOK_TOOL_NAMES: readonly string[] = [
   'growthbook_get_metrics',
 ];
 
-/**
- * TODO(A/B merge): replace placeholder with concrete tool factories.
- * This keeps index-level integration type-safe in isolated worktrees.
- */
 export function createGrowthbookTools(): Tool[] {
-  return [];
+  return [
+    createGetEnvironmentsTool(),
+    createGetProjectsTool(),
+    ...createFeatureTools(),
+    ...createExperimentTools(),
+    ...createMetricTools(),
+  ];
 }
