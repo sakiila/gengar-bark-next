@@ -120,7 +120,15 @@ export async function fetchWithPagination(
     return res.json();
   }
 
-  const countRes = await fetchWithRateLimit(`${baseApiUrl}${endpoint}?limit=1`, {
+  const countQueryParams = new URLSearchParams({ limit: '1' });
+  if (additionalParams) {
+    for (const [key, value] of Object.entries(additionalParams)) {
+      if (value) {
+        countQueryParams.append(key, value);
+      }
+    }
+  }
+  const countRes = await fetchWithRateLimit(`${baseApiUrl}${endpoint}?${countQueryParams}`, {
     headers,
   });
   await handleResNotOk(countRes);

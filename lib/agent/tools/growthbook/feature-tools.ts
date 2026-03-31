@@ -46,10 +46,6 @@ export function createFeatureTools(): Tool[] {
             type: 'object',
             description: 'Optional custom fields payload.',
           },
-          owner: {
-            type: 'string',
-            description: 'Ignored. Owner is controlled by service layer.',
-          },
         },
         required: ['id', 'valueType', 'defaultValue', 'description', 'fileExtension'],
       },
@@ -83,10 +79,6 @@ export function createFeatureTools(): Tool[] {
             type: 'string',
             description: 'Forced value (stringified for json).',
           },
-          owner: {
-            type: 'string',
-            description: 'Ignored. Owner is controlled by service layer.',
-          },
         },
         required: ['featureId', 'fileExtension', 'value'],
       },
@@ -102,7 +94,11 @@ export function createFeatureTools(): Tool[] {
         properties: {
           project: {
             type: 'string',
-            description: 'Optional project ID filter.',
+            description: 'Optional project filter. Supports project ID or exact project name.',
+          },
+          query: {
+            type: 'string',
+            description: 'Optional keyword filter for feature id/description/tags.',
           },
           featureFlagId: {
             type: 'string',

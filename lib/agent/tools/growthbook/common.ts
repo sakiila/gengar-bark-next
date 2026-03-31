@@ -4,30 +4,8 @@ type GrowthbookInvoker = (params: Record<string, unknown>, context: AgentContext
 
 type GrowthbookModule = Record<string, unknown>;
 
-const GROWTHBOOK_MODULE_PATHS = [
-  '@/lib/growthbook',
-  '@/lib/growthbook/services/environments',
-  '@/lib/growthbook/services/projects',
-  '@/lib/growthbook/services/features',
-  '@/lib/growthbook/services/experiments',
-  '@/lib/growthbook/services/attributes',
-  '@/lib/growthbook/services/defaults',
-  '@/lib/growthbook/services/metrics',
-  '@/lib/growthbook/client',
-  '@/lib/growthbook/defaults',
-];
-
-async function loadGrowthbookModules(): Promise<GrowthbookModule[]> {
-  const modules: GrowthbookModule[] = [];
-  for (const modulePath of GROWTHBOOK_MODULE_PATHS) {
-    try {
-      const loaded = (await import(modulePath)) as GrowthbookModule;
-      modules.push(loaded);
-    } catch {
-      // Optional module path; ignore so wrappers remain branch-local compilable.
-    }
-  }
-  return modules;
+async function loadGrowthbookModule(): Promise<GrowthbookModule> {
+  return (await import('@/lib/growthbook')) as GrowthbookModule;
 }
 
 export async function invokeGrowthbook(
@@ -35,20 +13,18 @@ export async function invokeGrowthbook(
   params: Record<string, unknown>,
   context: AgentContext
 ): Promise<ToolResult> {
-  const modules = await loadGrowthbookModules();
+  const module = await loadGrowthbookModule();
 
   for (const name of functionNames) {
-    for (const module of modules) {
-      const candidate = module[name];
-      if (typeof candidate === 'function') {
-        const invoker = candidate as GrowthbookInvoker;
-        const data = await invoker(params, context);
-        return {
-          success: true,
-          data,
-          displayText: `GrowthBook tool executed: ${name}`,
-        };
-      }
+    const candidate = module[name];
+    if (typeof candidate === 'function') {
+      const invoker = candidate as GrowthbookInvoker;
+      const data = await invoker(params, context);
+      return {
+        success: true,
+        data,
+        displayText: typeof data === 'string' ? data : `GrowthBook tool executed: ${name}`,
+      };
     }
   }
 
