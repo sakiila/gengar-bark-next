@@ -40,16 +40,9 @@ describe('getFeatureFlags', () => {
     });
 
     const text = await getFeatureFlags({ project: 'obc' }, {} as any);
-    const result = JSON.parse(text) as {
-      error?: string;
-      availableProjects?: Array<{ id: string; name: string }>;
-    };
-
-    expect(result.error).toContain('Invalid project');
-    expect(result.availableProjects).toEqual([
-      { id: 'prj_1', name: 'Website' },
-      { id: 'prj_2', name: 'Sample Data' },
-    ]);
+    expect(text).toContain('项目 "obc" 无法匹配到有效的 project id/name');
+    expect(text).toContain('Website (prj_1)');
+    expect(text).toContain('Sample Data (prj_2)');
   });
 
   it('filters features by query when query is provided', async () => {
@@ -82,15 +75,11 @@ describe('getFeatureFlags', () => {
       });
 
     const text = await getFeatureFlags({ project: 'Website', query: 'obc' }, {} as any);
-    const result = JSON.parse(text) as {
-      features: GrowthbookFeature[];
-      total: number;
-      count: number;
-    };
-
-    expect(result.features).toHaveLength(1);
-    expect(result.features[0].id).toBe('obc_enable_checkout');
-    expect(result.total).toBe(1);
-    expect(result.count).toBe(1);
+    expect(text).toContain('已完成 Feature Flag 查询');
+    expect(text).toContain('项目：Website');
+    expect(text).toContain('关键词：obc');
+    expect(text).toContain('本次返回 1 条，匹配总数 1');
+    expect(text).toContain('- obc_enable_checkout');
+    expect(text).not.toContain('capital_market_entry');
   });
 });
