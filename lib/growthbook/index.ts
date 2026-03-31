@@ -48,7 +48,13 @@ function summarizeFeatureList(data: unknown, params: Record<string, unknown>): s
   const total = Number(payload.total ?? payload.count ?? features.length);
   const project = params.project ? `，项目：${String(params.project)}` : '';
   const query = params.query ? `，关键词：${String(params.query)}` : '';
-  const header = `已完成 Feature Flag 查询${project}${query}，本次返回 ${features.length} 条，匹配总数 ${total}。`;
+  const scannedPages = Number(params.__scannedPages ?? 0);
+  const scannedCount = Number(params.__scannedCount ?? 0);
+  const scanSummary =
+    scannedPages > 0
+      ? `共扫描 ${scannedPages} 页，累计检查 ${scannedCount} 条候选记录，`
+      : '';
+  const header = `已完成 Feature Flag 查询${project}${query}，${scanSummary}本次返回 ${features.length} 条，匹配总数 ${total}。`;
   const pageInfo = formatPageInfo(payload);
 
   if (features.length === 0) {
@@ -350,12 +356,25 @@ export async function getFeatureFlags(params: Record<string, unknown>, _context:
     return `已查询 Feature Flag 详情：${id}\n描述：${description}\n标签：${tags}`;
   }
   const project = params.project ? String(params.project) : '';
+  const originalQuery = params.query ? String(params.query).trim() : '';
   const resolvedProject = await resolveProjectId(apiHost, token, project);
+  let effectiveProjectId = '';
+  let effectiveQuery = originalQuery;
+  let fallbackToProjectKeyword = false;
+
   if (!resolvedProject.ok) {
-    return summarizeInvalidProject(project, resolvedProject.availableProjects);
+    // Compatibility fallback: when the model/user puts keyword into `project`,
+    // reuse it as fuzzy query instead of hard failing.
+    if (!originalQuery && project.trim()) {
+      effectiveQuery = project.trim();
+      fallbackToProjectKeyword = true;
+    } else {
+      return summarizeInvalidProject(project, resolvedProject.availableProjects);
+    }
+  } else {
+    effectiveProjectId = resolvedProject.projectId;
   }
 
-  const query = params.query ? String(params.query).trim() : '';
   const data = await fetchWithPagination(
     apiHost,
     token,
@@ -363,18 +382,49 @@ export async function getFeatureFlags(params: Record<string, unknown>, _context:
     Number(params.limit ?? 100),
     Number(params.offset ?? 0),
     Boolean(params.mostRecent ?? false),
-    resolvedProject.projectId ? { projectId: resolvedProject.projectId } : undefined
+    effectiveProjectId ? { projectId: effectiveProjectId } : undefined
   );
 
+  let scannedPages = 1;
+  let scannedCount = Array.isArray((data as { features?: unknown[] }).features)
+    ? ((data as { features?: unknown[] }).features?.length ?? 0)
+    : 0;
+
+  const effectiveLimit = Number(params.limit ?? 100);
+  const effectiveOffset = Number(params.offset ?? 0);
+  const maxPagesForQuery = 10;
+
   if (
-    query &&
+    effectiveQuery &&
     data &&
     typeof data === 'object' &&
     Array.isArray((data as { features?: GrowthbookFeature[] }).features)
   ) {
-    const filtered = (data as { features: GrowthbookFeature[] }).features.filter((feature) =>
-      matchesQuery(feature, query)
-    );
+    const allFeatures: GrowthbookFeature[] = [...(data as { features: GrowthbookFeature[] }).features];
+    let currentOffset = Number((data as { nextOffset?: unknown }).nextOffset ?? effectiveOffset + effectiveLimit);
+    let hasMore = Boolean((data as { hasMore?: unknown }).hasMore);
+
+    while (hasMore && scannedPages < maxPagesForQuery) {
+      const nextPage = await fetchWithPagination(
+        apiHost,
+        token,
+        '/api/v1/features',
+        effectiveLimit,
+        currentOffset,
+        Boolean(params.mostRecent ?? false),
+        effectiveProjectId ? { projectId: effectiveProjectId } : undefined
+      );
+      const nextFeatures = Array.isArray((nextPage as { features?: GrowthbookFeature[] }).features)
+        ? ((nextPage as { features: GrowthbookFeature[] }).features ?? [])
+        : [];
+      allFeatures.push(...nextFeatures);
+      scannedPages += 1;
+      scannedCount += nextFeatures.length;
+      hasMore = Boolean((nextPage as { hasMore?: unknown }).hasMore);
+      currentOffset = Number((nextPage as { nextOffset?: unknown }).nextOffset ?? currentOffset + effectiveLimit);
+    }
+
+    const filtered = allFeatures.filter((feature) => matchesQuery(feature, effectiveQuery));
     (data as { features: GrowthbookFeature[] }).features = filtered;
     (data as { total?: number }).total = filtered.length;
     (data as { count?: number }).count = filtered.length;
@@ -391,7 +441,21 @@ export async function getFeatureFlags(params: Record<string, unknown>, _context:
   ) {
     (data as { features: unknown[] }).features = [...(data as { features: unknown[] }).features].reverse();
   }
-  return summarizeFeatureList(data, params);
+  const summaryParams: Record<string, unknown> = {
+    ...params,
+    query: effectiveQuery,
+    __scannedPages: scannedPages,
+    __scannedCount: scannedCount,
+  };
+  if (!effectiveProjectId) {
+    delete summaryParams.project;
+  } else {
+    summaryParams.project = project;
+  }
+  const summary = summarizeFeatureList(data, summaryParams);
+  return fallbackToProjectKeyword
+    ? `未匹配到项目 "${project}"，已自动按关键词 "${effectiveQuery}" 执行模糊查询。\n\n${summary}`
+    : summary;
 }
 
 export const growthbookGetFeatureFlags = getFeatureFlags;
