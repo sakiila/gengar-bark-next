@@ -1,7 +1,6 @@
 /**
  * Orchestrator for the AI Agent system.
  * Core agent logic that coordinates intent detection, tool execution, and response generation.
- * Requirements: 1.1, 3.1, 3.2, 5.2, 5.3
  */
 
 import OpenAI from 'openai';
