@@ -196,16 +196,34 @@ export async function createIssue(text: string, channel: string, ts: string, use
     };
   }
 
-  // 如果关联的 CS 单有 Issue Priority 字段，则在新创建的单关联到 Priority 字段
-  if (nowIssueType === 'Bug Online' && csIssueCustomField10049) {
-    const PRIORITY_MAP: Record<string, string> = {
-      '10058': '1', // P0
-      '10059': '2', // P1
-      '10060': '3', // P2
-      '10061': '4', // P3
-    };
-    const mappedPriority = PRIORITY_MAP[csIssueCustomField10049.id] ?? '10004';
+  const PRIORITY_MAP: Record<string, string> = {
+    '10058': '1', // P0
+    '10059': '2', // P1
+    '10060': '3', // P2
+    '10061': '4', // P3
+  };
+  const DEFAULT_BUG_ONLINE_PRIORITY_ID = '10004';
+  const priorityDiagnostics = {
+    issueType: nowIssueType,
+    requiredForBugOnline: nowIssueType === 'Bug Online',
+    selectedPriorityId: null as string | null,
+    fallbackPriorityId: DEFAULT_BUG_ONLINE_PRIORITY_ID,
+    source: 'not-applicable' as 'related-issue' | 'default' | 'not-applicable',
+    relatedIssueKey: normalizedIssueKey,
+    relatedIssueCustomField10049Present: Boolean(csIssueCustomField10049),
+    relatedIssueCustomField10049Value: csIssueCustomField10049,
+  };
+
+  // Bug Online 单要求必填 Priority；优先继承关联 CS 单的 Issue Priority，否则回退默认值。
+  if (nowIssueType === 'Bug Online') {
+    const hasMappedPriority = Boolean(csIssueCustomField10049?.id && PRIORITY_MAP[csIssueCustomField10049.id]);
+    const mappedPriority = hasMappedPriority
+      ? PRIORITY_MAP[csIssueCustomField10049!.id]
+      : DEFAULT_BUG_ONLINE_PRIORITY_ID;
+
     requestBody.fields.priority = { id: mappedPriority };
+    priorityDiagnostics.selectedPriorityId = mappedPriority;
+    priorityDiagnostics.source = hasMappedPriority ? 'related-issue' : 'default';
   }
 
   // 构建统一的描述内容
@@ -263,6 +281,16 @@ export async function createIssue(text: string, channel: string, ts: string, use
 
   if (!response.ok) {
     const errorData = await response.json();
+    console.error('Jira create issue failed:', {
+      status: response.status,
+      statusText: response.statusText,
+      projectKey: nowProjectKey,
+      issueType: nowIssueType,
+      normalizedIssueKey,
+      priorityDiagnostics,
+      requestBody,
+      errorData,
+    });
     throw new Error(`${JSON.stringify(errorData)}`);
   }
 
