@@ -11,6 +11,7 @@ import { CITool, createCITool } from './ci-tool';
 import { QATool, createQATool } from './qa-tool';
 import { GitHubReviewTool, createGitHubReviewTool } from './github-review-tool';
 import { GitHubIssueTool, createGitHubIssueTool } from './github-issue-tool';
+import { createGrowthbookTools, GROWTHBOOK_TOOL_NAMES } from './growthbook';
 
 // Re-export tools and factory functions
 export { JiraTool, createJiraTool };
@@ -20,6 +21,7 @@ export { CITool, createCITool };
 export { QATool, createQATool };
 export { GitHubReviewTool, createGitHubReviewTool };
 export { GitHubIssueTool, createGitHubIssueTool };
+export { createGrowthbookTools, GROWTHBOOK_TOOL_NAMES };
 
 // Re-export types for convenience
 export type { Tool, ToolResult, AgentContext } from '../types';
@@ -38,6 +40,7 @@ export function createAllTools() {
     createQATool(),
     createGitHubReviewTool(),
     createGitHubIssueTool(),
+    ...createGrowthbookTools(),
   ];
 }
 
@@ -54,5 +57,6 @@ export function getAvailableToolNames(): string[] {
     'ask_question',
     'github_review',
     'create_github_issue',
+    ...GROWTHBOOK_TOOL_NAMES,
   ];
 }
