@@ -33,6 +33,10 @@ const jiraParameterSchema: ToolParameterSchema = {
       type: 'string',
       description: 'Detailed description of the issue (optional)',
     },
+    csTicket: {
+      type: 'string',
+      description: 'Related CS ticket number to link (e.g., CS-1234). If present in the conversation, always pass it here.',
+    },
   },
   required: ['project', 'issueType', 'summary'],
 };
@@ -58,11 +62,12 @@ export class JiraTool implements Tool {
     params: Record<string, unknown>,
     context: AgentContext
   ): Promise<ToolResult> {
-    const { project, issueType, summary, description } = params as {
+    const { project, issueType, summary, description, csTicket } = params as {
       project: string;
       issueType: string;
       summary: string;
       description?: string;
+      csTicket?: string;
     };
 
     // Validate required parameters
@@ -95,7 +100,8 @@ export class JiraTool implements Tool {
         context.channel,
         context.threadTs,
         userName,
-        userEmail
+        userEmail,
+        csTicket
       );
 
       const issueUrl = `https://moego.atlassian.net/browse/${issueKey}`;
