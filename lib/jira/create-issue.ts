@@ -95,7 +95,7 @@ async function getIssueField(issueKey: string, fieldName: string): Promise<unkno
   }
 }
 
-export async function createIssue(text: string, channel: string, ts: string, userName: string, email?: string) {
+export async function createIssue(text: string, channel: string, ts: string, userName: string, email?: string, csTicket?: string) {
   // 如果提供了邮箱，查询对应的 Jira account ID
   let reporterAccountId: string | null = null;
   if (email) {
@@ -127,9 +127,10 @@ export async function createIssue(text: string, channel: string, ts: string, use
     };
   }
 
-  // 预处理并规范化 AI 返回的 issueKey（如有）
-  const normalizedIssueKey = typeof result.issueKey === 'string' && /^[A-Z]+-\d+$/i.test(result.issueKey)
-    ? result.issueKey.toUpperCase()
+  // 预处理并规范化 issueKey：优先使用显式传递的 csTicket，其次使用 AI 返回的 issueKey
+  const rawIssueKey = csTicket || result.issueKey;
+  const normalizedIssueKey = typeof rawIssueKey === 'string' && /^[A-Z]+-\d+$/i.test(rawIssueKey)
+    ? rawIssueKey.toUpperCase()
     : null;
 
   // 如果存在关联的 CS 单，获取其 customfield_10049 字段
