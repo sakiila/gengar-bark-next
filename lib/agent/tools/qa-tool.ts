@@ -124,7 +124,7 @@ export class QATool implements Tool {
         data: {
           question,
           answer: truncatedAnswer,
-          model: 'gpt-5-chat-latest',
+          model: 'gpt-5.4-mini',
         },
         displayText: truncatedAnswer,
       };

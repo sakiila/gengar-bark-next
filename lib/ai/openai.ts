@@ -19,21 +19,21 @@ export async function getDALLE3(prompt: string) {
 
 export async function getGPT(messages: ChatCompletionMessageParam[]) {
   return openai.chat.completions.create({
-    model: 'gpt-5-chat-latest',
+    model: 'gpt-5.4-mini',
     messages,
   });
 }
 
 export async function getGPTmini(messages: ChatCompletionMessageParam[]) {
   return openai.chat.completions.create({
-    model: 'gpt-5-mini',
+    model: 'gpt-5.4-mini',
     messages,
   });
 }
 
 export async function translateToChinese(text: string) {
   return openai.chat.completions.create({
-    model: 'gpt-5-mini',
+    model: 'gpt-5.4-mini',
     messages: [
       {
         role: 'system',
@@ -50,7 +50,7 @@ export async function translateToChinese(text: string) {
 export async function getThird(messages: ChatCompletionMessageParam[]) {
   const params = {
     messages: messages,
-    model: 'gpt-5-mini',
+    model: 'gpt-5.4-mini',
   };
 
   const headers = {

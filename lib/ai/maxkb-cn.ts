@@ -44,7 +44,7 @@ export class MaxKBCNClient {
       const url = `${this.baseURL}/chat/completions`;
 
       const requestData: ChatCompletionRequest = {
-        model: 'gpt-4o-mini',
+        model: 'gpt-5.4-mini',
         messages: messages,
       };
 

@@ -83,7 +83,7 @@ export interface OrchestratorConfig {
 const DEFAULT_CONFIG: OrchestratorConfig = {
   retry: DEFAULT_RETRY_CONFIG,
   cache: DEFAULT_CACHE_CONFIG,
-  model: 'gpt-5-mini',
+  model: 'gpt-5.4-mini',
 };
 
 /**
