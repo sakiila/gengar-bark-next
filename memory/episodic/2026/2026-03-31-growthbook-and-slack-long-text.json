@@ -1,0 +1,18 @@
+{
+  "id": "ep-2026-03-31-001",
+  "timestamp": "2026-03-31T00:00:00Z",
+  "skill": "self-improving-agent",
+  "situation": "User 使用 Slack 命令查询 GrowthBook OBC 相关 flags，工具返回空结果或 invalid_blocks 错误。",
+  "root_cause": "1）GrowthBook 工具把自然语言 project \"obc\" 直接当成 projectId 过滤，API 合法但返回空列表；2）当工具返回完整 JSON 时，orchestrator 把超长字符串作为单个 Slack mrkdwn block 发送，超过 Slack block 文本长度限制导致 invalid_blocks。",
+  "solution": "在 GrowthBook service 层增加 resolveProjectId + query 关键词过滤，并在 orchestrator.combineToolResults 中只对 object 类型数据生成 blocks，将大段字符串结果保持为 text 回复。",
+  "lesson": "（a）所有“自然语言 project/业务标签 -> API 主键”的链路，都要在 service 层做显式解析和错误提示；（b）对 Slack 这类有硬编码长度限制的平台，要在统一的响应生成层做长度控制，而不是让任意工具直接生成 blocks。",
+  "related_pattern": [
+    "pat-2026-03-31-001",
+    "pat-2026-03-31-002"
+  ],
+  "user_feedback": {
+    "rating": 9,
+    "comments": "现在既能找到 OBC 相关 flags，又不会再被 invalid_blocks 打断。"
+  }
+}
+

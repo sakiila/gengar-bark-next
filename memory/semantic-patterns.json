@@ -1,0 +1,78 @@
+{
+  "patterns": {
+    "pat-2026-03-30-001": {
+      "id": "pat-2026-03-30-001",
+      "name": "先编译再调用 ESM tools",
+      "source": "implementation_review",
+      "confidence": 0.9,
+      "applications": 1,
+      "created": "2026-03-30",
+      "category": "mcp_integration|esm|tooling",
+      "pattern": "当 MCP 工具源码通过 ESM + `.js` specifier 引入，但运行环境未能正确映射到 TS 源文件时，先执行构建，把 server 产物编译到 `server/`，再用编译产物 `.js` 去调用 tools。",
+      "problem": "直接用 ts-node/loader 调用 `src/**/*.ts` 时，由于 `.js` specifier 不存在、outDir 落点不同或依赖解析差异，会导致无法导入或类型/模块解析失败。",
+      "solution": {
+        "steps": [
+          "先执行 `npm ci`（确保 growthbook-mcp 依赖齐全）",
+          "再执行 `npm run build` 生成编译产物",
+          "使用实际存在的 `growthbook-mcp/server/**.js` 路径导入工具并执行 handler"
+        ],
+        "verification": [
+          "用 `tsc --listEmittedFiles` 或 `ls` 确认输出路径",
+          "再运行最小脚本做一次 tool handler 的真实调用"
+        ]
+      },
+      "quality_rules": [
+        "遇到 `.js` specifier 指向 `src` 但实际只有 `.ts` 时，优先走编译产物",
+        "落地前务必确认 outDir/rootDir 的真实落点"
+      ],
+      "target_skills": ["self-improving-agent"]
+    },
+    "pat-2026-03-31-001": {
+      "id": "pat-2026-03-31-001",
+      "name": "将人类的“项目/关键词”意图映射到 GrowthBook API 参数",
+      "source": "implementation_review",
+      "confidence": 0.9,
+      "applications": 1,
+      "created": "2026-03-31",
+      "category": "growthbook|tooling|nl_to_api",
+      "pattern": "当用户用自然语言说“某某项目相关的 flag”时，工具层要把 project 语义拆成“projectId 解析 + query 关键词过滤”，而不是把原始词直接塞进 API 的 projectId 参数。",
+      "problem": "模型会把诸如 \"obc\" 这样的业务标签直接当成 projectId 传给 GrowthBook，导致后端返回合法但为空的列表，看起来像工具坏了。",
+      "solution": {
+        "steps": [
+          "在 service 层增加 resolveProjectId：先拉取 /api/v1/projects，再支持按 id 或 name 精确匹配，将人类输入映射到真实 projectId。",
+          "在工具 schema 中为 feature 列表增加 query 字段，用于对 id/description/tags 做模糊过滤，匹配“相关”的语义。",
+          "当 project 无法解析成合法 projectId 时，不直接调用 features 接口，而是返回 error + availableProjects 提示人类/模型做纠正。"
+        ],
+        "quality_rules": [
+          "凡是“人类语义 != API 主键”的场景，优先在 service 层做解析与兜底提示，而不是把原值直接透传给 API。",
+          "为空结果之前，先区分是“合法但确实为空”还是“参数映射错误但 API 不报错”。"
+        ]
+      },
+      "target_skills": ["self-improving-agent"]
+    },
+    "pat-2026-03-31-002": {
+      "id": "pat-2026-03-31-002",
+      "name": "避免把超长 JSON 塞进单个 Slack mrkdwn block",
+      "source": "debug_session",
+      "confidence": 0.9,
+      "applications": 1,
+      "created": "2026-03-31",
+      "category": "slack|rendering|limits",
+      "pattern": "当工具返回的是大段 JSON 文本（如 feature flags 列表），优先作为纯 text 回复，而不是转换成单个 section.mrkdwn.text block。",
+      "problem": "Slack 对 block 文本有 3000 字符左右的限制，把整段 JSON 序列化后塞进一个 block 容易触发 invalid_blocks: must be less than 3001 characters。",
+      "solution": {
+        "steps": [
+          "在 orchestrator 的 combineToolResults 中，只对 object 类型的数据调用 formatStructuredResponse，string 类型一律走 text 通道。",
+          "必要时在 response generator 对文本再做长度截断（如 2000 字符 + 截断标记），保证 UI 友好且不触发平台上限。",
+          "后续如果需要对 JSON 做结构化展示，应该先解析成对象/数组，再做分页和字段级裁剪。"
+        ],
+        "quality_rules": [
+          "UI 层永远不要直接把“未知长度的原始 JSON 字符串”塞进单个 Slack block。",
+          "平台有明确长度上限时，保证在我们自己的格式化层先做兜底，再信任下游。"
+        ]
+      },
+      "target_skills": ["self-improving-agent"]
+    }
+  }
+}
+
