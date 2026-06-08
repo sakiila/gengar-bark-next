@@ -1,10 +1,11 @@
 # 基础阶段 - 用于依赖安装
-FROM node:18-alpine AS deps
+FROM node:18-bookworm-slim AS deps
 WORKDIR /app
 
 # 添加构建必要的包并清理缓存
-RUN apk add --no-cache python3 make g++ \
-    && rm -rf /var/cache/apk/*
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python3 make g++ \
+    && rm -rf /var/lib/apt/lists/*
 
 # 优化 npm 缓存配置
 RUN npm config set cache /tmp/npm-cache --global
@@ -19,7 +20,7 @@ RUN --mount=type=cache,target=/tmp/npm-cache \
     && rm -rf /tmp/npm-cache/*
 
 # 构建阶段
-FROM node:18-alpine AS builder
+FROM node:18-bookworm-slim AS builder
 WORKDIR /app
 
 # 环境变量配置
@@ -40,12 +41,13 @@ RUN --mount=type=cache,target=/tmp/npm-cache \
     && find . -name "*.map" -type f -delete
 
 # 生产阶段
-FROM node:18-alpine AS production
+FROM node:18-bookworm-slim AS production
 WORKDIR /app
 
 # 安装必要的运行时依赖并清理缓存
-RUN apk add --no-cache curl \
-    && rm -rf /var/cache/apk/* \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/* \
     && addgroup --system --gid 1001 nodejs \
     && adduser --system --uid 1001 nextjs \
     && mkdir .next \
