@@ -1,5 +1,5 @@
 # 基础阶段 - 用于依赖安装
-FROM node:18-bookworm-slim AS deps
+FROM node:20-bookworm-slim AS deps
 WORKDIR /app
 
 # 添加构建必要的包并清理缓存
@@ -20,7 +20,7 @@ RUN --mount=type=cache,target=/tmp/npm-cache \
     && rm -rf /tmp/npm-cache/*
 
 # 构建阶段
-FROM node:18-bookworm-slim AS builder
+FROM node:20-bookworm-slim AS builder
 WORKDIR /app
 
 # 环境变量配置
@@ -41,7 +41,7 @@ RUN --mount=type=cache,target=/tmp/npm-cache \
     && find . -name "*.map" -type f -delete
 
 # 生产阶段
-FROM node:18-bookworm-slim AS production
+FROM node:20-bookworm-slim AS production
 WORKDIR /app
 
 # 安装必要的运行时依赖并清理缓存

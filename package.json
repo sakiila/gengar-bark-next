@@ -34,7 +34,7 @@
     "react-share": "^5.1.1",
     "recharts": "^2.14.1",
     "reflect-metadata": "^0.2.2",
-    "sharp": "0.32.6",
+    "sharp": "0.34.5",
     "three": "^0.169.0",
     "typeorm": "^0.3.20",
     "wordcloud": "^1.2.3"

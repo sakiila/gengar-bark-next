@@ -15,7 +15,7 @@ concurrency:
 
 env:
   IMAGE_NAME: docker-registry.baobo.me/gengar-bark
-  NODE_VERSION: '18'
+  NODE_VERSION: '20'
   DOCKER_BUILDKIT: 1
   COMPOSE_DOCKER_CLI_BUILD: 1
 
