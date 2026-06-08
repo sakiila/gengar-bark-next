@@ -204,7 +204,7 @@ Keep the summary under 500 characters while preserving essential information.`;
 
     try {
       const response = await this.openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: 'gpt-5.4-mini',
         messages,
         temperature: 0.3,
       });
@@ -291,7 +291,7 @@ Do not include any explanation, just the value or "NOT_FOUND".`;
 
     try {
       const response = await this.openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: 'gpt-5.4-mini',
         messages,
         temperature: 0,
       });
