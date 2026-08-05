@@ -18,12 +18,10 @@ const jiraParameterSchema: ToolParameterSchema = {
     project: {
       type: 'string',
       description: 'The Jira project key (e.g., MER, CRM, FIN, ERP, GRM, ENT)',
-      enum: ['MER', 'CRM', 'FIN', 'ERP', 'GRM', 'ENT'],
     },
     issueType: {
       type: 'string',
       description: 'The type of Jira issue to create (e.g., Bug, Task, Story, Epic)',
-      enum: ['Bug', 'Task', 'Story', 'Epic'],
     },
     summary: {
       type: 'string',
@@ -38,12 +36,11 @@ const jiraParameterSchema: ToolParameterSchema = {
       description: 'Related CS ticket number to link (e.g., CS-1234). If present in the conversation, always pass it here.',
     },
   },
-  required: ['project', 'issueType', 'summary'],
+  required: [],
 };
 
 /**
- * JiraTool creates Jira issues through the AI agent.
- * Wraps the existing createIssue() function and provides structured results.
+ * JiraTool returns direct mention command text for Jira issue creation.
  */
 export class JiraTool implements Tool {
   name = 'create_jira_issue';
@@ -52,80 +49,25 @@ export class JiraTool implements Tool {
   cacheable = false; // Creating issues should never be cached
 
   /**
-   * Execute the Jira tool to create a new issue.
+   * Execute the Jira tool to return direct creation text.
    * 
-   * @param params - Tool parameters including project, issueType, summary, description
-   * @param context - Agent context with user and channel information
-   * @returns ToolResult with the created issue key and link
+   * @param _params - Tool parameters
+   * @param _context - Agent context
+   * @returns ToolResult with target text
    */
   async execute(
-    params: Record<string, unknown>,
-    context: AgentContext
+    _params: Record<string, unknown>,
+    _context: AgentContext
   ): Promise<ToolResult> {
-    const { project, issueType, summary, description, csTicket } = params as {
-      project: string;
-      issueType: string;
-      summary: string;
-      description?: string;
-      csTicket?: string;
+    const displayText = `<@U0AN6696Z97> 根据前述信息，补充相关字段，创建 jira 单，直接创建，返回链接`;
+
+    return {
+      success: true,
+      data: {
+        message: displayText,
+      },
+      displayText,
     };
-
-    // Validate required parameters
-    if (!project || !issueType || !summary) {
-      return {
-        success: false,
-        error: 'Missing required parameters: project, issueType, and summary are required',
-        displayText: 'Could not create Jira issue: missing required information.',
-      };
-    }
-
-    try {
-      // Get user information for the reporter
-      let userName = context.userId;
-      let userEmail: string | undefined;
-
-      const user = await getUser(context.userId);
-      if (user && user.length > 0) {
-        userName = user[0].real_name_normalized || userName;
-        userEmail = user[0].email;
-      }
-
-      // Build the command text that createIssue expects
-      // Format: jira <projectKey> <issueType> [summary]
-      const commandText = `jira ${project} ${issueType} ${summary}`;
-
-      // Call the existing createIssue function
-      const issueKey = await createIssue(
-        commandText,
-        context.channel,
-        context.threadTs,
-        userName,
-        userEmail,
-        csTicket
-      );
-
-      const issueUrl = `https://moego.atlassian.net/browse/${issueKey}`;
-
-      return {
-        success: true,
-        data: {
-          issueKey,
-          issueUrl,
-          project,
-          issueType,
-          summary,
-        },
-        displayText: `✅ Jira issue created successfully: <${issueUrl}|${issueKey}>`,
-      };
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      
-      return {
-        success: false,
-        error: errorMessage,
-        displayText: `❌ Failed to create Jira issue: ${errorMessage}`,
-      };
-    }
   }
 }
 
