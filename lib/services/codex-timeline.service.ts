@@ -63,11 +63,34 @@ export function isWithinFiveMinutes(
 }
 
 /**
+ * 将 UTC ISO 时间转换为太平洋时区（America/Los_Angeles，带时区缩写 PDT/PST）
+ */
+export function formatToPacificTime(isoString: string): string {
+  if (!isoString) return '';
+  const d = new Date(isoString);
+  if (isNaN(d.getTime())) return isoString;
+
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Los_Angeles',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+    timeZoneName: 'short',
+  }).formatToParts(d);
+
+  const get = (type: string) => parts.find((p) => p.type === type)?.value || '';
+  return `${get('year')}-${get('month')}-${get('day')} ${get('hour')}:${get('minute')}:${get('second')} ${get('timeZoneName')}`;
+}
+
+/**
  * 构建高美感、极简克制的 Slack Block Kit 消息
  */
 export function buildTimelineEventBlocks(event: TimelineEvent): any[] {
-  const announcedDate = new Date(event.announced_at);
-  const unixTimestamp = Math.floor(announcedDate.getTime() / 1000);
+  const formattedTime = formatToPacificTime(event.announced_at);
 
   let mainText = '';
   if (event.is_reply && event.replying_to) {
@@ -89,7 +112,7 @@ export function buildTimelineEventBlocks(event: TimelineEvent): any[] {
       elements: [
         {
           type: 'mrkdwn',
-          text: `<!date^${unixTimestamp}^{date_num} {time_secs}|${event.announced_at}>  ·  <${event.url}|View on X>`,
+          text: `${formattedTime}  ·  <${event.url}|View on X>`,
         },
       ],
     },

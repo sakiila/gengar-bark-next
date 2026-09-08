@@ -67,12 +67,18 @@ describe('Codex Timeline Service', () => {
       expect(textSection.text.text).toContain('_Replying to @0x0SojalSec_');
       expect(textSection.text.text).toContain('You forgot the part where I reset usage twice in the middle');
 
-      // 2. Clean context row with native timestamp and View on X link
+      // 2. Clean context row with Pacific timestamp (PDT/PST) and View on X link
       const contextBlock = blocks[1];
       expect(contextBlock.type).toBe('context');
-      expect(contextBlock.elements[0].text).toContain('<!date^');
+      expect(contextBlock.elements[0].text).toContain('2026-09-07 21:41:58 PDT');
       expect(contextBlock.elements[0].text).toContain(`<${mockEvent.url}|View on X>`);
       expect(contextBlock.elements[0].text).not.toContain('Quota Reset');
+    });
+
+    it('should format UTC announced_at to Pacific time with timezone suffix', () => {
+      const { formatToPacificTime } = require('./codex-timeline.service');
+      const formatted = formatToPacificTime('2026-09-08T04:41:58.000Z');
+      expect(formatted).toBe('2026-09-07 21:41:58 PDT');
     });
 
     it('should verify Tibo configuration constants', () => {
