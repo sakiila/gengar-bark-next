@@ -54,44 +54,25 @@ describe('Codex Timeline Service', () => {
       replying_to: '0x0SojalSec',
     };
 
-    it('should build proper Block Kit structure with header, quote, fields, and actions', () => {
+    it('should build clean and minimal Block Kit structure without emoji clutter', () => {
       const blocks = buildTimelineEventBlocks(mockEvent);
 
       expect(blocks).toBeDefined();
       expect(Array.isArray(blocks)).toBe(true);
+      expect(blocks.length).toBe(2);
 
-      // 1. Header block
-      const headerBlock = blocks.find((b) => b.type === 'header');
-      expect(headerBlock).toBeDefined();
-      expect(headerBlock.text.text).toContain('Codex / Claude Quota Reset');
+      // 1. Section with clean text and reply indication
+      const textSection = blocks[0];
+      expect(textSection.type).toBe('section');
+      expect(textSection.text.text).toContain('_Replying to @0x0SojalSec_');
+      expect(textSection.text.text).toContain('You forgot the part where I reset usage twice in the middle');
 
-      // 2. Reply context
-      const replyContext = blocks.find(
-        (b) => b.type === 'context' && b.elements[0]?.text?.includes('Replying to'),
-      );
-      expect(replyContext).toBeDefined();
-      expect(replyContext.elements[0].text).toContain('@0x0SojalSec');
-
-      // 3. Section with quote
-      const quoteSection = blocks.find(
-        (b) => b.type === 'section' && b.text?.text?.startsWith('> '),
-      );
-      expect(quoteSection).toBeDefined();
-      expect(quoteSection.text.text).toContain('> You forgot the part');
-      expect(quoteSection.text.text).toContain('> Enjoy coding!');
-
-      // 4. Fields section (announced date, type, scope)
-      const fieldsSection = blocks.find((b) => b.type === 'section' && b.fields);
-      expect(fieldsSection).toBeDefined();
-      expect(fieldsSection.fields.some((f: any) => f.text.includes('<!date^'))).toBe(true);
-      expect(fieldsSection.fields.some((f: any) => f.text.includes('`reset`'))).toBe(true);
-
-      // 5. Actions block with View on X button
-      const actionsBlock = blocks.find((b) => b.type === 'actions');
-      expect(actionsBlock).toBeDefined();
-      const xButton = actionsBlock.elements.find((el: any) => el.url === mockEvent.url);
-      expect(xButton).toBeDefined();
-      expect(xButton.text.text).toContain('View on X');
+      // 2. Clean context row with type label, native timestamp, and View on X link
+      const contextBlock = blocks[1];
+      expect(contextBlock.type).toBe('context');
+      expect(contextBlock.elements[0].text).toContain('Quota Reset');
+      expect(contextBlock.elements[0].text).toContain('<!date^');
+      expect(contextBlock.elements[0].text).toContain(`<${mockEvent.url}|View on X>`);
     });
 
     it('should verify Tibo configuration constants', () => {

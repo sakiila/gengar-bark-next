@@ -63,134 +63,56 @@ export function isWithinFiveMinutes(
 }
 
 /**
- * 格式化推文正文为 Slack 优雅引用格式
+ * 获取简洁的事件类型标签
  */
-function formatQuoteText(summary: string): string {
-  if (!summary) return '> _(Empty content)_';
-  return summary
-    .split('\n')
-    .map((line) => `> ${line}`)
-    .join('\n');
-}
-
-/**
- * 根据事件类型获取标题与表情
- */
-function getEventTitle(type: string): string {
+function getTypeLabel(type: string): string {
   switch (type?.toLowerCase()) {
     case 'reset':
-      return '🔄 Codex / Claude Quota Reset';
+      return 'Quota Reset';
     case 'boost':
-      return '🚀 Codex Boost Announced';
+      return 'Quota Boost';
     case 'credits':
-      return '🎁 Codex Credits Announced';
+      return 'Credits';
     case 'promo':
-      return '🏷️ Codex Promotion Announced';
+      return 'Promotion';
     default:
-      return '📢 Codex Radar Update';
+      return 'Announcement';
   }
 }
 
 /**
- * 构建高美感、结构分明的 Slack Block Kit 消息
+ * 构建高美感、极简克制的 Slack Block Kit 消息
  */
 export function buildTimelineEventBlocks(event: TimelineEvent): any[] {
   const announcedDate = new Date(event.announced_at);
   const unixTimestamp = Math.floor(announcedDate.getTime() / 1000);
-  const title = getEventTitle(event.type);
-  const quoteText = formatQuoteText(event.summary);
+  const typeLabel = getTypeLabel(event.type);
 
-  const blocks: any[] = [
-    {
-      type: 'header',
-      text: {
-        type: 'plain_text',
-        text: title,
-        emoji: true,
-      },
-    },
-  ];
-
+  let mainText = '';
   if (event.is_reply && event.replying_to) {
-    blocks.push({
-      type: 'context',
-      elements: [
-        {
-          type: 'mrkdwn',
-          text: `💬 *Replying to:* \`@${event.replying_to}\``,
-        },
-      ],
-    });
+    mainText = `_Replying to @${event.replying_to}_\n\n${event.summary}`;
+  } else {
+    mainText = event.summary;
   }
 
-  blocks.push(
+  return [
     {
       type: 'section',
       text: {
         type: 'mrkdwn',
-        text: quoteText,
+        text: mainText,
       },
-    },
-    {
-      type: 'section',
-      fields: [
-        {
-          type: 'mrkdwn',
-          text: `*📅 Announced:*\n<!date^${unixTimestamp}^{date_num} {time_secs}|${event.announced_at}>`,
-        },
-        {
-          type: 'mrkdwn',
-          text: `*🏷️ Type & Group:*\n\`${event.type || 'unknown'}\` / \`${event.group || 'unknown'}\``,
-        },
-        {
-          type: 'mrkdwn',
-          text: `*🌐 Scope:*\n\`${event.scope || 'global'}\``,
-        },
-        {
-          type: 'mrkdwn',
-          text: `*🎯 Confidence:*\n\`${event.confidence || 'medium'}\``,
-        },
-      ],
-    },
-    {
-      type: 'actions',
-      elements: [
-        {
-          type: 'button',
-          text: {
-            type: 'plain_text',
-            text: 'View on X ↗',
-            emoji: true,
-          },
-          url: event.url,
-          style: 'primary',
-        },
-        {
-          type: 'button',
-          text: {
-            type: 'plain_text',
-            text: 'Codex Radar 🌐',
-            emoji: true,
-          },
-          url: 'https://codex-reset.com',
-        },
-      ],
     },
     {
       type: 'context',
       elements: [
         {
           type: 'mrkdwn',
-          text: `📡 *Source:* ${event.source_label || 'Live radar feed'} • <https://codex-reset.com|codex-reset.com>`,
+          text: `${typeLabel}  ·  <!date^${unixTimestamp}^{date_num} {time_secs}|${event.announced_at}>  ·  <${event.url}|View on X>`,
         },
       ],
     },
-    {
-      type: 'divider',
-    },
-  );
-
-  return blocks;
+  ];
 }
 
 /**
