@@ -67,12 +67,12 @@ describe('Codex Timeline Service', () => {
       expect(textSection.text.text).toContain('_Replying to @0x0SojalSec_');
       expect(textSection.text.text).toContain('You forgot the part where I reset usage twice in the middle');
 
-      // 2. Clean context row with type label, native timestamp, and View on X link
+      // 2. Clean context row with native timestamp and View on X link
       const contextBlock = blocks[1];
       expect(contextBlock.type).toBe('context');
-      expect(contextBlock.elements[0].text).toContain('Quota Reset');
       expect(contextBlock.elements[0].text).toContain('<!date^');
       expect(contextBlock.elements[0].text).toContain(`<${mockEvent.url}|View on X>`);
+      expect(contextBlock.elements[0].text).not.toContain('Quota Reset');
     });
 
     it('should verify Tibo configuration constants', () => {

@@ -63,30 +63,11 @@ export function isWithinFiveMinutes(
 }
 
 /**
- * 获取简洁的事件类型标签
- */
-function getTypeLabel(type: string): string {
-  switch (type?.toLowerCase()) {
-    case 'reset':
-      return 'Quota Reset';
-    case 'boost':
-      return 'Quota Boost';
-    case 'credits':
-      return 'Credits';
-    case 'promo':
-      return 'Promotion';
-    default:
-      return 'Announcement';
-  }
-}
-
-/**
  * 构建高美感、极简克制的 Slack Block Kit 消息
  */
 export function buildTimelineEventBlocks(event: TimelineEvent): any[] {
   const announcedDate = new Date(event.announced_at);
   const unixTimestamp = Math.floor(announcedDate.getTime() / 1000);
-  const typeLabel = getTypeLabel(event.type);
 
   let mainText = '';
   if (event.is_reply && event.replying_to) {
@@ -108,7 +89,7 @@ export function buildTimelineEventBlocks(event: TimelineEvent): any[] {
       elements: [
         {
           type: 'mrkdwn',
-          text: `${typeLabel}  ·  <!date^${unixTimestamp}^{date_num} {time_secs}|${event.announced_at}>  ·  <${event.url}|View on X>`,
+          text: `<!date^${unixTimestamp}^{date_num} {time_secs}|${event.announced_at}>  ·  <${event.url}|View on X>`,
         },
       ],
     },
@@ -123,7 +104,7 @@ export async function postTimelineEventToSlack(
   channel: string = DEFAULT_SLACK_CHANNEL,
 ) {
   const blocks = buildTimelineEventBlocks(event);
-  const fallbackText = `Tibo: [${event.type?.toUpperCase() || 'UPDATE'}] ${event.summary}`;
+  const fallbackText = `Tibo: ${event.summary}`;
   const client = getSlackClient();
 
   return await client.chat.postMessage({
