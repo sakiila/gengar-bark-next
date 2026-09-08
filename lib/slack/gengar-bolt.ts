@@ -37,7 +37,7 @@ async function sendMessage(params: any) {
  * @param iconUrl - 自定义图标 URL
  * @param username - 自定义用户名
  */
-async function sendMessageWithCustomization(params: any, iconUrl?: string, username?: string) {
+export async function sendMessageWithCustomization(params: any, iconUrl?: string, username?: string) {
   try {
     return await botClient.chat.postMessage({
       ...params,
