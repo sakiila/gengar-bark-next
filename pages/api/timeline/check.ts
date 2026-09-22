@@ -14,6 +14,11 @@ export default async function handler(
     req.body?.simulate === true ||
     req.query.simulate === '1';
 
+  const reset =
+    req.query.reset === 'true' ||
+    req.body?.reset === true ||
+    req.query.reset === '1';
+
   const targetChannel =
     (req.query.channel as string) ||
     req.body?.channel ||
@@ -22,6 +27,7 @@ export default async function handler(
   try {
     const result = await checkCodexTimeline({
       forceSendLatest: simulate,
+      resetCursor: reset,
       channel: targetChannel,
     });
 
