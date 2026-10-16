@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { DEFAULT_AI_MODEL } from '@/lib/ai/config';
 
 interface Message {
   role: string;
@@ -44,7 +45,7 @@ export class MaxKBCNClient {
       const url = `${this.baseURL}/chat/completions`;
 
       const requestData: ChatCompletionRequest = {
-        model: 'gpt-5.4-mini',
+        model: DEFAULT_AI_MODEL,
         messages: messages,
       };
 

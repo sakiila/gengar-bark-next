@@ -6,6 +6,7 @@
 
 import { Tool, ToolResult, AgentContext, ToolParameterSchema } from '../types';
 import { getGPT } from '@/lib/ai/openai';
+import { DEFAULT_AI_MODEL } from '@/lib/ai/config';
 import { ChatCompletionMessageParam } from 'openai/resources';
 
 /**
@@ -124,7 +125,7 @@ export class QATool implements Tool {
         data: {
           question,
           answer: truncatedAnswer,
-          model: 'gpt-5.4-mini',
+          model: DEFAULT_AI_MODEL,
         },
         displayText: truncatedAnswer,
       };

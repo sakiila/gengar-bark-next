@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import { ChatCompletionMessageParam } from 'openai/resources';
 import { timeUtils } from '@/lib/utils/time-utils';
+import { DEFAULT_AI_MODEL } from '@/lib/ai/config';
 
 // https://github.com/vercel/examples/blob/main/solutions/slackbot/api/events.ts
 const openai = new OpenAI({
@@ -19,21 +20,21 @@ export async function getDALLE3(prompt: string) {
 
 export async function getGPT(messages: ChatCompletionMessageParam[]) {
   return openai.chat.completions.create({
-    model: 'gpt-5.4-mini',
+    model: DEFAULT_AI_MODEL,
     messages,
   });
 }
 
 export async function getGPTmini(messages: ChatCompletionMessageParam[]) {
   return openai.chat.completions.create({
-    model: 'gpt-5.4-mini',
+    model: DEFAULT_AI_MODEL,
     messages,
   });
 }
 
 export async function translateToChinese(text: string) {
   return openai.chat.completions.create({
-    model: 'gpt-5.4-mini',
+    model: DEFAULT_AI_MODEL,
     messages: [
       {
         role: 'system',
@@ -50,7 +51,7 @@ export async function translateToChinese(text: string) {
 export async function getThird(messages: ChatCompletionMessageParam[]) {
   const params = {
     messages: messages,
-    model: 'gpt-5.4-mini',
+    model: DEFAULT_AI_MODEL,
   };
 
   const headers = {

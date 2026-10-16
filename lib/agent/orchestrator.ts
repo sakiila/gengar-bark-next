@@ -31,6 +31,7 @@ import {
   getToolExecutionService,
   ToolExecutionLog,
 } from '../database/services/tool-execution.service';
+import { DEFAULT_AI_MODEL } from '@/lib/ai/config';
 
 /**
  * Configuration for retry logic.
@@ -76,14 +77,14 @@ const DEFAULT_CACHE_CONFIG: CacheConfig = {
 export interface OrchestratorConfig {
   retry: RetryConfig;
   cache: CacheConfig;
-  /** Model to use for OpenAI calls (default: gpt-4o-mini) */
+  /** Model to use for OpenAI calls (default: gpt-6-luna) */
   model: string;
 }
 
 const DEFAULT_CONFIG: OrchestratorConfig = {
   retry: DEFAULT_RETRY_CONFIG,
   cache: DEFAULT_CACHE_CONFIG,
-  model: 'gpt-5.4-mini',
+  model: DEFAULT_AI_MODEL,
 };
 
 /**

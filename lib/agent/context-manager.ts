@@ -8,6 +8,7 @@ import { Redis } from '@upstash/redis';
 import OpenAI from 'openai';
 import { ChatCompletionMessageParam } from 'openai/resources';
 import { ConversationMessage, CachedConversation } from './types';
+import { DEFAULT_AI_MODEL } from '@/lib/ai/config';
 
 /**
  * Configuration for the context manager.
@@ -204,7 +205,7 @@ Keep the summary under 500 characters while preserving essential information.`;
 
     try {
       const response = await this.openai.chat.completions.create({
-        model: 'gpt-5.4-mini',
+        model: DEFAULT_AI_MODEL,
         messages,
         temperature: 0.3,
       });
@@ -291,7 +292,7 @@ Do not include any explanation, just the value or "NOT_FOUND".`;
 
     try {
       const response = await this.openai.chat.completions.create({
-        model: 'gpt-5.4-mini',
+        model: DEFAULT_AI_MODEL,
         messages,
         temperature: 0,
       });
