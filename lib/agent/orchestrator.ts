@@ -711,8 +711,9 @@ export class Orchestrator {
       
       return {
         text: this.responseGenerator.formatTextResponse(displayText),
-        // Only format as structured response for non-MCP tools with simple data
-        blocks: (!isMCPResult && result.data && typeof result.data !== 'object') 
+        // Only format as structured response for non-MCP tools with object-like data.
+        // String payloads (e.g. large JSON text) should stay as plain text to avoid Slack block text limits.
+        blocks: (!isMCPResult && result.data && typeof result.data === 'object') 
           ? this.responseGenerator.formatStructuredResponse(result.data, 'generic') 
           : undefined,
         toolsUsed,

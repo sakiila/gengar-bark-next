@@ -1,0 +1,23 @@
+{
+  "id": "ep-2026-03-30-001",
+  "timestamp": "2026-03-30T00:00:00Z",
+  "skill": "self-improving-agent",
+  "situation": "需要用最小 TS 脚本跑 growthbook-mcp 的 `get_feature_flags` tool，并从本地 `.env` 获取 API 配置。",
+  "actions_taken": [
+    "先克隆 growthbook-mcp 并确认 tools 注册入口在 src/index.ts",
+    "尝试用 ts-node/ESM loader 直接 import 源码 `.js` specifier",
+    "发现 `.js` specifier 对不到 TS 源文件，且依赖/类型检查会导致解析错误",
+    "执行 `npm run build` 生成编译产物到 `growthbook-mcp/server/**.js`",
+    "写最小脚本基于编译产物复用 `registerFeatureTools` 的 handler 进行真实调用"
+  ],
+  "outcome": "success",
+  "root_cause": "growthbook-mcp 的源码使用 ESM + `.js` 扩展名 specifier，而在直接运行 TS 源文件时无法稳定映射到可导入的模块，导致模块解析失败；同时 tsc 的 outDir/rootDir 落点需要确认。",
+  "solution": "先构建生成 `server/**.js` 再导入 handler，且用 `tsc --listEmittedFiles` + `ls` 验证输出落点；最后用 fake MCP server 抓 handler 直接调用。",
+  "lesson": "对于 `.js` specifier 指向 TS 源的场景，优先采用 build 产物路径来保证 ESM 解析一致性，并在写脚本前验证输出落点。",
+  "related_pattern": "pat-2026-03-30-001",
+  "user_feedback": {
+    "rating": 8,
+    "comments": "用户选择将本轮经验落盘到 memory 结构中；脚本已完成并可继续用于最小可行性测试。"
+  }
+}
+
