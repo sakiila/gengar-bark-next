@@ -10,6 +10,10 @@ import { teamJoin } from '@/lib/events-handlers/team-join';
 import { userChange } from '@/lib/events-handlers/user-change';
 import { monitorUserMessages } from '@/lib/events-handlers/message-monitor';
 import mcpAppHomeOpened from '@/lib/events-handlers/mcp-app-home-opened';
+import { forwardPetMatchLinkShared } from '@/lib/events-handlers/pet-match-link-shared';
+
+// Slack signs the exact JSON bytes, including whitespace and escaped characters.
+export const config = { api: { bodyParser: false } };
 
 // Create a request-scoped logger with context
 const createRequestLogger = (req: NextApiRequest) => {
@@ -28,6 +32,21 @@ export default async function handler(
   const log = createRequestLogger(req);
 
   try {
+    const chunks: Buffer[] = [];
+    let bodySize = 0;
+    for await (const chunk of req) {
+      const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+      bodySize += buffer.length;
+      if (bodySize > 1024 * 1024) return res.status(413).end();
+      chunks.push(buffer);
+    }
+    const rawBody = Buffer.concat(chunks).toString('utf8');
+    try {
+      req.body = JSON.parse(rawBody);
+    } catch {
+      return res.status(400).end();
+    }
+
     const eventData = {
       type: req.body.type,
       event_type: req.body.event?.type,
@@ -42,6 +61,12 @@ export default async function handler(
     if (type === 'url_verification') {
       log.debug('Processing URL verification', { challenge: req.body.challenge });
       return res.status(200).json({ challenge: req.body.challenge });
+    }
+
+    if (type === 'event_callback' && req.body.event?.type === 'link_shared') {
+      const status = await forwardPetMatchLinkShared(rawBody, req.headers);
+      if (status !== 200) log.warn('Pet Match event relay failed', { status });
+      return res.status(status).end();
     }
 
     if (!verifyRequest(req)) {
