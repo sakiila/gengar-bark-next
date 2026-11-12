@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  IMAGE_NAME: docker-registry.baobo.me/gengar-bark
+  IMAGE_NAME: ghcr.io/sakiila/gengar-bark
   NODE_VERSION: '18'
   DOCKER_BUILDKIT: 1
   COMPOSE_DOCKER_CLI_BUILD: 1
@@ -27,12 +27,12 @@ jobs:
       packages: write
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
         with:
           version: latest
           platforms: linux/amd64
@@ -42,7 +42,7 @@ jobs:
           buildkitd-flags: --debug
 
       - name: Cache Docker layers
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}
@@ -64,11 +64,11 @@ jobs:
           echo "$ENV_CONTENT" > .env
 
       - name: Login to Registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@v3
         with:
-          registry: docker-registry.baobo.me
-          username: ${{ secrets.REGISTRY_USERNAME }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       # 修改缓存配置，确保目录存在
       - name: Prepare cache directory
@@ -77,7 +77,7 @@ jobs:
           chmod 777 /tmp/.buildx-cache
 
       - name: Build and push
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         with:
           context: .
           push: true
@@ -116,15 +116,29 @@ jobs:
 
       - name: Deploy
         uses: appleboy/ssh-action@master
+        env:
+          GHCR_USERNAME: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.HOST_USERNAME }}
           key: ${{ secrets.HOST_SSHKEY }}
+          envs: GHCR_USERNAME,GHCR_TOKEN
           script: |
+            set -e
+
             # 创建应用目录
             mkdir -p /app/gengar-bark
             cd /app/gengar-bark
             
+            (
+              export DOCKER_CONFIG="$(mktemp -d)"
+              trap 'rm -rf -- "$DOCKER_CONFIG"' EXIT
+              printf '%s' "${GHCR_TOKEN:?}" | docker login ghcr.io --username "${GHCR_USERNAME:?}" --password-stdin
+              docker pull "${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.VERSION }}"
+            )
+            unset GHCR_TOKEN
+
             # 清理旧容器
             echo "Stopping and removing old container if exists..."
             if docker ps -a | grep -q "gengar-bark"; then
@@ -132,9 +146,6 @@ jobs:
               docker rm -f gengar-bark || true
             fi
             
-            # 拉取新镜像
-            echo "Pulling new image..."
-            docker pull ${{ env.IMAGE_NAME }}:${{ steps.tag.outputs.VERSION }}
             
             # 启动新容器
             echo "Starting new container..."
